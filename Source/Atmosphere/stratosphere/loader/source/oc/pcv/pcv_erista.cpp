@@ -163,9 +163,9 @@ namespace ams::ldr::oc::pcv::erista {
         R_SUCCEED();
     }
 
-    /* This currently patches a lot of unwanted extra stuff that needs to be removed.                */
-    /* Additionally all timings are hardcoded, meaning timing reductions don't work as of right now. */
-    /* Finally: This only patches for 2133BL; 1866BL also needs to be done.                          */
+    /* This currently patches a lot of unwanted extra stuff that needs to be removed. */
+    /* Additionally, timing reductions have possible improvements.                    */
+    /* Note: I don't even know if this patches 2133BL or 1866BL, but I assume 2133BL. */
     void MemMtcTableAutoAdjustBaseLatency(EristaMtcTable *table) {
         using namespace pcv::erista;
         #define WRITE_PARAM_ALL_REG(TABLE, PARAM, VALUE) \
@@ -174,207 +174,281 @@ namespace ams::ldr::oc::pcv::erista {
             TABLE->shadow_regs_quse_train.PARAM = VALUE; \
             TABLE->shadow_regs_rdwr_train.PARAM = VALUE;
 
-        WRITE_PARAM_ALL_REG(table, emc_cfg,                            0xF3200000); /* TODO: HP mode. */
-        WRITE_PARAM_ALL_REG(table, emc_rc,                             0x00000060);
-        WRITE_PARAM_ALL_REG(table, emc_rfc,                            0x00000120);
-        WRITE_PARAM_ALL_REG(table, emc_ras,                            0x00000044);
-        WRITE_PARAM_ALL_REG(table, emc_rp,                             0x0000001D);
-        WRITE_PARAM_ALL_REG(table, emc_r2w,                            0x0000002A);
-        WRITE_PARAM_ALL_REG(table, emc_w2r,                            0x00000021);
-        WRITE_PARAM_ALL_REG(table, emc_r2p,                            0x0000000C);
-        WRITE_PARAM_ALL_REG(table, emc_w2p,                            0x0000002D);
-        WRITE_PARAM_ALL_REG(table, emc_rd_rcd,                         0x0000001D);
-        WRITE_PARAM_ALL_REG(table, emc_wr_rcd,                         0x0000001D);
-        WRITE_PARAM_ALL_REG(table, emc_rrd,                            0x00000010);
-        WRITE_PARAM_ALL_REG(table, emc_rext,                           0x00000017);
-        WRITE_PARAM_ALL_REG(table, emc_wdv,                            0x0000000E);
-        WRITE_PARAM_ALL_REG(table, emc_quse,                           0x00000024);
-        WRITE_PARAM_ALL_REG(table, emc_qrst,                           0x0006000C);
-        WRITE_PARAM_ALL_REG(table, emc_qsafe,                          0x00000034);
-        WRITE_PARAM_ALL_REG(table, emc_rdv,                            0x0000003C);
-        WRITE_PARAM_ALL_REG(table, emc_refresh,                        0x00001820);
-        WRITE_PARAM_ALL_REG(table, emc_burst_refresh_num,              0x00000000);
-        WRITE_PARAM_ALL_REG(table, emc_pdex2wr,                        0x00000010);
-        WRITE_PARAM_ALL_REG(table, emc_pdex2rd,                        0x00000010);
-        WRITE_PARAM_ALL_REG(table, emc_pchg2pden,                      0x00000003);
-        WRITE_PARAM_ALL_REG(table, emc_act2pden,                       0x00000003);
-        WRITE_PARAM_ALL_REG(table, emc_ar2pden,                        0x00000003);
-        WRITE_PARAM_ALL_REG(table, emc_rw2pden,                        0x00000038);
-        WRITE_PARAM_ALL_REG(table, emc_txsr,                           0x0000012C);
-        WRITE_PARAM_ALL_REG(table, emc_tcke,                           0x0000000D);
-        WRITE_PARAM_ALL_REG(table, emc_tfaw,                           0x00000040);
-        WRITE_PARAM_ALL_REG(table, emc_trpab,                          0x00000022);
-        WRITE_PARAM_ALL_REG(table, emc_tclkstable,                     0x00000004);
-        WRITE_PARAM_ALL_REG(table, emc_tclkstop,                       0x00000014);
-        WRITE_PARAM_ALL_REG(table, emc_trefbw,                         0x00001860);
-        WRITE_PARAM_ALL_REG(table, emc_tppd,                           0x00000004);
-        WRITE_PARAM_ALL_REG(table, emc_odt_write,                      0x00000000);
-        WRITE_PARAM_ALL_REG(table, emc_pdex2mrr,                       0x0000002E);
-        WRITE_PARAM_ALL_REG(table, emc_wext,                           0x00000016);
-        WRITE_PARAM_ALL_REG(table, emc_rfc_slr,                        0x00000000);
-        WRITE_PARAM_ALL_REG(table, emc_mrs_wait_cnt2,                  0x01900017);
-        WRITE_PARAM_ALL_REG(table, emc_mrs_wait_cnt,                   0x0640002F);
-        // table->emc_mrs  =                                           0x00000000;
-        // table->emc_emrs =                                           0x00000000;
-        // table->emc_mrw  =                                           0x00170040;
-        WRITE_PARAM_ALL_REG(table, emc_fbio_spare,                     0x00000012);
-        WRITE_PARAM_ALL_REG(table, emc_fbio_cfg5,                      0x9960A00D);
-        WRITE_PARAM_ALL_REG(table, emc_pdex2cke,                       0x00000002);
-        WRITE_PARAM_ALL_REG(table, emc_cke2pden,                       0x0000000E);
-        // table->emc_emrs2 =                                          0x00000000;
-        // table->emc_mrw2  =                                          0x0802002D;
-        // table->emc_mrw3  =                                          0x0C0D00C0;
-        // table->emc_mrw4  =                                          0xC0000000;
-        WRITE_PARAM_ALL_REG(table, emc_r2r,                            0x00000000);
-        WRITE_PARAM_ALL_REG(table, emc_einput,                         0x00000014);
-        WRITE_PARAM_ALL_REG(table, emc_einput_duration,                0x0000001D);
-        WRITE_PARAM_ALL_REG(table, emc_puterm_extra,                   0x0000001F);
-        WRITE_PARAM_ALL_REG(table, emc_tckesr,                         0x00000018);
-        WRITE_PARAM_ALL_REG(table, emc_tpd,                            0x0000000C);
-        table->emc_auto_cal_config =                                   0x201A51D8;
-        table->emc_cfg_2           =                                   0x00110835;
-        WRITE_PARAM_ALL_REG(table, emc_cfg_dig_dll,                    0x002C03A9);
-        WRITE_PARAM_ALL_REG(table, emc_cfg_dig_dll_period,             0x00008000);
-        WRITE_PARAM_ALL_REG(table, emc_rdv_mask,                       0x0000003E);
-        WRITE_PARAM_ALL_REG(table, emc_wdv_mask,                       0x0000000E);
-        WRITE_PARAM_ALL_REG(table, emc_rdv_early_mask,                 0x0000003C);
-        WRITE_PARAM_ALL_REG(table, emc_rdv_early,                      0x0000003A);
-        table->emc_auto_cal_config8 =                                  0x00770000;
-        WRITE_PARAM_ALL_REG(table, emc_zcal_interval,                  0x00064000);
-        WRITE_PARAM_ALL_REG(table, emc_zcal_wait_cnt,                  0x00310640);
-        WRITE_PARAM_ALL_REG(table, emc_fdpd_ctrl_dq,                   0x8020221F);
-        WRITE_PARAM_ALL_REG(table, emc_fdpd_ctrl_cmd,                  0x0220F40F);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_cmd_brick_ctrl_fdpd,  0x00000000);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_data_brick_ctrl_fdpd, 0x00000000);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_brick_ctrl_rfu1,      0x1FFF1FFF);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_brick_ctrl_rfu2,      0x00000000);
-        WRITE_PARAM_ALL_REG(table, emc_tr_timing_0,                    0x01186190);
-        // WRITE_PARAM_ALL_REG(table, emc_tr_ctrl_1,                   0x00000000);
-        WRITE_PARAM_ALL_REG(table, emc_tr_rdv,                         0x0000003C);
-        table->emc_sel_dpd_ctrl =                                      0x00040000;
-        WRITE_PARAM_ALL_REG(table, emc_pre_refresh_req_cnt,            0x00000608);
-        WRITE_PARAM_ALL_REG(table, emc_dyn_self_ref_control,           0x8000308C);
-        WRITE_PARAM_ALL_REG(table, emc_txsrdll,                        0x0000012C);
-        WRITE_PARAM_ALL_REG(table, emc_tr_qpop,                        0x0000002C);
-        WRITE_PARAM_ALL_REG(table, emc_tr_rdv_mask,                    0x0000003E);
-        WRITE_PARAM_ALL_REG(table, emc_tr_qsafe,                       0x00000034);
-        WRITE_PARAM_ALL_REG(table, emc_tr_qrst,                        0x0006000C);
-        table->emc_auto_cal_config2 =                                  0x05500000;
-        table->emc_auto_cal_config3 =                                  0x00770000;
-        // WRITE_PARAM_ALL_REG(table, emc_tr_dvfs,                     0x00000000);
-        WRITE_PARAM_ALL_REG(table, emc_auto_cal_channel,               0xC1E0030A);
-        WRITE_PARAM_ALL_REG(table, emc_ibdly,                          0x1000001C);
-        WRITE_PARAM_ALL_REG(table, emc_obdly,                          0x10000002);
-        WRITE_PARAM_ALL_REG(table, emc_txdsrvttgen,                    0x00000000);
-        WRITE_PARAM_ALL_REG(table, emc_we_duration,                    0x0000000D);
-        WRITE_PARAM_ALL_REG(table, emc_ws_duration,                    0x00000008);
-        WRITE_PARAM_ALL_REG(table, emc_wev,                            0x0000000A);
-        WRITE_PARAM_ALL_REG(table, emc_wsv,                            0x0000000C);
-        WRITE_PARAM_ALL_REG(table, emc_cfg_3,                          0x00000040);
-        // WRITE_PARAM_ALL_REG(table, emc_mrw6,                        0x08037171);
-        // WRITE_PARAM_ALL_REG(table, emc_mrw7,                        0x48037171);
-        // WRITE_PARAM_ALL_REG(table, emc_mrw8,                        0x080B6666);
-        // table->emc_mrw9  =                                          0x0C0E7272;
-        // table->emc_mrw10 =                                          0x880C4848;
-        // table->emc_mrw11 =                                          0x480C4848; /* Check them maybe */
-        // table->emc_mrw12 =                                          0x880E1718;
-        // table->emc_mrw13 =                                          0x480E1814;
-        // WRITE_PARAM_ALL_REG(table, emc_mrw14,                       0x08161414);
-        // WRITE_PARAM_ALL_REG(table, emc_mrw15,                       0x48161414);
-        // table->emc_fdpd_ctrl_cmd_no_ramp =                          0x00000001;
-        WRITE_PARAM_ALL_REG(table, emc_wdv_chk,                        0x00000006);
-        // WRITE_PARAM_ALL_REG(table, emc_cfg_pipe_2,                  0x00000000);
-        // WRITE_PARAM_ALL_REG(table, emc_cfg_pipe_1,                  0x00000000);
-        // WRITE_PARAM_ALL_REG(table, emc_cfg_pipe,                    0x00000000);
-        WRITE_PARAM_ALL_REG(table, emc_qpop,                           0x0000002C);
-        WRITE_PARAM_ALL_REG(table, emc_quse_width,                     0x00000009);
-        WRITE_PARAM_ALL_REG(table, emc_puterm_width,                   0x0000000E);
-        table->emc_auto_cal_config7 =                                  0x00770000;
-        // WRITE_PARAM_ALL_REG(table, emc_refctrl2,                    0x00000000);
-        WRITE_PARAM_ALL_REG(table, emc_fbio_cfg7,                      0x00003BFF);
-        WRITE_PARAM_ALL_REG(table, emc_rfcpb,                          0x00000090);
-        // WRITE_PARAM_ALL_REG(table, emc_dqs_brlshft_0,               0x00000000); /* brlshft may or may not be important, I don't think it matters but who knows. */
-        // WRITE_PARAM_ALL_REG(table, emc_dqs_brlshft_1,               0x00000000);
-        table->emc_auto_cal_config4 =                                  0x00770000;
-        table->emc_auto_cal_config5 =                                  0x00770000;
-        WRITE_PARAM_ALL_REG(table, emc_ccdmw,                          0x00000020);
-        table->emc_auto_cal_config6 =                                  0x00770000;
-        WRITE_PARAM_ALL_REG(table, emc_dll_cfg_0,                      0x1F13612F);
-        WRITE_PARAM_ALL_REG(table, emc_dll_cfg_1,                      0x00000014);
-        WRITE_PARAM_ALL_REG(table, emc_config_sample_delay,            0x00000020);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_tx_pwrd_0,            0x10000000);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_tx_pwrd_1,            0x08000000);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_tx_pwrd_2,            0x08000000);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_tx_pwrd_3,            0x00000000);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_tx_pwrd_4,            0x00000000);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_tx_pwrd_5,            0x00001000);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_ddll_bypass,          0xEFFF2210);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_ddll_pwrd_0,          0x00000000);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_ddll_pwrd_1,          0x00000000);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_ddll_pwrd_2,          0xDCDCDCDC);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_cmd_ctrl_0,           0x0A0A0A0A);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_cmd_ctrl_1,           0x0A0A0A0A);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_cmd_ctrl_2,           0x000A0A0A);
-        // table->trim_regs.emc_pmacro_ib_vref_dq_0  =                 0x15171414;
-        // table->trim_regs.emc_pmacro_ib_vref_dq_1  =                 0x15131513;
-        // table->trim_regs.emc_pmacro_ib_vref_dqs_0 =                 0x11111111;
-        // table->trim_regs.emc_pmacro_ib_vref_dqs_1 =                 0x11111111;
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_ddll_long_cmd_0,      0x000C000C);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_ddll_long_cmd_1,      0x000B000B);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_ddll_long_cmd_2,      0x000A000A);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_ddll_long_cmd_3,      0x000C000C);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_ddll_long_cmd_4,      0x0000000C);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_ddll_short_cmd_0,     0x00000000);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_ddll_short_cmd_1,     0x00000000);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_ddll_short_cmd_2,     0x00000000);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_vttgen_ctrl_0,        0x00030808);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_vttgen_ctrl_1,        0x00015C00);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_bg_bias_ctrl_0,       0x00000034);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_pad_cfg_ctrl,         0x00020000);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_zctrl,                0x00000550);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_cmd_pad_rx_ctrl,      0x00000000);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_data_pad_rx_ctrl,     0x00000033);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_cmd_rx_term_mode,     0x00003000);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_data_rx_term_mode,    0x00000011);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_cmd_pad_tx_ctrl,      0x02000000);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_data_pad_tx_ctrl,     0x02000101);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_common_pad_tx_ctrl,   0x00000007);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_autocal_cfg_common,   0x0000080D);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_vttgen_ctrl_2,        0x00102020);
-        // WRITE_PARAM_ALL_REG(table, emc_pmacro_ib_rxrt,              0x00000055);
-        WRITE_PARAM_ALL_REG(table, emc_training_ctrl,                  0x00009080);
-        WRITE_PARAM_ALL_REG(table, emc_training_quse_cors_ctrl,        0x01124000);
-        WRITE_PARAM_ALL_REG(table, emc_training_quse_fine_ctrl,        0x01125B6A);
-        WRITE_PARAM_ALL_REG(table, emc_training_quse_ctrl_misc,        0x0F081000);
-        WRITE_PARAM_ALL_REG(table, emc_training_write_fine_ctrl,       0x1114FC00);
-        WRITE_PARAM_ALL_REG(table, emc_training_write_ctrl_misc,       0x07004300);
-        WRITE_PARAM_ALL_REG(table, emc_training_write_vref_ctrl,       0x00103200);
-        WRITE_PARAM_ALL_REG(table, emc_training_read_fine_ctrl,        0x1110FC00);
-        WRITE_PARAM_ALL_REG(table, emc_training_read_ctrl_misc,        0x0F085300);
-        WRITE_PARAM_ALL_REG(table, emc_training_read_vref_ctrl,        0x00105800);
-        WRITE_PARAM_ALL_REG(table, emc_training_ca_fine_ctrl,          0x0513801F);
-        WRITE_PARAM_ALL_REG(table, emc_training_ca_ctrl_misc,          0x1F101100);
-        WRITE_PARAM_ALL_REG(table, emc_training_ca_ctrl_misc1,         0x00000014);
-        WRITE_PARAM_ALL_REG(table, emc_training_ca_vref_ctrl,          0x00103200);
-        WRITE_PARAM_ALL_REG(table, emc_training_settle,                0x07070404);
-        // WRITE_PARAM_ALL_REG(table, emc_training_mpc,                0x00000000);
+        #define GET_CYCLE(PARAM) ((u32)((double)(PARAM) / tCK_avg))
+
+        /* This condition is insane but it's done in eos. */
+        /* Need to clean up at some point. */
+        u32 rext;
+        u32 wext;
+        if (C.eristaEmcMaxClock < 3200001) {
+            if (C.eristaEmcMaxClock < 2133001) {
+                rext = 26;
+                wext = 22;
+            } else {
+                rext = 28;
+                wext = 22;
+
+                if (2400000 < C.eristaEmcMaxClock) {
+                    wext = 25;
+                }
+            }
+        } else {
+            rext = 30;
+            wext = 25;
+        }
+
+        u32 refresh_raw = 0xFFFF;
+        u32 trefbw = 0;
+
+        if (C.t8_tREFI != 6) {
+            refresh_raw = static_cast<u32>(std::floor(static_cast<double>(tREFpb_values[C.t8_tREFI]) / tCK_avg)) - 0x40;
+            refresh_raw = MIN(refresh_raw, static_cast<u32>(0xFFFF));
+        }
+
+        trefbw = refresh_raw + 0x40;
+        trefbw = MIN(trefbw, static_cast<u32>(0x3FFF));
+
+        if (C.hpMode) {
+            WRITE_PARAM_ALL_REG(table, emc_cfg, 0x13200000);
+        } else {
+            WRITE_PARAM_ALL_REG(table, emc_cfg, 0xF3200000);
+        }
+
+        WRITE_PARAM_ALL_REG(table, emc_rc,                           /*0x00000060*/ GET_CYCLE(tRC));
+        WRITE_PARAM_ALL_REG(table, emc_rfc,                       /*0x00000120*/ GET_CYCLE(tRFCab));
+        WRITE_PARAM_ALL_REG(table, emc_ras,                         /*0x00000044*/ GET_CYCLE(tRAS));
+        WRITE_PARAM_ALL_REG(table, emc_rp,                         /*0x0000001D*/ GET_CYCLE(tRPpb));
+        WRITE_PARAM_ALL_REG(table, emc_r2w,                                    /*0x0000002A*/ tR2W);
+        WRITE_PARAM_ALL_REG(table, emc_w2r,                                    /*0x00000021*/ tW2R);
+        WRITE_PARAM_ALL_REG(table, emc_r2p,                                             0x0000000C);
+        WRITE_PARAM_ALL_REG(table, emc_w2p,                                             0x0000002D);
+        WRITE_PARAM_ALL_REG(table, emc_rd_rcd,                      /*0x0000001D*/ GET_CYCLE(tRCD));
+        WRITE_PARAM_ALL_REG(table, emc_wr_rcd,                      /*0x0000001D*/ GET_CYCLE(tRCD));
+        WRITE_PARAM_ALL_REG(table, emc_rrd,                         /*0x00000010*/ GET_CYCLE(tRRD));
+        WRITE_PARAM_ALL_REG(table, emc_rext,                                            0x00000017);
+        WRITE_PARAM_ALL_REG(table, emc_wdv,                                             0x0000000E);
+        WRITE_PARAM_ALL_REG(table, emc_quse,                                            0x00000024);
+        WRITE_PARAM_ALL_REG(table, emc_qrst,                                            0x0006000C);
+        WRITE_PARAM_ALL_REG(table, emc_qsafe,                                           0x00000034);
+        WRITE_PARAM_ALL_REG(table, emc_rdv,                                             0x0000003C);
+        WRITE_PARAM_ALL_REG(table, emc_refresh,                         /*0x00001820*/ refresh_raw);
+        WRITE_PARAM_ALL_REG(table, emc_burst_refresh_num,                               0x00000000);
+        WRITE_PARAM_ALL_REG(table, emc_pdex2wr,                                         0x00000010);
+        WRITE_PARAM_ALL_REG(table, emc_pdex2rd,                                         0x00000010);
+        WRITE_PARAM_ALL_REG(table, emc_pchg2pden,                                       0x00000003);
+        WRITE_PARAM_ALL_REG(table, emc_act2pden,                                        0x00000003);
+        WRITE_PARAM_ALL_REG(table, emc_ar2pden,                                         0x00000003);
+        WRITE_PARAM_ALL_REG(table, emc_rw2pden,                 /*0x00000038*/ GET_CYCLE(tRW2PDEN));
+        WRITE_PARAM_ALL_REG(table, emc_txsr,       /*0x0000012C*/ MIN(GET_CYCLE(tXSR), (u32) 1022));
+        WRITE_PARAM_ALL_REG(table, emc_tcke,                                            0x0000000D);
+        WRITE_PARAM_ALL_REG(table, emc_tfaw,                        /*0x00000040*/ GET_CYCLE(tFAW));
+        WRITE_PARAM_ALL_REG(table, emc_trpab,                      /*0x00000022*/ GET_CYCLE(tRPab));
+        WRITE_PARAM_ALL_REG(table, emc_tclkstable,                                      0x00000004);
+        WRITE_PARAM_ALL_REG(table, emc_tclkstop,                                        0x00000014);
+        WRITE_PARAM_ALL_REG(table, emc_trefbw,                              /* 0x00001860*/ trefbw);
+        WRITE_PARAM_ALL_REG(table, emc_tppd,                                            0x00000004);
+        WRITE_PARAM_ALL_REG(table, emc_odt_write,                                       0x00000000);
+        WRITE_PARAM_ALL_REG(table, emc_pdex2mrr,                /*0x0000002E*/ GET_CYCLE(pdex2mrr));
+        WRITE_PARAM_ALL_REG(table, emc_wext,                                            0x00000016);
+        WRITE_PARAM_ALL_REG(table, emc_rfc_slr,                                         0x00000000);
+        WRITE_PARAM_ALL_REG(table, emc_mrs_wait_cnt2,                                   0x01900017);
+        WRITE_PARAM_ALL_REG(table, emc_mrs_wait_cnt,                                    0x0640002F);
+        // table->emc_mrs  =                                                            0x00000000;
+        // table->emc_emrs =                                                            0x00000000;
+        // table->emc_mrw  =                                                            0x00170040;
+        WRITE_PARAM_ALL_REG(table, emc_fbio_spare,                                      0x00000012);
+        WRITE_PARAM_ALL_REG(table, emc_fbio_cfg5,                                       0x9960A00D);
+        WRITE_PARAM_ALL_REG(table, emc_pdex2cke,                                        0x00000002);
+        WRITE_PARAM_ALL_REG(table, emc_cke2pden,                                        0x0000000E);
+        // table->emc_emrs2 =                                                           0x00000000;
+        // table->emc_mrw2  =                                                           0x0802002D;
+        // table->emc_mrw3  =                                                           0x0C0D00C0;
+        // table->emc_mrw4  =                                                           0xC0000000;
+        WRITE_PARAM_ALL_REG(table, emc_r2r,                                             0x00000000);
+        WRITE_PARAM_ALL_REG(table, emc_einput,                                          0x00000014);
+        WRITE_PARAM_ALL_REG(table, emc_einput_duration,                                 0x0000001D);
+        WRITE_PARAM_ALL_REG(table, emc_puterm_extra,                                    0x0000001F);
+        WRITE_PARAM_ALL_REG(table, emc_tckesr,                                          0x00000018);
+        WRITE_PARAM_ALL_REG(table, emc_tpd,                                             0x0000000C);
+        table->emc_auto_cal_config =                                                    0x201A51D8;
+        table->emc_cfg_2           =                                                    0x00110835;
+        WRITE_PARAM_ALL_REG(table, emc_cfg_dig_dll,                                     0x002C03A9);
+        WRITE_PARAM_ALL_REG(table, emc_cfg_dig_dll_period,                              0x00008000);
+        WRITE_PARAM_ALL_REG(table, emc_rdv_mask,                                        0x0000003E);
+        WRITE_PARAM_ALL_REG(table, emc_wdv_mask,                                        0x0000000E);
+        WRITE_PARAM_ALL_REG(table, emc_rdv_early_mask,                                  0x0000003C);
+        WRITE_PARAM_ALL_REG(table, emc_rdv_early,                                       0x0000003A);
+        table->emc_auto_cal_config8 =                                                   0x00770000;
+        WRITE_PARAM_ALL_REG(table, emc_zcal_interval,                                   0x00064000);
+        WRITE_PARAM_ALL_REG(table, emc_zcal_wait_cnt,                                   0x00310640);
+        WRITE_PARAM_ALL_REG(table, emc_fdpd_ctrl_dq,                                    0x8020221F);
+        WRITE_PARAM_ALL_REG(table, emc_fdpd_ctrl_cmd,                                   0x0220F40F);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_cmd_brick_ctrl_fdpd,                   0x00000000);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_data_brick_ctrl_fdpd,                  0x00000000);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_brick_ctrl_rfu1,                       0x1FFF1FFF);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_brick_ctrl_rfu2,                       0x00000000);
+        WRITE_PARAM_ALL_REG(table, emc_tr_timing_0,                                     0x01186190);
+        // WRITE_PARAM_ALL_REG(table, emc_tr_ctrl_1,                                    0x00000000);
+        WRITE_PARAM_ALL_REG(table, emc_tr_rdv,                                          0x0000003C);
+        table->emc_sel_dpd_ctrl =                                                       0x00040000;
+        WRITE_PARAM_ALL_REG(table, emc_pre_refresh_req_cnt, /*0x00000608*/ (u32) (refresh_raw / 4));
+        WRITE_PARAM_ALL_REG(table, emc_dyn_self_ref_control,                            0x8000308C);
+        WRITE_PARAM_ALL_REG(table, emc_txsrdll,    /*0x0000012C*/ MIN(GET_CYCLE(tXSR), (u32) 1022));
+        WRITE_PARAM_ALL_REG(table, emc_tr_qpop,                                         0x0000002C);
+        WRITE_PARAM_ALL_REG(table, emc_tr_rdv_mask,                                     0x0000003E);
+        WRITE_PARAM_ALL_REG(table, emc_tr_qsafe,                                        0x00000034);
+        WRITE_PARAM_ALL_REG(table, emc_tr_qrst,                                         0x0006000C);
+        table->emc_auto_cal_config2 =                                                   0x05500000;
+        table->emc_auto_cal_config3 =                                                   0x00770000;
+        // WRITE_PARAM_ALL_REG(table, emc_tr_dvfs,                                      0x00000000);
+        WRITE_PARAM_ALL_REG(table, emc_auto_cal_channel,                                0xC1E0030A);
+        WRITE_PARAM_ALL_REG(table, emc_ibdly,                                           0x1000001C);
+        WRITE_PARAM_ALL_REG(table, emc_obdly,                                           0x10000002);
+        WRITE_PARAM_ALL_REG(table, emc_txdsrvttgen,                                     0x00000000);
+        WRITE_PARAM_ALL_REG(table, emc_we_duration,                                     0x0000000D);
+        WRITE_PARAM_ALL_REG(table, emc_ws_duration,                                     0x00000008);
+        WRITE_PARAM_ALL_REG(table, emc_wev,                                             0x0000000A);
+        WRITE_PARAM_ALL_REG(table, emc_wsv,                                             0x0000000C);
+        WRITE_PARAM_ALL_REG(table, emc_cfg_3,                                           0x00000040);
+        // WRITE_PARAM_ALL_REG(table, emc_mrw6,                                         0x08037171);
+        // WRITE_PARAM_ALL_REG(table, emc_mrw7,                                         0x48037171);
+        // WRITE_PARAM_ALL_REG(table, emc_mrw8,                                         0x080B6666);
+        // table->emc_mrw9  =                                                           0x0C0E7272;
+        // table->emc_mrw10 =                                                           0x880C4848;
+        // table->emc_mrw11 =                                                           0x480C4848; /* Check them maybe */
+        // table->emc_mrw12 =                                                           0x880E1718;
+        // table->emc_mrw13 =                                                           0x480E1814;
+        // WRITE_PARAM_ALL_REG(table, emc_mrw14,                                        0x08161414);
+        // WRITE_PARAM_ALL_REG(table, emc_mrw15,                                        0x48161414);
+        // table->emc_fdpd_ctrl_cmd_no_ramp =                                           0x00000001;
+        WRITE_PARAM_ALL_REG(table, emc_wdv_chk,                                         0x00000006);
+        // WRITE_PARAM_ALL_REG(table, emc_cfg_pipe_2,                                   0x00000000);
+        // WRITE_PARAM_ALL_REG(table, emc_cfg_pipe_1,                                   0x00000000);
+        // WRITE_PARAM_ALL_REG(table, emc_cfg_pipe,                                     0x00000000);
+        WRITE_PARAM_ALL_REG(table, emc_qpop,                                            0x0000002C);
+        WRITE_PARAM_ALL_REG(table, emc_quse_width,                                      0x00000009);
+        WRITE_PARAM_ALL_REG(table, emc_puterm_width,                                    0x0000000E);
+        table->emc_auto_cal_config7 =                                                   0x00770000;
+        // WRITE_PARAM_ALL_REG(table, emc_refctrl2,                                     0x00000000);
+        WRITE_PARAM_ALL_REG(table, emc_fbio_cfg7,                                       0x00003BFF);
+        WRITE_PARAM_ALL_REG(table, emc_rfcpb,                     /*0x00000090*/ GET_CYCLE(tRFCpb));
+        // WRITE_PARAM_ALL_REG(table, emc_dqs_brlshft_0,                                0x00000000); /* brlshft may or may not be important, I don't think it matters but who knows. */
+        // WRITE_PARAM_ALL_REG(table, emc_dqs_brlshft_1,                                0x00000000);
+        table->emc_auto_cal_config4 =                                                   0x00770000;
+        table->emc_auto_cal_config5 =                                                   0x00770000;
+        WRITE_PARAM_ALL_REG(table, emc_ccdmw,                                           0x00000020);
+        table->emc_auto_cal_config6 =                                                   0x00770000;
+        WRITE_PARAM_ALL_REG(table, emc_dll_cfg_0,                                       0x1F13612F);
+        WRITE_PARAM_ALL_REG(table, emc_dll_cfg_1,                                       0x00000014);
+        WRITE_PARAM_ALL_REG(table, emc_config_sample_delay,                             0x00000020);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_tx_pwrd_0,                             0x10000000);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_tx_pwrd_1,                             0x08000000);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_tx_pwrd_2,                             0x08000000);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_tx_pwrd_3,                             0x00000000);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_tx_pwrd_4,                             0x00000000);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_tx_pwrd_5,                             0x00001000);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_ddll_bypass,                           0xEFFF2210);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_ddll_pwrd_0,                           0x00000000);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_ddll_pwrd_1,                           0x00000000);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_ddll_pwrd_2,                           0xDCDCDCDC);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_cmd_ctrl_0,                            0x0A0A0A0A);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_cmd_ctrl_1,                            0x0A0A0A0A);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_cmd_ctrl_2,                            0x000A0A0A);
+        // table->trim_regs.emc_pmacro_ib_vref_dq_0  =                                  0x15171414;
+        // table->trim_regs.emc_pmacro_ib_vref_dq_1  =                                  0x15131513;
+        // table->trim_regs.emc_pmacro_ib_vref_dqs_0 =                                  0x11111111;
+        // table->trim_regs.emc_pmacro_ib_vref_dqs_1 =                                  0x11111111;
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_ddll_long_cmd_0,                       0x000C000C);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_ddll_long_cmd_1,                       0x000B000B);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_ddll_long_cmd_2,                       0x000A000A);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_ddll_long_cmd_3,                       0x000C000C);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_ddll_long_cmd_4,                       0x0000000C);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_ddll_short_cmd_0,                      0x00000000);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_ddll_short_cmd_1,                      0x00000000);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_ddll_short_cmd_2,                      0x00000000);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_vttgen_ctrl_0,                         0x00030808);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_vttgen_ctrl_1,                         0x00015C00);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_bg_bias_ctrl_0,                        0x00000034);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_pad_cfg_ctrl,                          0x00020000);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_zctrl,                                 0x00000550);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_cmd_pad_rx_ctrl,                       0x00000000);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_data_pad_rx_ctrl,                      0x00000033);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_cmd_rx_term_mode,                      0x00003000);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_data_rx_term_mode,                     0x00000011);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_cmd_pad_tx_ctrl,                       0x02000000);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_data_pad_tx_ctrl,                      0x02000101);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_common_pad_tx_ctrl,                    0x00000007);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_autocal_cfg_common,                    0x0000080D);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_vttgen_ctrl_2,                         0x00102020);
+        // WRITE_PARAM_ALL_REG(table, emc_pmacro_ib_rxrt,                               0x00000055);
+        WRITE_PARAM_ALL_REG(table, emc_training_ctrl,                                   0x00009080);
+        WRITE_PARAM_ALL_REG(table, emc_training_quse_cors_ctrl,                         0x01124000);
+        WRITE_PARAM_ALL_REG(table, emc_training_quse_fine_ctrl,                         0x01125B6A);
+        WRITE_PARAM_ALL_REG(table, emc_training_quse_ctrl_misc,                         0x0F081000);
+        WRITE_PARAM_ALL_REG(table, emc_training_write_fine_ctrl,                        0x1114FC00);
+        WRITE_PARAM_ALL_REG(table, emc_training_write_ctrl_misc,                        0x07004300);
+        WRITE_PARAM_ALL_REG(table, emc_training_write_vref_ctrl,                        0x00103200);
+        WRITE_PARAM_ALL_REG(table, emc_training_read_fine_ctrl,                         0x1110FC00);
+        WRITE_PARAM_ALL_REG(table, emc_training_read_ctrl_misc,                         0x0F085300);
+        WRITE_PARAM_ALL_REG(table, emc_training_read_vref_ctrl,                         0x00105800);
+        WRITE_PARAM_ALL_REG(table, emc_training_ca_fine_ctrl,                           0x0513801F);
+        WRITE_PARAM_ALL_REG(table, emc_training_ca_ctrl_misc,                           0x1F101100);
+        WRITE_PARAM_ALL_REG(table, emc_training_ca_ctrl_misc1,                          0x00000014);
+        WRITE_PARAM_ALL_REG(table, emc_training_ca_vref_ctrl,                           0x00103200);
+        WRITE_PARAM_ALL_REG(table, emc_training_settle,                                 0x07070404);
+        // WRITE_PARAM_ALL_REG(table, emc_training_mpc,                                 0x00000000);
+
+        const u32 mc_tRCD  = (int)  ((double)     (GET_CYCLE(tRCD)  >> 2) - 2.0);
+        const u32 mc_tRPpb = (int)  (((double)    (GET_CYCLE(tRPpb) >> 2) - 1.0) + 2.0);
+        const u32 mc_tRC   = (uint) ((double)     (GET_CYCLE(tRC)   >> 2) - 1.0);
+        const u32 mc_tR2W  = (uint) (((double)    ((uint)tR2W       >> 2) - 1.0) + 2.0);
+        const u32 mc_tW2R  = (uint) (((double)    (tW2R >> 2)             - 1.0) + 2.0);
+        const u32 mc_tRAS  = MIN(GET_CYCLE(tRAS), (u32) 0x7F);
+        const u32 mc_tRRD  = MIN(GET_CYCLE(tRRD), (u32)   31);
+
+        table->burst_mc_regs.mc_emem_arb_timing_ras = (int)  ((double)  (mc_tRAS          >> 2) - 2.0);
+        table->burst_mc_regs.mc_emem_arb_timing_rcd = (int)  ((double)  (GET_CYCLE(tRCD)  >> 2) - 2.0);
+        table->burst_mc_regs.mc_emem_arb_timing_rp  = (int)  (((double) (GET_CYCLE(tRPpb) >> 2) - 1.0) + 2.0);
+        table->burst_mc_regs.mc_emem_arb_timing_rc  = (int)  ((double)  (GET_CYCLE(tRC)   >> 2) - 1.0);
+        table->burst_mc_regs.mc_emem_arb_timing_faw = (int)  ((double)  (GET_CYCLE(tFAW)  >> 2) - 1.0);
+        table->burst_mc_regs.mc_emem_arb_timing_rrd = (int)  ((double)  (mc_tRRD          >> 2) - 1.0);
+        table->burst_mc_regs.mc_emem_arb_timing_r2w = (uint) (((double) ((uint) tR2W      >> 2) - 1.0) + 2.0);
+        table->burst_mc_regs.mc_emem_arb_timing_w2r = (uint) (((double) (tW2R             >> 2) - 1.0) + 2.0);
+
+        u32 mc_r2r = table->burst_mc_regs.mc_emem_arb_timing_r2r;
+        if (mc_r2r > 1) {
+            mc_r2r = (uint) (((double) (long) ((double) rext * 0.25) - 1.0) + 2.0);
+            table->burst_mc_regs.mc_emem_arb_timing_r2r = mc_r2r;
+        }
+
+        u32 mc_w2w = table->burst_mc_regs.mc_emem_arb_timing_w2w;
+        if (mc_w2w > 1) {
+            mc_w2w = (uint) (((double) (long) ((double) wext / 4.0) - 1.0) + 2.0);
+            table->burst_mc_regs.mc_emem_arb_timing_w2w = mc_w2w;
+        }
+
+        table->burst_mc_regs.mc_emem_arb_da_turns     = ((mc_tW2R >> 1) << 0x18) | ((mc_tR2W >> 1) << 0x10) | ((mc_r2r >> 1) << 8) | ((mc_w2w >> 1));
+        table->burst_mc_regs.mc_emem_arb_da_covers    = (((uint)                    (mc_tRCD + 3 + mc_tRPpb) >> 1 & 0xff)    << 8) | (((uint) (mc_tRCD + 11 + mc_tRPpb) >> 1 & 0xff) << 0x10) | ((mc_tRC >> 1) & 0xff);
+        table->burst_mc_regs.mc_emem_arb_misc0        = (table->burst_mc_regs.mc_emem_arb_misc0 & 0xffe08000U) | ((mc_tRC + 1) & 0xff); /* Missing in l4t dump? TODO */
+        table->burst_mc_regs.mc_emem_arb_timing_rfcpb = GET_CYCLE(tRFCpb) >> 2;
+
         table->burst_mc_regs.mc_emem_arb_cfg                  =        0x0000000c;
-        table->burst_mc_regs.mc_emem_arb_timing_rcd           =        0x00000006;
-        table->burst_mc_regs.mc_emem_arb_timing_rp            =        0x00000007;
-        table->burst_mc_regs.mc_emem_arb_timing_rc            =        0x00000018;
-        table->burst_mc_regs.mc_emem_arb_timing_ras           =        0x0000000f;
-        table->burst_mc_regs.mc_emem_arb_timing_faw           =        0x0000000f;
-        table->burst_mc_regs.mc_emem_arb_timing_rrd           =        0x00000003;
+        // table->burst_mc_regs.mc_emem_arb_timing_rcd        =        0x00000006;
+        // table->burst_mc_regs.mc_emem_arb_timing_rp         =        0x00000007;
+        // table->burst_mc_regs.mc_emem_arb_timing_rc         =        0x00000018;
+        // table->burst_mc_regs.mc_emem_arb_timing_ras        =        0x0000000f;
+        // table->burst_mc_regs.mc_emem_arb_timing_faw        =        0x0000000f;
+        // table->burst_mc_regs.mc_emem_arb_timing_rrd        =        0x00000003;
         table->burst_mc_regs.mc_emem_arb_timing_rap2pre       =        0x00000003;
         table->burst_mc_regs.mc_emem_arb_timing_wap2pre       =        0x0000000d;
-        table->burst_mc_regs.mc_emem_arb_timing_r2r           =        0x00000007;
+        // table->burst_mc_regs.mc_emem_arb_timing_r2r        =        0x00000007;
         table->burst_mc_regs.mc_emem_arb_timing_w2w           =        0x00000007;
-        table->burst_mc_regs.mc_emem_arb_timing_r2w           =        0x0000000c;
-        table->burst_mc_regs.mc_emem_arb_timing_w2r           =        0x0000000a;
-        table->burst_mc_regs.mc_emem_arb_da_turns             =        0x05060303;
-        table->burst_mc_regs.mc_emem_arb_da_covers            =        0x000d080c;
+        // table->burst_mc_regs.mc_emem_arb_timing_r2w        =        0x0000000c;
+        // table->burst_mc_regs.mc_emem_arb_timing_w2r        =        0x0000000a;
+        // table->burst_mc_regs.mc_emem_arb_da_turns          =        0x05060303;
+        // table->burst_mc_regs.mc_emem_arb_da_covers         =        0x000d080c;
         table->burst_mc_regs.mc_emem_arb_ring1_throttle       =        0x001f0000;
-        table->burst_mc_regs.mc_emem_arb_timing_rfcpb         =        0x00000023;
+        // table->burst_mc_regs.mc_emem_arb_timing_rfcpb      =        0x00000023;
         table->burst_mc_regs.mc_emem_arb_timing_ccdmw         =        0x00000008;
         table->burst_mc_regs.mc_emem_arb_refpb_hp_ctrl        =        0x000a1020;
         table->burst_mc_regs.mc_emem_arb_refpb_bank_ctrl      =        0x80001028;
@@ -417,7 +491,7 @@ namespace ams::ldr::oc::pcv::erista {
 
     /* These timings are slightly off from eos, I am not sure why but I am going to figure it out at some point. */
     void MemMtcTableAutoAdjust(EristaMtcTable *table) {
-        if (C.mtcConf != AUTO_ADJ)
+        if (C.mtcConf != AUTO_ADJ) /* Return even needed? */
             return;
 
         using namespace pcv::erista;
@@ -499,7 +573,6 @@ namespace ams::ldr::oc::pcv::erista {
         WRITE_PARAM_ALL_REG(table, emc_pdex2wr, GET_CYCLE(10.0));
         WRITE_PARAM_ALL_REG(table, emc_pdex2rd, GET_CYCLE(10.0));
 
-        /* I am very surprised if this is correct. */
         WRITE_PARAM_ALL_REG(table, emc_pchg2pden, GET_CYCLE(1.75));
         WRITE_PARAM_ALL_REG(table, emc_ar2pden,   GET_CYCLE(1.75));
         WRITE_PARAM_ALL_REG(table, emc_pdex2cke,  GET_CYCLE(1.75));
@@ -511,7 +584,6 @@ namespace ams::ldr::oc::pcv::erista {
         WRITE_PARAM_ALL_REG(table, emc_pre_refresh_req_cnt, (u32) (refresh_raw / 4));
         WRITE_PARAM_ALL_REG(table, emc_trefbw,                     trefbw);
 
-        /* MC. */
         const u32 mc_tRCD = (int)((double)(GET_CYCLE(tRCD) >> 2) - 2.0);
         const u32 mc_tRPpb = (int)(((double)(GET_CYCLE(tRPpb) >> 2) - 1.0) + 2.0);
         const u32 mc_tRC = (uint)((double)(GET_CYCLE(tRC) >> 2) - 1.0);
@@ -520,15 +592,12 @@ namespace ams::ldr::oc::pcv::erista {
         const u32 mc_tRAS = MIN(GET_CYCLE(tRAS), (u32) 0x7F);
         const u32 mc_tRRD = MIN(GET_CYCLE(tRRD), (u32) 31);
 
-        table->burst_mc_regs.mc_emem_arb_cfg = (int)(((double) C.eristaEmcMaxClock / 33300.0) * 0.25);
         table->burst_mc_regs.mc_emem_arb_timing_ras = (int) ((double) (mc_tRAS >> 2) - 2.0);
         table->burst_mc_regs.mc_emem_arb_timing_rcd = (int) ((double) (GET_CYCLE(tRCD) >> 2) - 2.0);
         table->burst_mc_regs.mc_emem_arb_timing_rp = (int) (((double) (GET_CYCLE(tRPpb) >> 2) - 1.0) + 2.0);
         table->burst_mc_regs.mc_emem_arb_timing_rc = (int) ((double) (GET_CYCLE(tRC) >> 2) - 1.0);
         table->burst_mc_regs.mc_emem_arb_timing_faw = (int) ((double)(GET_CYCLE(tFAW) >> 2) - 1.0);
         table->burst_mc_regs.mc_emem_arb_timing_rrd = (int)((double)(mc_tRRD >> 2) - 1.0);
-        table->burst_mc_regs.mc_emem_arb_timing_rap2pre = 3;
-        table->burst_mc_regs.mc_emem_arb_timing_wap2pre = 11;
         table->burst_mc_regs.mc_emem_arb_timing_r2w = (uint)(((double)((uint)tR2W >> 2) - 1.0) + 2.0);
         table->burst_mc_regs.mc_emem_arb_timing_w2r = (uint)(((double)(tW2R >> 2) - 1.0) + 2.0);
 
@@ -615,7 +684,6 @@ namespace ams::ldr::oc::pcv::erista {
             WRITE_PARAM_ALL_REG(table, emc_cfg, 0x13200000);
         }
 
-        /* This makes no sense but should match eos re. I will accept it and pray to the silicon gods. */
         table->dram_timings.t_rp = tRFCpb;
         table->dram_timings.t_rfc = tRFCab;
         table->emc_cfg_2 = 0x11083d;
@@ -643,18 +711,13 @@ namespace ams::ldr::oc::pcv::erista {
         for (u32 i = khz_list_size - 1; i > 0; i--)
             std::memcpy(static_cast<void *>(table_list[i]), static_cast<void *>(table_list[i - 1]), sizeof(EristaMtcTable));
 
-        /* Too lazy for proper settings atm, want to sleep. ¯\_(ツ)_/¯ */
-        if (0) MemMtcTableAutoAdjust(table_list[0]);
-
-        MemMtcTableAutoAdjustBaseLatency(table_list[0]);
+        if (C.mtcConf == AUTO_ADJ) {
+            MemMtcTableAutoAdjust(table_list[0]);
+        } else {
+            MemMtcTableAutoAdjustBaseLatency(table_list[0]);
+        }
 
         PATCH_OFFSET(ptr, C.eristaEmcMaxClock);
-
-        // Handle customize table replacement
-        // if (C.mtcConf == CUSTOMIZED_ALL) {
-        //    MemMtcCustomizeTable(table_list[0], const_cast<EristaMtcTable *>(C.eristaMtcTable));
-        //}
-
         R_SUCCEED();
     }
 

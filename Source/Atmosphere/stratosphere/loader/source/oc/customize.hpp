@@ -31,6 +31,7 @@
 
  enum MtcConfig: u32 {
      AUTO_ADJ = 0,
+     AUTO_ADJ_BL = 1,
  };
 
  using CustomizeCpuDvfsTable = pcv::cvb_entry_t[pcv::DvfsTableEntryLimit];
