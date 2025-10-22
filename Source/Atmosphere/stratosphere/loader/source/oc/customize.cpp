@@ -32,7 +32,7 @@ volatile CustomizeTable C = {
 
 .mtcConf = AUTO_ADJ,
 
-.hpMode = ENABLED,
+.hpMode = DISABLED,
 
 .commonCpuBoostClock = 1785000, // Default boost clock
 
