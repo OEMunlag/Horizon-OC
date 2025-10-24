@@ -163,9 +163,9 @@ namespace ams::ldr::oc::pcv::erista {
         R_SUCCEED();
     }
 
-    /* This currently patches a lot of unwanted extra stuff that needs to be removed. */
-    /* Additionally, timing reductions have possible improvements.                    */
-    /* Note: I don't even know if this patches 2133BL or 1866BL, but I assume 2133BL. */
+    /* This is not done properly, this is not scaled correctly.                                                                                              */
+    /* It is fixable of course, but I don't know if I hate myself enough to fix it, especially considering erista does not benefit much from proper timings. */
+    /* This currently patches a lot of unwanted extra stuff that needs to be removed.                                                                        */
     void MemMtcTableAutoAdjustBaseLatency(EristaMtcTable *table) {
         using namespace pcv::erista;
         #define WRITE_PARAM_ALL_REG(TABLE, PARAM, VALUE) \
@@ -415,78 +415,66 @@ namespace ams::ldr::oc::pcv::erista {
         table->burst_mc_regs.mc_emem_arb_timing_r2w = (uint) (((double) ((uint) tR2W      >> 2) - 1.0) + 2.0);
         table->burst_mc_regs.mc_emem_arb_timing_w2r = (uint) (((double) (tW2R             >> 2) - 1.0) + 2.0);
 
-        u32 mc_r2r = table->burst_mc_regs.mc_emem_arb_timing_r2r;
-        if (mc_r2r > 1) {
-            mc_r2r = (uint) (((double) (long) ((double) rext * 0.25) - 1.0) + 2.0);
-            table->burst_mc_regs.mc_emem_arb_timing_r2r = mc_r2r;
-        }
-
-        u32 mc_w2w = table->burst_mc_regs.mc_emem_arb_timing_w2w;
-        if (mc_w2w > 1) {
-            mc_w2w = (uint) (((double) (long) ((double) wext / 4.0) - 1.0) + 2.0);
-            table->burst_mc_regs.mc_emem_arb_timing_w2w = mc_w2w;
-        }
-
-        table->burst_mc_regs.mc_emem_arb_da_turns     = ((mc_tW2R >> 1) << 0x18) | ((mc_tR2W >> 1) << 0x10) | ((mc_r2r >> 1) << 8) | ((mc_w2w >> 1));
+        table->burst_mc_regs.mc_emem_arb_da_turns     = (val & 0x0000FFFF) | (tW2R << 24) | (tR2W << 16);
         table->burst_mc_regs.mc_emem_arb_da_covers    = (((uint)                    (mc_tRCD + 3 + mc_tRPpb) >> 1 & 0xff)    << 8) | (((uint) (mc_tRCD + 11 + mc_tRPpb) >> 1 & 0xff) << 0x10) | ((mc_tRC >> 1) & 0xff);
         table->burst_mc_regs.mc_emem_arb_misc0        = (table->burst_mc_regs.mc_emem_arb_misc0 & 0xffe08000U) | ((mc_tRC + 1) & 0xff); /* Missing in l4t dump? TODO */
         table->burst_mc_regs.mc_emem_arb_timing_rfcpb = GET_CYCLE(tRFCpb) >> 2;
 
-        table->burst_mc_regs.mc_emem_arb_cfg                  =        0x0000000c;
-        // table->burst_mc_regs.mc_emem_arb_timing_rcd        =        0x00000006;
-        // table->burst_mc_regs.mc_emem_arb_timing_rp         =        0x00000007;
-        // table->burst_mc_regs.mc_emem_arb_timing_rc         =        0x00000018;
-        // table->burst_mc_regs.mc_emem_arb_timing_ras        =        0x0000000f;
-        // table->burst_mc_regs.mc_emem_arb_timing_faw        =        0x0000000f;
-        // table->burst_mc_regs.mc_emem_arb_timing_rrd        =        0x00000003;
-        table->burst_mc_regs.mc_emem_arb_timing_rap2pre       =        0x00000003;
-        table->burst_mc_regs.mc_emem_arb_timing_wap2pre       =        0x0000000d;
-        // table->burst_mc_regs.mc_emem_arb_timing_r2r        =        0x00000007;
-        table->burst_mc_regs.mc_emem_arb_timing_w2w           =        0x00000007;
-        // table->burst_mc_regs.mc_emem_arb_timing_r2w        =        0x0000000c;
-        // table->burst_mc_regs.mc_emem_arb_timing_w2r        =        0x0000000a;
-        // table->burst_mc_regs.mc_emem_arb_da_turns          =        0x05060303;
-        // table->burst_mc_regs.mc_emem_arb_da_covers         =        0x000d080c;
-        table->burst_mc_regs.mc_emem_arb_ring1_throttle       =        0x001f0000;
-        // table->burst_mc_regs.mc_emem_arb_timing_rfcpb      =        0x00000023;
-        table->burst_mc_regs.mc_emem_arb_timing_ccdmw         =        0x00000008;
-        table->burst_mc_regs.mc_emem_arb_refpb_hp_ctrl        =        0x000a1020;
-        table->burst_mc_regs.mc_emem_arb_refpb_bank_ctrl      =        0x80001028;
-        // table->burst_mc_regs.mc_emem_arb_dhyst_ctrl        =        0x00000002;
-        table->burst_mc_regs.mc_emem_arb_dhyst_timeout_util_0 =        0x0000001a;
-        table->burst_mc_regs.mc_emem_arb_dhyst_timeout_util_1 =        0x0000001a;
-        table->burst_mc_regs.mc_emem_arb_dhyst_timeout_util_2 =        0x0000001a;
-        table->burst_mc_regs.mc_emem_arb_dhyst_timeout_util_3 =        0x0000001a;
-        table->burst_mc_regs.mc_emem_arb_dhyst_timeout_util_4 =        0x0000001a;
-        table->burst_mc_regs.mc_emem_arb_dhyst_timeout_util_5 =        0x0000001a;
-        table->burst_mc_regs.mc_emem_arb_dhyst_timeout_util_6 =        0x0000001a;
-        table->burst_mc_regs.mc_emem_arb_dhyst_timeout_util_7 =        0x0000001a;
-        table->la_scale_regs.mc_mll_mpcorer_ptsa_rate         =        0x000000d0;
-        table->la_scale_regs.mc_ftop_ptsa_rate                =        0x00000018;
-        table->la_scale_regs.mc_ptsa_grant_decrement          =        0x00001203;
-        table->la_scale_regs.mc_latency_allowance_avpc_0      =        0x00800004;
-        table->la_scale_regs.mc_latency_allowance_xusb_1      =        0x00800038;
-        table->la_scale_regs.mc_latency_allowance_sdmmcaa_0   =        0x00800005;
-        table->la_scale_regs.mc_latency_allowance_sdmmca_0    =        0x00800014;
-        table->la_scale_regs.mc_latency_allowance_isp2_0      =        0x0000002c;
-        table->la_scale_regs.mc_latency_allowance_isp2_1      =        0x00800080;
-        table->la_scale_regs.mc_latency_allowance_vic_0       =        0x0080001d;
-        table->la_scale_regs.mc_latency_allowance_nvdec_0     =        0x00800095;
-        table->la_scale_regs.mc_latency_allowance_tsec_0      =        0x00800041;
-        table->la_scale_regs.mc_latency_allowance_ppcs_1      =        0x00800080;
-        table->la_scale_regs.mc_latency_allowance_xusb_0      =        0x0080003d;
-        table->la_scale_regs.mc_latency_allowance_ppcs_0      =        0x00340049;
-        table->la_scale_regs.mc_latency_allowance_gpu2_0      =        0x00800019;
-        table->la_scale_regs.mc_latency_allowance_hc_1        =        0x00000080;
-        table->la_scale_regs.mc_latency_allowance_sdmmc_0     =        0x00800090;
-        table->la_scale_regs.mc_latency_allowance_mpcore_0    =        0x00800004;
-        table->la_scale_regs.mc_latency_allowance_vi2_0       =        0x00000080;
-        table->la_scale_regs.mc_latency_allowance_hc_0        =        0x00080016;
-        table->la_scale_regs.mc_latency_allowance_gpu_0       =        0x00800019;
-        table->la_scale_regs.mc_latency_allowance_sdmmcab_0   =        0x00800005;
-        table->la_scale_regs.mc_latency_allowance_nvenc_0     =        0x00800018;
-        table->dram_timings.t_rp                              =            tRFCpb;
-        table->dram_timings.t_rfc                             =            tRFCab;
+        table->burst_mc_regs.mc_emem_arb_cfg                  = 0x0000000c;
+        // table->burst_mc_regs.mc_emem_arb_timing_rcd        = 0x00000006;
+        // table->burst_mc_regs.mc_emem_arb_timing_rp         = 0x00000007;
+        // table->burst_mc_regs.mc_emem_arb_timing_rc         = 0x00000018;
+        // table->burst_mc_regs.mc_emem_arb_timing_ras        = 0x0000000f;
+        // table->burst_mc_regs.mc_emem_arb_timing_faw        = 0x0000000f;
+        // table->burst_mc_regs.mc_emem_arb_timing_rrd        = 0x00000003;
+        table->burst_mc_regs.mc_emem_arb_timing_rap2pre       = 0x00000003;
+        table->burst_mc_regs.mc_emem_arb_timing_wap2pre       = 0x0000000d;
+        table->burst_mc_regs.mc_emem_arb_timing_r2r           = 0x00000007;
+        table->burst_mc_regs.mc_emem_arb_timing_w2w           = 0x00000007;
+        // table->burst_mc_regs.mc_emem_arb_timing_r2w        = 0x0000000c;
+        // table->burst_mc_regs.mc_emem_arb_timing_w2r        = 0x0000000a;
+        // table->burst_mc_regs.mc_emem_arb_da_turns          = 0x05060303;
+        // table->burst_mc_regs.mc_emem_arb_da_covers         = 0x000d080c;
+        table->burst_mc_regs.mc_emem_arb_ring1_throttle       = 0x001f0000;
+        // table->burst_mc_regs.mc_emem_arb_timing_rfcpb      = 0x00000023;
+        table->burst_mc_regs.mc_emem_arb_timing_ccdmw         = 0x00000008;
+        table->burst_mc_regs.mc_emem_arb_refpb_hp_ctrl        = 0x000a1020;
+        table->burst_mc_regs.mc_emem_arb_refpb_bank_ctrl      = 0x80001028;
+        // table->burst_mc_regs.mc_emem_arb_dhyst_ctrl        = 0x00000002;
+        table->burst_mc_regs.mc_emem_arb_dhyst_timeout_util_0 = 0x0000001a;
+        table->burst_mc_regs.mc_emem_arb_dhyst_timeout_util_1 = 0x0000001a;
+        table->burst_mc_regs.mc_emem_arb_dhyst_timeout_util_2 = 0x0000001a;
+        table->burst_mc_regs.mc_emem_arb_dhyst_timeout_util_3 = 0x0000001a;
+        table->burst_mc_regs.mc_emem_arb_dhyst_timeout_util_4 = 0x0000001a;
+        table->burst_mc_regs.mc_emem_arb_dhyst_timeout_util_5 = 0x0000001a;
+        table->burst_mc_regs.mc_emem_arb_dhyst_timeout_util_6 = 0x0000001a;
+        table->burst_mc_regs.mc_emem_arb_dhyst_timeout_util_7 = 0x0000001a;
+        table->la_scale_regs.mc_mll_mpcorer_ptsa_rate         = 0x000000d0;
+        table->la_scale_regs.mc_ftop_ptsa_rate                = 0x00000018;
+        table->la_scale_regs.mc_ptsa_grant_decrement          = 0x00001203;
+        table->la_scale_regs.mc_latency_allowance_avpc_0      = 0x00800004;
+        table->la_scale_regs.mc_latency_allowance_xusb_1      = 0x00800038;
+        table->la_scale_regs.mc_latency_allowance_sdmmcaa_0   = 0x00800005;
+        table->la_scale_regs.mc_latency_allowance_sdmmca_0    = 0x00800014;
+        table->la_scale_regs.mc_latency_allowance_isp2_0      = 0x0000002c;
+        table->la_scale_regs.mc_latency_allowance_isp2_1      = 0x00800080;
+        table->la_scale_regs.mc_latency_allowance_vic_0       = 0x0080001d;
+        table->la_scale_regs.mc_latency_allowance_nvdec_0     = 0x00800095;
+        table->la_scale_regs.mc_latency_allowance_tsec_0      = 0x00800041;
+        table->la_scale_regs.mc_latency_allowance_ppcs_1      = 0x00800080;
+        table->la_scale_regs.mc_latency_allowance_xusb_0      = 0x0080003d;
+        table->la_scale_regs.mc_latency_allowance_ppcs_0      = 0x00340049;
+        table->la_scale_regs.mc_latency_allowance_gpu2_0      = 0x00800019;
+        table->la_scale_regs.mc_latency_allowance_hc_1        = 0x00000080;
+        table->la_scale_regs.mc_latency_allowance_sdmmc_0     = 0x00800090;
+        table->la_scale_regs.mc_latency_allowance_mpcore_0    = 0x00800004;
+        table->la_scale_regs.mc_latency_allowance_vi2_0       = 0x00000080;
+        table->la_scale_regs.mc_latency_allowance_hc_0        = 0x00080016;
+        table->la_scale_regs.mc_latency_allowance_gpu_0       = 0x00800019;
+        table->la_scale_regs.mc_latency_allowance_sdmmcab_0   = 0x00800005;
+        table->la_scale_regs.mc_latency_allowance_nvenc_0     = 0x00800018;
+        table->dram_timings.t_rp                              =     tRFCpb;
+        table->dram_timings.t_rfc                             =     tRFCab;
     }
 
     /* These timings are slightly off from eos, I am not sure why but I am going to figure it out at some point. */
