@@ -1,8 +1,4 @@
 /*
- * Copyright (C) Switch-OC-Suite
- *
- * Copyright (c) 2023 hanai3Bi
- *
  * Copyright (c) Souldbminer and Horizon OC Contributors
  *
  * This program is free software; you can redistribute it and/or modify it
