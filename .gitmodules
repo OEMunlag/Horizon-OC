@@ -1,3 +1,0 @@
-[submodule "source/sys-clk/libs/libultrahand"]
-	path = source/sys-clk/libs/libultrahand
-	url = https://github.com/ppkantorski/libultrahand.git
