@@ -10,3 +10,6 @@
 [submodule "build"]
 	path = build
 	url = https://github.com/Atmosphere-NX/Atmosphere.git
+[submodule "source/sys-clk/overlay/libs/libultrahand"]
+	path = source/sys-clk/overlay/libs/libultrahand
+	url = https://github.com/ppkantorski/libultrahand.git
