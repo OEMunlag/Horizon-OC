@@ -1,4 +1,3 @@
-
 """
 
 HOC Timing Tool
@@ -77,7 +76,7 @@ def find_inflection_points(x, y):
     
     return inflections
 
-def fit_piecewise_segments(x, y):
+def fit_piecewise_segments(x, y, reg_name="register"):
     x = np.array(x, dtype=float)
     y = np.array(y, dtype=float)
     
@@ -137,22 +136,65 @@ def fit_piecewise_segments(x, y):
     y_fit = piecewise(x)
     r2 = safe_r2(y, y_fit)
     
-    formula_lines = ["float timing(float x) {"]
-    for thresh, slp, intcpt in zip(thresholds, slopes, intercepts):
+    formula_lines = []
+    for i, (thresh, slp, intcpt) in enumerate(zip(thresholds, slopes, intercepts)):
         if abs(slp) < 1e-6:
-            formula_lines.append(f"    if (x <= {thresh:.1f}) return {intcpt:.2f};")
+            val_str = f"{intcpt:.0f}"
         else:
-            formula_lines.append(f"    if (x <= {thresh:.1f}) return {slp:.6f} * x + {intcpt:.2f};")
-    formula_lines.append("}")
-    formula = "\n".join(formula_lines)
+            slp_simple = round(slp, 4)
+            intcpt_simple = round(intcpt, 0)
+            if slp_simple == int(slp_simple):
+                slp_simple = int(slp_simple)
+            if intcpt_simple >= 0:
+                val_str = f"{slp_simple} * x + {intcpt_simple}"
+            else:
+                val_str = f"{slp_simple} * x - {abs(intcpt_simple)}"
+        
+        if i == len(thresholds) - 1:
+            formula_lines.append(f"    return {val_str};")
+        else:
+            formula_lines.append(f"    if (x <= {thresh:.0f}) return {val_str};")
+    
+    formula = "float timing(float x) {\n" + "\n".join(formula_lines) + "\n}"
+    
+    advanced_lines = []
+    max_freq = max(x) if len(x) > 0 else 0
+    
+    for i, (thresh, slp, intcpt) in enumerate(zip(thresholds, slopes, intercepts)):
+        if abs(slp) < 1e-6:
+            val = f"{intcpt:.0f}"
+        else:
+            slp_simple = round(slp, 4)
+            intcpt_simple = round(intcpt, 0)
+            if slp_simple == int(slp_simple):
+                slp_simple = int(slp_simple)
+            if intcpt_simple >= 0:
+                val = f"({slp_simple} * freq + {intcpt_simple})"
+            else:
+                val = f"({slp_simple} * freq - {abs(intcpt_simple)})"
+        
+        if thresh >= max_freq - 1:
+            advanced_lines.append(f"WRITE_ALL_PARAM_REG(EMC_{reg_name}, {val});")
+        elif i == 0:
+            advanced_lines.append(f"if (freq <= {thresh:.0f}) {{")
+            advanced_lines.append(f"    WRITE_ALL_PARAM_REG(EMC_{reg_name}, {val});")
+            advanced_lines.append("}")
+        else:
+            advanced_lines.append(f"else if (freq <= {thresh:.0f}) {{")
+            advanced_lines.append(f"    WRITE_ALL_PARAM_REG(EMC_{reg_name}, {val});")
+            advanced_lines.append("}")
+    
+    advanced_formula = "\n".join(advanced_lines)
     
     return {
         'fn': piecewise,
         'formula': formula,
+        'advanced_formula': advanced_formula,
         'r2': r2,
         'thresholds': thresholds,
         'slopes': slopes,
-        'intercepts': intercepts
+        'intercepts': intercepts,
+        'reg_name': reg_name
     }
 
 
@@ -228,6 +270,10 @@ with dpg.window(label="HOC Timing Tool", width=1920, height=1080, tag="main_wind
         with dpg.tab(label="Graphs", tag="graph_tab"):
             with dpg.tab_bar(tag="main_tabs"):
                 dpg.add_tab(label="No Data", tag="placeholder_tab")
+        
+        with dpg.tab(label="Code", tag="code_tab"):
+            with dpg.tab_bar(tag="code_tabs"):
+                dpg.add_tab(label="No Data", tag="code_placeholder_tab")
 
 
 def handle_file_selection(sender, app_data):
@@ -247,6 +293,8 @@ def handle_file_selection(sender, app_data):
         dpg.add_tab(label="No valid data", parent="main_tabs")
         dpg.set_value("status_text", "No valid data found in ZIP.")
         return
+
+    dpg.delete_item("code_tabs", children_only=True)
 
     for base_latency, lat_data in sorted(data.items()):
         with dpg.tab(label=f"{base_latency}bl", parent="main_tabs"):
@@ -270,7 +318,7 @@ def handle_file_selection(sender, app_data):
                                 x = np.array(freqs, dtype=float)
                                 y = np.array(vals, dtype=float)
                                 
-                                fit_result = fit_piecewise_segments(x, y)
+                                fit_result = fit_piecewise_segments(x, y, reg_name)
                                 
                                 if fit_result is None:
                                     continue
@@ -291,8 +339,13 @@ def handle_file_selection(sender, app_data):
                                         fit_y = fit_result['fn'](fit_x)
                                         dpg.add_line_series(fit_x, fit_y, label=f"Fit (R²={fit_result['r2']:.3f})", parent=y_axis)
 
-                                    dpg.add_text(fit_result['formula'], wrap=800)
                                     dpg.add_text(f"R² = {fit_result['r2']:.4f}", color=(100, 200, 100))
+                                    
+                                    with dpg.tab_bar():
+                                        with dpg.tab(label="Timing Function"):
+                                            dpg.add_input_text(default_value=fit_result['formula'], readonly=True, width=-1, height=150, multiline=True, tag=f"{container_tag}_formula")
+                                        with dpg.tab(label="Register Write"):
+                                            dpg.add_input_text(default_value=fit_result['advanced_formula'], readonly=True, width=-1, height=150, multiline=True, tag=f"{container_tag}_advanced")
 
                                     def make_freq_callback(freq_map, val_tag):
                                         def _callback(sender, app_data):
@@ -326,6 +379,32 @@ def handle_file_selection(sender, app_data):
 
                         dpg.set_item_callback(search_tag, make_filter_closure(scroll_area, search_tag))
 
+    for base_latency, lat_data in sorted(data.items()):
+        code_content = ""
+        with dpg.tab(label=f"{base_latency}bl", parent="code_tabs"):
+            with dpg.tab_bar():
+                for typ in ("mc", "emc"):
+                    with dpg.tab(label=typ.upper()):
+                        typ_code = ""
+                        if lat_data[typ]:
+                            for reg_name, freq_map in sorted(lat_data[typ].items()):
+                                freqs = sorted(freq_map.keys())
+                                vals = [freq_map[f] for f in freqs]
+                                if len(freqs) < 2:
+                                    continue
+                                
+                                x = np.array(freqs, dtype=float)
+                                y = np.array(vals, dtype=float)
+                                fit_result = fit_piecewise_segments(x, y, reg_name)
+                                
+                                if fit_result:
+                                    typ_code += fit_result['advanced_formula'] + "\n\n"
+                        
+                        if typ_code:
+                            dpg.add_input_text(default_value=typ_code, readonly=True, width=-1, height=-1, multiline=True)
+                        else:
+                            dpg.add_text(f"No {typ.upper()} data.")
+        
     dpg.set_value("status_text", "Done.")
 
 
