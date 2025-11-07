@@ -6,25 +6,33 @@
 #include <array>
 #include "errors.h"
 
-static inline uint32_t read_reg64(uint64_t virt_addr, uint32_t offset) {
-    return *(volatile uint32_t *)(virt_addr + offset);
+// Read a 32-bit register via libnx SVC
+static inline uint32_t read_reg64(uint64_t phys_addr, uint32_t offset) {
+    uint32_t value = 0;
+    Result rc = svcReadWriteRegister(&value, phys_addr + offset, 0, false);
+    if (R_FAILED(rc)) {
+        // Handle failure if needed
+        return 0;
+    }
+    return value;
 }
 
-static inline void write_reg64(uint64_t virt_addr, uint32_t offset, uint32_t value) {
-    *(volatile uint32_t *)(virt_addr + offset) = value;
+// Write a 32-bit register via libnx SVC
+static inline void write_reg64(uint64_t phys_addr, uint32_t offset, uint32_t value) {
+    Result rc = svcReadWriteRegister(NULL, phys_addr + offset, value, true);
+    if (R_FAILED(rc)) {
+        // Handle failure if needed
+    }
 }
 
+// Bitfield helper remains the same
 static inline uint32_t set_bits(uint32_t reg_value, uint8_t start_bit, uint8_t end_bit, uint32_t value)
 {
     if (end_bit < start_bit || end_bit > 31)
         return reg_value;
 
-    // Create bit mask for the field
     uint32_t mask = ((1u << (end_bit - start_bit + 1)) - 1u) << start_bit;
-
-    // Clear target bits and insert new value
     reg_value = (reg_value & ~mask) | ((value << start_bit) & mask);
-
     return reg_value;
 }
 
