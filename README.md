@@ -13,6 +13,7 @@
 ![Downloads](https://img.shields.io/github/downloads/souldbminersmwc/Horizon-OC/total.svg?style=for-the-badge)
 
 ---
+<div align="left">
 
 ### DISCLAIMER: THIS TOOL CAN BE DANGEROUS IF MISUSED. PROCEED WITH CAUTION
 * Due to the design of Horizon OS, overclocking RAM can cause **NAND DAMAGE**. Ensure to have a NAND Backup<br>
