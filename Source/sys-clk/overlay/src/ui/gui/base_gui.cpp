@@ -1,4 +1,8 @@
 /*
+ * Copyright (C) Switch-OC-Suite
+ *
+ * Copyright (c) 2023 hanai3Bi
+ *
  * Copyright (c) Souldbminer and Horizon OC Contributors
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -23,13 +27,20 @@
  * stuff is worth it, you can buy us a beer in return.  - The sys-clk authors
  * --------------------------------------------------------------------------
  */
+
+
 #include "base_gui.h"
+
 #include "../elements/base_frame.h"
 #include "logo_rgba_bin.h"
+
+
+
 
 #define LOGO_X 20
 #define LOGO_Y 45
 #define LOGO_LABEL_FONT_SIZE 35
+
 #define VERSION_X (LOGO_X + 250)
 #define VERSION_Y LOGO_Y-40
 #define VERSION_FONT_SIZE 15
@@ -45,12 +56,9 @@ std::string getVersionString() {
 
 void BaseGui::preDraw(tsl::gfx::Renderer* renderer)
 {
-    // Draw "Horizon OC " in default color
-    renderer->drawString("Horizon OC ", false, LOGO_X, LOGO_Y, LOGO_LABEL_FONT_SIZE, renderer->a(TEXT_COLOR));
-    
-    // Draw "Gaea" in green
-    tsl::Color greenColor(40, 204, 40, 255);  // Light green
-    renderer->drawString("Gaea", false, LOGO_X + 225, LOGO_Y, LOGO_LABEL_FONT_SIZE, greenColor);
+//    renderer->drawBitmap(LOGO_X, LOGO_Y, LOGO_WIDTH, LOGO_HEIGHT, logo_rgba_bin);
+    renderer->drawString("Horizon OC overlay", false, LOGO_X, LOGO_Y, LOGO_LABEL_FONT_SIZE, renderer->a(TEXT_COLOR));
+//    renderer->drawString(TARGET_VERSION, false, VERSION_X, VERSION_Y, VERSION_FONT_SIZE, tsl::bannerVersionTextColor);
 }
 
 tsl::elm::Element* BaseGui::createUI()
