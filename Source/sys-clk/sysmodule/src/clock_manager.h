@@ -70,6 +70,7 @@ class ClockManager
     bool ConfigIntervalTimeout(SysClkConfigValue intervalMsConfigValue, std::uint64_t ns, std::uint64_t* lastLogNs);
     void RefreshFreqTableRow(SysClkModule module);
     bool RefreshContext();
+    void set_sd1_voltage(uint32_t voltage_uv);
 
     static ClockManager *instance;
 
