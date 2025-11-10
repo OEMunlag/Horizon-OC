@@ -457,8 +457,8 @@ void ClockManager::set_sd1_voltage(uint32_t voltage_uv)
 {
 	// SD1 parameters
 	const u32 uv_step = 12500;
-	const u32 uv_min = 1100000;
-	const u32 uv_max = 1350000;
+	const u32 uv_min = 600000;
+	const u32 uv_max = 1237500;
 	const u8 volt_addr = 0x17;      // MAX77620_REG_SD1
 	const u8 volt_mask = 0x7F;      // MAX77620_SD1_VOLT_MASK
 
