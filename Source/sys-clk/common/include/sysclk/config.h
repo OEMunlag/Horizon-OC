@@ -60,8 +60,6 @@ typedef enum {
 
     HocClkConfigValue_EnforceBoardLimit,
 
-    HocClkConfigValue_EMCVdd2VoltageUV,
-
     SysClkConfigValue_EnumMax,
 } SysClkConfigValue;
 
@@ -124,10 +122,7 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
 
         case HocClkConfigValue_TDPCycleLimit:
             return pretty ? "TDP Cycle Limit" : "tdp_limit_c";
-        case HocClkConfigValue_EnforceBoardLimit:
-            return pretty ? "Enforce Board Limit" : "enforce_board_limit";
-        case HocClkConfigValue_EMCVdd2VoltageUV:
-            return pretty ? "EMC Vdd2 Voltage" : "emc_vdd2_voltage_uv";
+
         default:
             return pretty ? "Null" : "null";
     }
@@ -164,7 +159,6 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
         case HocClkConfigValue_DockedGovernor:
         case HocClkConfigValue_HandheldGovernor:
         case HocClkConfigValue_HandheldTDP:
-        case HocClkConfigValue_EnforceBoardLimit:
             return 1ULL;
         case HocClkConfigValue_ThermalThrottleThreshold:
             return 70ULL;
@@ -174,8 +168,6 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
             return 6400ULL;
         case HocClkConfigValue_TDPCycleLimit:
             return 10ULL;
-        case HocClkConfigValue_EMCVdd2VoltageUV:
-            return 1175000ULL;
         default:
             return 0ULL;
     }
@@ -201,7 +193,6 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case SysClkConfigValue_PowerLogIntervalMs:
         case SysClkConfigValue_CsvWriteIntervalMs:
         case HocClkConfigValue_TDPCycleLimit:
-        case HocClkConfigValue_EMCVdd2VoltageUV:
             return input >= 0;
         case HocClkConfigValue_UncappedClocks:
         case HocClkConfigValue_OverwriteBoostMode:
@@ -209,7 +200,6 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case HocClkConfigValue_DockedGovernor:
         case HocClkConfigValue_HandheldGovernor:
         case HocClkConfigValue_HandheldTDP:
-        case HocClkConfigValue_EnforceBoardLimit:
             return (input & 0x1) == input;
         default:
             return false;
