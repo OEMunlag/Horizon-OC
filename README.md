@@ -84,11 +84,13 @@ It enables advanced CPU, GPU, and RAM tuning with user-friendly configuration to
    ```
 3. Move the cloned folder into `build/`.
 4. Insert your `Source/stratosphere` folder into `build/`.
-5. Run:
+5. Run: (On Windows you need to use "make -j %NUMBER_OF_PROCESSORS%")
 
    ```bash
    ./build.sh
    ```
+
+
 
 To build the Configurator:
 

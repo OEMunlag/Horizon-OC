@@ -37,20 +37,20 @@
  #define VALUE_DEFAULT_TEXT "Default"
  
  struct ValueRange {
-     std::uint32_t min;
-     std::uint32_t max;
-     std::uint32_t step;
-     std::string suffix;
-     std::uint32_t divisor;  // Divide input values by this for display
-     
-     // Default constructor
-     ValueRange() : min(0), max(0), step(1), suffix(""), divisor(1) {}
-     
-     ValueRange(std::uint32_t min, std::uint32_t max, std::uint32_t step, 
-                const std::string& suffix = "", std::uint32_t divisor = 1)
-         : min(min), max(max), step(step), suffix(suffix), divisor(divisor) {}
- };
- 
+    std::uint32_t min;
+    std::uint32_t max;
+    std::uint32_t step;
+    std::string suffix;
+    std::uint32_t divisor;      // Divide input values by this for display
+    int decimalPlaces;          // Number of decimal places to display (0-6)
+    
+    ValueRange() : min(0), max(0), step(1), suffix(""), divisor(1), decimalPlaces(0) {}
+    
+    ValueRange(std::uint32_t min, std::uint32_t max, std::uint32_t step, 
+               const std::string& suffix = "", std::uint32_t divisor = 1, int decimalPlaces = 0)
+        : min(min), max(max), step(step), suffix(suffix), divisor(divisor), decimalPlaces(decimalPlaces) {}
+};
+
  struct ValueThresholds {
      std::uint32_t warning;  // Values >= this show orange
      std::uint32_t danger;   // Values >= this show red
