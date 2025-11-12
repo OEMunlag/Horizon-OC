@@ -49,7 +49,7 @@ enum SysClkIpcCmd
     SysClkIpcCmd_SetConfigValues = 10,
     SysClkIpcCmd_GetFreqList = 11,
     SysClkIpcCmd_SetReverseNXRTMode = 12,
-    HocClkIpcCmd_UpdateEMCRegs = 13,
+    HocClkIpcCmd_UpdateEMC = 13,
 };
 
 

@@ -12,9 +12,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
- 
+
 /* --------------------------------------------------------------------------
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <p-sam@d3vs.net>, <natinusala@gmail.com>, <m4x@m4xw.net>
@@ -32,6 +32,7 @@
 #include "process_management.h"
 #include "errors.h"
 #include "ipc_service.h"
+#include "emc_patcher.h"
 
 #define HOSPPC_HAS_BOOST (hosversionAtLeast(7,0,0))
 
@@ -235,27 +236,41 @@ void ClockManager::Tick()
         std::uint32_t maxHz = 0;
         std::uint32_t nearestHz = 0;
         std::uint32_t mode = 0;
-        
-        AppletOperationMode opMode = appletGetOperationMode();
+
+        #define EMC_MAX_VOLTAGE_SAFETY_CHECK 1400000
+
+        if(this->config->GetConfigValue(HocClkConfigValue_EMCVdd2VoltageuV) < EMC_MAX_VOLTAGE_SAFETY_CHECK) {
+            EMCpatcher::set_sd1_voltage((u32)this->config->GetConfigValue(HocClkConfigValue_EMCVdd2VoltageuV));
+        } else {
+            ResetToStockClocks(); // Clean up after boost mode
+        }
+
+
+        AppletOperationMode opMode = appletGetOperationMode(); // Used to get if docked or handheld
         Result rc = apmExtGetCurrentPerformanceConfiguration(&mode);
         ASSERT_RESULT_OK(rc, "apmExtGetCurrentPerformanceConfiguration");
 
         if(this->config->GetConfigValue(HocClkConfigValue_HandheldTDP) && opMode == AppletOperationMode_Handheld) {
                 if(Board::GetSocType() == SysClkSocType_MarikoLite) {
-                    if(Board::GetPowerMw(SysClkPowerSensor_Now) < -(int)this->config->GetConfigValue(HocClkConfigValue_LiteTDPLimit)) {
+                    if(Board::GetPowerMw(SysClkPowerSensor_Avg) < -(int)this->config->GetConfigValue(HocClkConfigValue_LiteTDPLimit)) {
                         ResetToStockClocks();
                         return;
                     }
                 } else {
-                    if(Board::GetPowerMw(SysClkPowerSensor_Now) < -(int)this->config->GetConfigValue(HocClkConfigValue_HandheldTDPLimit)) {
+                    if(Board::GetPowerMw(SysClkPowerSensor_Avg) < -(int)this->config->GetConfigValue(HocClkConfigValue_HandheldTDPLimit)) {
                         ResetToStockClocks();
                         return;
                     }
                 }
             }
 
-        if(apmExtIsBoostMode(mode) && !this->config->GetConfigValue(HocClkConfigValue_OverwriteBoostMode)) {
-            ResetToStockClocks();
+        if(apmExtIsBoostMode(mode) && !this->config->GetConfigValue(HocClkConfigValue_OverwriteBoostMode)) { // Stock boost mode
+            // ResetToStockClocks();
+            if(Board::GetSocType() == SysClkSocType_MarikoLite || Board::GetSocType() == SysClkSocType_Mariko) {
+                Board::SetHz((SysClkModule)SysClkModule_CPU, (u32)this->config->GetConfigValue(HocClkConfigValue_MarikoBoostClock) * 1000000);
+            } else {
+                Board::SetHz((SysClkModule)SysClkModule_CPU, (u32)this->config->GetConfigValue(HocClkConfigValue_EristaBoostClock) * 1000000);
+            }
             return;
         }
 
@@ -443,3 +458,51 @@ void ClockManager::SetRNXRTMode(ReverseNXMode mode)
 {
     this->rnxSync->SetRTMode(mode);
 }
+
+// void ClockManager::set_sd1_voltage(uint32_t voltage_uv)
+// {
+// 	// SD1 parameters
+// 	const u32 uv_step = 12500;
+// 	const u32 uv_min = 600000;
+// 	const u32 uv_max = 1237500;
+// 	const u8 volt_addr = 0x17;      // MAX77620_REG_SD1
+// 	const u8 volt_mask = 0x7F;      // MAX77620_SD1_VOLT_MASK
+
+// 	// Validate input voltage
+// 	if (voltage_uv < uv_min || voltage_uv > uv_max)
+// 		return;
+
+// 	// Calculate voltage multiplier
+// 	u32 mult = (voltage_uv + uv_step - 1 - uv_min) / uv_step;
+// 	mult = mult & volt_mask;
+
+// 	// Open I2C session to MAX77620 PMIC
+// 	I2cSession session;
+// 	Result res = i2cOpenSession(&session, I2cDevice_Max77620Pmic);
+// 	if (R_FAILED(res)) {
+// 		return;
+// 	}
+
+// 	// Read current register value
+// 	u8 current_val = 0;
+// 	res = i2csessionSendAuto(&session, &volt_addr, 1, I2cTransactionOption_Start);
+// 	if (R_FAILED(res)) {
+// 		i2csessionClose(&session);
+// 		return;
+// 	}
+
+// 	res = i2csessionReceiveAuto(&session, &current_val, 1, I2cTransactionOption_Stop);
+// 	if (R_FAILED(res)) {
+// 		i2csessionClose(&session);
+// 		return;
+// 	}
+
+// 	// Mask in the new voltage bits, preserving other bits
+// 	u8 new_val = (current_val & ~volt_mask) | mult;
+
+// 	// Write back register with START and STOP conditions
+// 	u8 write_buf[2] = {volt_addr, new_val};
+// 	res = i2csessionSendAuto(&session, write_buf, sizeof(write_buf), I2cTransactionOption_All);
+
+// 	i2csessionClose(&session);
+// }

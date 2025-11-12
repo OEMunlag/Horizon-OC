@@ -60,6 +60,15 @@ typedef enum {
 
     HocClkConfigValue_EnforceBoardLimit,
 
+    HocClkConfigValue_EristaBoostClock,
+    HocClkConfigValue_MarikoBoostClock,
+
+    HocClkConfigValue_EMCEnableUnsafeVoltages,
+    HocClkConfigValue_EMCVdd2VoltageuV,
+    HocClkConfigValue_EMCVddqVoltageuV,
+
+    HocClkConfigValue_PWMDimming,
+
     SysClkConfigValue_EnumMax,
 } SysClkConfigValue;
 
@@ -122,7 +131,20 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
 
         case HocClkConfigValue_TDPCycleLimit:
             return pretty ? "TDP Cycle Limit" : "tdp_limit_c";
-
+        case HocClkConfigValue_EnforceBoardLimit:
+            return pretty ? "Enforce Board Limit" : "enforce_board_limit";
+        case HocClkConfigValue_EristaBoostClock:
+            return pretty ? "Boost Clock" : "e_boost_clock";
+        case HocClkConfigValue_MarikoBoostClock:
+            return pretty ? "Boost Clock" : "m_boost_clock";
+        case HocClkConfigValue_EMCEnableUnsafeVoltages:
+            return pretty ? "EMC Unsafe Voltages" : "emc_unsafe_voltages";
+        case HocClkConfigValue_EMCVdd2VoltageuV:
+            return pretty ? "EMC VDD2 Voltage (mV)" : "emc_vdd2_voltage_uv";
+        case HocClkConfigValue_EMCVddqVoltageuV:
+            return pretty ? "EMC VDDQ Voltage (mV)" : "emc_vddq_voltage_uv";
+        case HocClkConfigValue_PWMDimming:
+            return pretty ? "PWM Dimming" : "pwm_dimming";
         default:
             return pretty ? "Null" : "null";
     }
@@ -140,8 +162,10 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
         case SysClkConfigValue_CsvWriteIntervalMs:
         case HocClkConfigValue_UncappedClocks:
         case HocClkConfigValue_OverwriteBoostMode:
+        case HocClkConfigValue_EMCEnableUnsafeVoltages:
             return 0ULL;
         case HocClkConfigValue_EristaMaxCpuClock:
+        case HocClkConfigValue_EristaBoostClock:
             return 1785ULL;
         case HocClkConfigValue_EristaMaxGpuClock:
             return 921ULL;
@@ -149,16 +173,18 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
             return 1600ULL;
 
         case HocClkConfigValue_MarikoMaxCpuClock:
+        case HocClkConfigValue_MarikoBoostClock:
             return 1963ULL;
         case HocClkConfigValue_MarikoMaxGpuClock:
             return 1075ULL;
         case HocClkConfigValue_MarikoMaxMemClock:
             return 1862ULL;
-
         case HocClkConfigValue_ThermalThrottle:
         case HocClkConfigValue_DockedGovernor:
         case HocClkConfigValue_HandheldGovernor:
         case HocClkConfigValue_HandheldTDP:
+        case HocClkConfigValue_EnforceBoardLimit:
+        case HocClkConfigValue_PWMDimming:
             return 1ULL;
         case HocClkConfigValue_ThermalThrottleThreshold:
             return 70ULL;
@@ -168,6 +194,10 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
             return 6400ULL;
         case HocClkConfigValue_TDPCycleLimit:
             return 10ULL;
+        case HocClkConfigValue_EMCVdd2VoltageuV:
+            return 1175000ULL;
+        case HocClkConfigValue_EMCVddqVoltageuV:
+            return 600000ULL;
         default:
             return 0ULL;
     }
@@ -193,6 +223,10 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case SysClkConfigValue_PowerLogIntervalMs:
         case SysClkConfigValue_CsvWriteIntervalMs:
         case HocClkConfigValue_TDPCycleLimit:
+        case HocClkConfigValue_EristaBoostClock:
+        case HocClkConfigValue_MarikoBoostClock:
+        case HocClkConfigValue_EMCVdd2VoltageuV:
+        case HocClkConfigValue_EMCVddqVoltageuV:
             return input >= 0;
         case HocClkConfigValue_UncappedClocks:
         case HocClkConfigValue_OverwriteBoostMode:
@@ -200,7 +234,11 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case HocClkConfigValue_DockedGovernor:
         case HocClkConfigValue_HandheldGovernor:
         case HocClkConfigValue_HandheldTDP:
+        case HocClkConfigValue_EnforceBoardLimit:
+        case HocClkConfigValue_EMCEnableUnsafeVoltages:
+        case HocClkConfigValue_PWMDimming:
             return (input & 0x1) == input;
+        
         default:
             return false;
     }

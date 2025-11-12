@@ -62,7 +62,7 @@ class ClockManager
       std::uint32_t count;
       std::uint32_t list[SYSCLK_FREQ_LIST_MAX];
     } freqTable[SysClkModule_EnumMax];
-
+    // void set_sd1_voltage(uint32_t uv);
   protected:
     bool IsAssignableHz(SysClkModule module, std::uint32_t hz);
     std::uint32_t GetMaxAllowedHz(SysClkModule module, SysClkProfile profile);
