@@ -205,18 +205,14 @@ void MiscGui::listUI()
     addConfigToggle(HocClkConfigValue_OverwriteBoostMode, nullptr);
 
     this->listElement->addItem(new tsl::elm::CategoryHeader("Experimental"));
-    addConfigToggle(HocClkConfigValue_EnforceBoardLimit, nullptr);
     addConfigToggle(HocClkConfigValue_ThermalThrottle, nullptr);
     addConfigToggle(HocClkConfigValue_HandheldTDP, nullptr);
-    addConfigToggle(HocClkConfigValue_EnforceBoardLimit, nullptr);
-    if(IsAula()) {
-        addConfigToggle(HocClkConfigValue_PWMDimming, "PWM Dimming");
-    }
+
     ValueThresholds tdpThresholds(8600, 9500);
     addConfigButton(
         HocClkConfigValue_HandheldTDPLimit,
         "TDP Threshold",
-        ValueRange(5000, 10000, 200, "mW", 1, 0),
+        ValueRange(5000, 10000, 100, "mW", 1),
         "Power",
         &tdpThresholds
     );
@@ -225,7 +221,7 @@ void MiscGui::listUI()
     addConfigButton(
         HocClkConfigValue_LiteTDPLimit,
         "Lite TDP Threshold",
-        ValueRange(4000, 8000, 200, "mW", 1, 0),
+        ValueRange(4000, 8000, 100, "mW", 1),
         "Power",
         &tdpThresholdsLite
     );
@@ -234,11 +230,11 @@ void MiscGui::listUI()
     addConfigButton(
         HocClkConfigValue_ThermalThrottleThreshold,
         "Thermal Throttle Limit",
-        ValueRange(50, 85, 5, "°C", 1, 0),
+        ValueRange(50, 85, 1, "°C", 1),
         "Temp",
         &throttleThresholds
     );
-    this->listElement->addItem(new tsl::elm::CategoryHeader("Clocks"));
+    this->listElement->addItem(new tsl::elm::CategoryHeader("Max Clocks"));
     if(IsMariko()) {
         addFreqButton(HocClkConfigValue_MarikoMaxCpuClock, nullptr, SysClkModule_CPU);
         addFreqButton(HocClkConfigValue_MarikoMaxGpuClock, nullptr, SysClkModule_GPU);
@@ -247,62 +243,6 @@ void MiscGui::listUI()
         addFreqButton(HocClkConfigValue_EristaMaxCpuClock, nullptr, SysClkModule_CPU);
         addFreqButton(HocClkConfigValue_EristaMaxGpuClock, nullptr, SysClkModule_GPU);
         addFreqButton(HocClkConfigValue_EristaMaxMemClock, nullptr, SysClkModule_MEM);
-    }
-
-    // addFreqButton(HocClkConfigValue_CustomBoostClock, nullptr, S);
-    if(IsMariko()) {
-        ValueThresholds BoostThresholds(1963, 2397);
-        addConfigButton(
-            HocClkConfigValue_MarikoBoostClock,
-            "CPU Boost Clock",
-            ValueRange(1785, 2805, 102, "MHz", 1, 0),
-            "CPU Boost Clock",
-            &BoostThresholds
-        );    
-    } else {
-        ValueThresholds BoostThresholds(1785, 2091);
-        addConfigButton(
-            HocClkConfigValue_EristaBoostClock,
-            "CPU Boost Clock",
-            ValueRange(1785, 2295, 102, "MHz", 1, 0),
-            "CPU Boost Clock",
-            &BoostThresholds
-        );
-    }
-
-    this->listElement->addItem(new tsl::elm::CategoryHeader("EMC and MTC"));
-
-    addConfigToggle(HocClkConfigValue_EMCEnableUnsafeVoltages, nullptr);
-
-    if(this->configList->values[HocClkConfigValue_EMCEnableUnsafeVoltages]) {
-        ValueThresholds emcUvThresholds(1212500, 1250000);
-        addConfigButton(
-            HocClkConfigValue_EMCVdd2VoltageuV,
-            "EMC VDD2 Voltage",
-            ValueRange(918500, 1350000, 12500, "µV", 1, 1),
-            "EMC VDD2 Voltage",
-            &emcUvThresholds
-        );
-    } else {
-        if(IsMariko()) {
-            ValueThresholds emcUvThresholds(1212500, 1250000);
-            addConfigButton(
-                HocClkConfigValue_EMCVdd2VoltageuV,
-                "EMC VDD2 Voltage",
-                ValueRange(1100000, 1212500, 12500, "µV", 1, 1),
-                "EMC VDD2 Voltage",
-                &emcUvThresholds
-            );
-        } else {
-            ValueThresholds emcUvThresholds(1237500, 1300000);
-            addConfigButton(
-                HocClkConfigValue_EMCVdd2VoltageuV,
-                "EMC VDD2 Voltage",
-                ValueRange(1125000, 1237500, 12500, "mV", 1000, 1),
-                "EMC VDD2 Voltage",
-                &emcUvThresholds
-            );
-        }
     }
     tsl::elm::ListItem* applyBtn = new tsl::elm::ListItem("Apply EMC Regs");
     applyBtn->setClickListener([](u64 keys) {

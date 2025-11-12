@@ -12,9 +12,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  */
-
+ 
 /* --------------------------------------------------------------------------
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <p-sam@d3vs.net>, <natinusala@gmail.com>, <m4x@m4xw.net>
@@ -24,39 +24,35 @@
  * --------------------------------------------------------------------------
  */
 
-#include <nxExt.h>
-#include <switch.h>
 
+#include <nxExt.h>
 #include "board.h"
 #include "errors.h"
-#include "maxXXXXX.h"
 
-#define HOSSVC_HAS_CLKRST (hosversionAtLeast(8, 0, 0))
-#define HOSSVC_HAS_TC (hosversionAtLeast(5, 0, 0))
-#define BQ24193_I2C_ADDR 0x6B
-#define BQ24193_FaultReg 0x09
+#define HOSSVC_HAS_CLKRST (hosversionAtLeast(8,0,0))
+#define HOSSVC_HAS_TC (hosversionAtLeast(5,0,0))
 
 static SysClkSocType g_socType = SysClkSocType_Erista;
 
-const char *Board::GetModuleName(SysClkModule module, bool pretty)
+const char* Board::GetModuleName(SysClkModule module, bool pretty)
 {
     ASSERT_ENUM_VALID(SysClkModule, module);
     return sysclkFormatModule(module, pretty);
 }
 
-const char *Board::GetProfileName(SysClkProfile profile, bool pretty)
+const char* Board::GetProfileName(SysClkProfile profile, bool pretty)
 {
     ASSERT_ENUM_VALID(SysClkProfile, profile);
     return sysclkFormatProfile(profile, pretty);
 }
 
-const char *Board::GetThermalSensorName(SysClkThermalSensor sensor, bool pretty)
+const char* Board::GetThermalSensorName(SysClkThermalSensor sensor, bool pretty)
 {
     ASSERT_ENUM_VALID(SysClkThermalSensor, sensor);
     return sysclkFormatThermalSensor(sensor, pretty);
 }
 
-const char *Board::GetPowerSensorName(SysClkPowerSensor sensor, bool pretty)
+const char* Board::GetPowerSensorName(SysClkPowerSensor sensor, bool pretty)
 {
     ASSERT_ENUM_VALID(SysClkPowerSensor, sensor);
     return sysclkFormatPowerSensor(sensor, pretty);
@@ -64,18 +60,19 @@ const char *Board::GetPowerSensorName(SysClkPowerSensor sensor, bool pretty)
 
 PcvModule Board::GetPcvModule(SysClkModule sysclkModule)
 {
-    switch (sysclkModule) {
-    case SysClkModule_CPU:
-        return PcvModule_CpuBus;
-    case SysClkModule_GPU:
-        return PcvModule_GPU;
-    case SysClkModule_MEM:
-        return PcvModule_EMC;
-    default:
-        ASSERT_ENUM_VALID(SysClkModule, sysclkModule);
+    switch(sysclkModule)
+    {
+        case SysClkModule_CPU:
+            return PcvModule_CpuBus;
+        case SysClkModule_GPU:
+            return PcvModule_GPU;
+        case SysClkModule_MEM:
+            return PcvModule_EMC;
+        default:
+            ASSERT_ENUM_VALID(SysClkModule, sysclkModule);
     }
 
-    return (PcvModule) 0;
+    return (PcvModule)0;
 }
 
 PcvModuleId Board::GetPcvModuleId(SysClkModule sysclkModule)
@@ -91,10 +88,13 @@ void Board::Initialize()
 {
     Result rc = 0;
 
-    if (HOSSVC_HAS_CLKRST) {
+    if(HOSSVC_HAS_CLKRST)
+    {
         rc = clkrstInitialize();
         ASSERT_RESULT_OK(rc, "clkrstInitialize");
-    } else {
+    }
+    else
+    {
         rc = pcvInitialize();
         ASSERT_RESULT_OK(rc, "pcvInitialize");
     }
@@ -105,7 +105,8 @@ void Board::Initialize()
     rc = psmInitialize();
     ASSERT_RESULT_OK(rc, "psmInitialize");
 
-    if (HOSSVC_HAS_TC) {
+    if(HOSSVC_HAS_TC)
+    {
         rc = tcInitialize();
         ASSERT_RESULT_OK(rc, "tcInitialize");
     }
@@ -121,16 +122,20 @@ void Board::Initialize()
 
 void Board::Exit()
 {
-    if (HOSSVC_HAS_CLKRST) {
+    if(HOSSVC_HAS_CLKRST)
+    {
         clkrstExit();
-    } else {
+    }
+    else
+    {
         pcvExit();
     }
 
     apmExtExit();
     psmExit();
 
-    if (HOSSVC_HAS_TC) {
+    if(HOSSVC_HAS_TC)
+    {
         tcExit();
     }
 
@@ -144,7 +149,8 @@ SysClkProfile Board::GetProfile()
     Result rc = apmExtGetPerformanceMode(&mode);
     ASSERT_RESULT_OK(rc, "apmExtGetPerformanceMode");
 
-    if (mode) {
+    if(mode)
+    {
         return SysClkProfile_Docked;
     }
 
@@ -153,9 +159,12 @@ SysClkProfile Board::GetProfile()
     rc = psmGetChargerType(&chargerType);
     ASSERT_RESULT_OK(rc, "psmGetChargerType");
 
-    if (chargerType == PsmChargerType_EnoughPower) {
+    if(chargerType == PsmChargerType_EnoughPower)
+    {
         return SysClkProfile_HandheldChargingOfficial;
-    } else if (chargerType == PsmChargerType_LowPower) {
+    }
+    else if(chargerType == PsmChargerType_LowPower)
+    {
         return SysClkProfile_HandheldChargingUSB;
     }
 
@@ -166,8 +175,9 @@ void Board::SetHz(SysClkModule module, std::uint32_t hz)
 {
     Result rc = 0;
 
-    if (HOSSVC_HAS_CLKRST) {
-        ClkrstSession session = { 0 };
+    if(HOSSVC_HAS_CLKRST)
+    {
+        ClkrstSession session = {0};
 
         rc = clkrstOpenSession(&session, Board::GetPcvModuleId(module), 3);
         ASSERT_RESULT_OK(rc, "clkrstOpenSession");
@@ -176,7 +186,9 @@ void Board::SetHz(SysClkModule module, std::uint32_t hz)
         ASSERT_RESULT_OK(rc, "clkrstSetClockRate");
 
         clkrstCloseSession(&session);
-    } else {
+    }
+    else
+    {
         rc = pcvSetClockRate(Board::GetPcvModule(module), hz);
         ASSERT_RESULT_OK(rc, "pcvSetClockRate");
     }
@@ -187,8 +199,9 @@ std::uint32_t Board::GetHz(SysClkModule module)
     Result rc = 0;
     std::uint32_t hz = 0;
 
-    if (HOSSVC_HAS_CLKRST) {
-        ClkrstSession session = { 0 };
+    if(HOSSVC_HAS_CLKRST)
+    {
+        ClkrstSession session = {0};
 
         rc = clkrstOpenSession(&session, Board::GetPcvModuleId(module), 3);
         ASSERT_RESULT_OK(rc, "clkrstOpenSession");
@@ -197,7 +210,9 @@ std::uint32_t Board::GetHz(SysClkModule module)
         ASSERT_RESULT_OK(rc, "clkrstSetClockRate");
 
         clkrstCloseSession(&session);
-    } else {
+    }
+    else
+    {
         rc = pcvGetClockRate(Board::GetPcvModule(module), &hz);
         ASSERT_RESULT_OK(rc, "pcvGetClockRate");
     }
@@ -207,48 +222,49 @@ std::uint32_t Board::GetHz(SysClkModule module)
 
 std::uint32_t Board::GetRealHz(SysClkModule module)
 {
-    switch (module) {
-    case SysClkModule_CPU:
-        return t210ClkCpuFreq();
-    case SysClkModule_GPU:
-        return t210ClkGpuFreq();
-    case SysClkModule_MEM:
-        return t210ClkMemFreq();
-    default:
-        ASSERT_ENUM_VALID(SysClkModule, module);
+    switch(module)
+    {
+        case SysClkModule_CPU:
+            return t210ClkCpuFreq();
+        case SysClkModule_GPU:
+            return t210ClkGpuFreq();
+        case SysClkModule_MEM:
+            return t210ClkMemFreq();
+        default:
+            ASSERT_ENUM_VALID(SysClkModule, module);
     }
 
     return 0;
 }
 
-void Board::GetFreqList(SysClkModule module, std::uint32_t *outList,
-std::uint32_t maxCount, std::uint32_t *outCount)
+void Board::GetFreqList(SysClkModule module, std::uint32_t* outList, std::uint32_t maxCount, std::uint32_t* outCount)
 {
     Result rc = 0;
     PcvClockRatesListType type;
     s32 tmpInMaxCount = maxCount;
     s32 tmpOutCount = 0;
 
-    if (HOSSVC_HAS_CLKRST) {
-        ClkrstSession session = { 0 };
+    if(HOSSVC_HAS_CLKRST)
+    {
+        ClkrstSession session = {0};
 
         rc = clkrstOpenSession(&session, Board::GetPcvModuleId(module), 3);
         ASSERT_RESULT_OK(rc, "clkrstOpenSession");
 
-        rc = clkrstGetPossibleClockRates(
-        &session, outList, tmpInMaxCount, &type, &tmpOutCount);
+        rc = clkrstGetPossibleClockRates(&session, outList, tmpInMaxCount, &type, &tmpOutCount);
         ASSERT_RESULT_OK(rc, "clkrstGetPossibleClockRates");
 
         clkrstCloseSession(&session);
-    } else {
-        rc = pcvGetPossibleClockRates(Board::GetPcvModule(module), outList,
-        tmpInMaxCount, &type, &tmpOutCount);
+    }
+    else
+    {
+        rc = pcvGetPossibleClockRates(Board::GetPcvModule(module), outList, tmpInMaxCount, &type, &tmpOutCount);
         ASSERT_RESULT_OK(rc, "pcvGetPossibleClockRates");
     }
 
-    if (type != PcvClockRatesListType_Discrete) {
-        ERROR_THROW("Unexpected PcvClockRatesListType: %u (module = %s)", type,
-        Board::GetModuleName(module, false));
+    if(type != PcvClockRatesListType_Discrete)
+    {
+        ERROR_THROW("Unexpected PcvClockRatesListType: %u (module = %s)", type, Board::GetModuleName(module, false));
     }
 
     *outCount = tmpOutCount;
@@ -257,27 +273,33 @@ std::uint32_t maxCount, std::uint32_t *outCount)
 void Board::ResetToStock()
 {
     Result rc = 0;
-    if (hosversionAtLeast(9, 0, 0)) {
+    if(hosversionAtLeast(9,0,0))
+    {
         std::uint32_t confId = 0;
         rc = apmExtGetCurrentPerformanceConfiguration(&confId);
         ASSERT_RESULT_OK(rc, "apmExtGetCurrentPerformanceConfiguration");
 
-        SysClkApmConfiguration *apmConfiguration = NULL;
-        for (size_t i = 0; sysclk_g_apm_configurations[i].id; i++) {
-            if (sysclk_g_apm_configurations[i].id == confId) {
+        SysClkApmConfiguration* apmConfiguration = NULL;
+        for(size_t i = 0; sysclk_g_apm_configurations[i].id; i++)
+        {
+            if(sysclk_g_apm_configurations[i].id == confId)
+            {
                 apmConfiguration = &sysclk_g_apm_configurations[i];
                 break;
             }
         }
 
-        if (!apmConfiguration) {
+        if(!apmConfiguration)
+        {
             ERROR_THROW("Unknown apm configuration: %x", confId);
         }
 
         Board::SetHz(SysClkModule_CPU, apmConfiguration->cpu_hz);
         Board::SetHz(SysClkModule_GPU, apmConfiguration->gpu_hz);
         Board::SetHz(SysClkModule_MEM, apmConfiguration->mem_hz);
-    } else {
+    }
+    else
+    {
         std::uint32_t mode = 0;
         rc = apmExtGetPerformanceMode(&mode);
         ASSERT_RESULT_OK(rc, "apmExtGetPerformanceMode");
@@ -290,25 +312,31 @@ void Board::ResetToStock()
 void Board::ResetToStockCpu()
 {
     Result rc = 0;
-    if (hosversionAtLeast(9, 0, 0)) {
+    if(hosversionAtLeast(9,0,0))
+    {
         std::uint32_t confId = 0;
         rc = apmExtGetCurrentPerformanceConfiguration(&confId);
         ASSERT_RESULT_OK(rc, "apmExtGetCurrentPerformanceConfiguration");
 
-        SysClkApmConfiguration *apmConfiguration = NULL;
-        for (size_t i = 0; sysclk_g_apm_configurations[i].id; i++) {
-            if (sysclk_g_apm_configurations[i].id == confId) {
+        SysClkApmConfiguration* apmConfiguration = NULL;
+        for(size_t i = 0; sysclk_g_apm_configurations[i].id; i++)
+        {
+            if(sysclk_g_apm_configurations[i].id == confId)
+            {
                 apmConfiguration = &sysclk_g_apm_configurations[i];
                 break;
             }
         }
 
-        if (!apmConfiguration) {
+        if(!apmConfiguration)
+        {
             ERROR_THROW("Unknown apm configuration: %x", confId);
         }
 
         Board::SetHz(SysClkModule_CPU, apmConfiguration->cpu_hz);
-    } else {
+    }
+    else
+    {
         std::uint32_t mode = 0;
         rc = apmExtGetPerformanceMode(&mode);
         ASSERT_RESULT_OK(rc, "apmExtGetPerformanceMode");
@@ -321,25 +349,31 @@ void Board::ResetToStockCpu()
 void Board::ResetToStockMem()
 {
     Result rc = 0;
-    if (hosversionAtLeast(9, 0, 0)) {
+    if(hosversionAtLeast(9,0,0))
+    {
         std::uint32_t confId = 0;
         rc = apmExtGetCurrentPerformanceConfiguration(&confId);
         ASSERT_RESULT_OK(rc, "apmExtGetCurrentPerformanceConfiguration");
 
-        SysClkApmConfiguration *apmConfiguration = NULL;
-        for (size_t i = 0; sysclk_g_apm_configurations[i].id; i++) {
-            if (sysclk_g_apm_configurations[i].id == confId) {
+        SysClkApmConfiguration* apmConfiguration = NULL;
+        for(size_t i = 0; sysclk_g_apm_configurations[i].id; i++)
+        {
+            if(sysclk_g_apm_configurations[i].id == confId)
+            {
                 apmConfiguration = &sysclk_g_apm_configurations[i];
                 break;
             }
         }
 
-        if (!apmConfiguration) {
+        if(!apmConfiguration)
+        {
             ERROR_THROW("Unknown apm configuration: %x", confId);
         }
 
         Board::SetHz(SysClkModule_MEM, apmConfiguration->mem_hz);
-    } else {
+    }
+    else
+    {
         std::uint32_t mode = 0;
         rc = apmExtGetPerformanceMode(&mode);
         ASSERT_RESULT_OK(rc, "apmExtGetPerformanceMode");
@@ -352,25 +386,31 @@ void Board::ResetToStockMem()
 void Board::ResetToStockGpu()
 {
     Result rc = 0;
-    if (hosversionAtLeast(9, 0, 0)) {
+    if(hosversionAtLeast(9,0,0))
+    {
         std::uint32_t confId = 0;
         rc = apmExtGetCurrentPerformanceConfiguration(&confId);
         ASSERT_RESULT_OK(rc, "apmExtGetCurrentPerformanceConfiguration");
 
-        SysClkApmConfiguration *apmConfiguration = NULL;
-        for (size_t i = 0; sysclk_g_apm_configurations[i].id; i++) {
-            if (sysclk_g_apm_configurations[i].id == confId) {
+        SysClkApmConfiguration* apmConfiguration = NULL;
+        for(size_t i = 0; sysclk_g_apm_configurations[i].id; i++)
+        {
+            if(sysclk_g_apm_configurations[i].id == confId)
+            {
                 apmConfiguration = &sysclk_g_apm_configurations[i];
                 break;
             }
         }
 
-        if (!apmConfiguration) {
+        if(!apmConfiguration)
+        {
             ERROR_THROW("Unknown apm configuration: %x", confId);
         }
 
         Board::SetHz(SysClkModule_GPU, apmConfiguration->gpu_hz);
-    } else {
+    }
+    else
+    {
         std::uint32_t mode = 0;
         rc = apmExtGetPerformanceMode(&mode);
         ASSERT_RESULT_OK(rc, "apmExtGetPerformanceMode");
@@ -379,56 +419,29 @@ void Board::ResetToStockGpu()
         ASSERT_RESULT_OK(rc, "apmExtSysRequestPerformanceMode");
     }
 }
-
 std::uint32_t Board::GetTemperatureMilli(SysClkThermalSensor sensor)
 {
     std::int32_t millis = 0;
-    Result res;
-    u16 data;
-    u8 reg = MAX17050_TEMP;
 
-    switch (sensor) {
-    case SysClkThermalSensor_SOC:
+    if(sensor == SysClkThermalSensor_SOC)
+    {
         millis = tmp451TempSoc();
-        break;
-    case SysClkThermalSensor_PCB:
+    }
+    else if(sensor == SysClkThermalSensor_PCB)
+    {
         millis = tmp451TempPcb();
-        break;
-    case SysClkThermalSensor_Skin:
-
-        if (HOSSVC_HAS_TC) {
+    }
+    else if(sensor == SysClkThermalSensor_Skin)
+    {
+        if(HOSSVC_HAS_TC)
+        {
             Result rc;
             rc = tcGetSkinTemperatureMilliC(&millis);
             ASSERT_RESULT_OK(rc, "tcGetSkinTemperatureMilliC");
         }
-        break;
-    case HocClkThermalSensor_Battery:
-        I2cSession session;
-        res = i2cOpenSession(&session, I2cDevice_Max17050);
-        if (R_FAILED(res)) {
-            millis = -1;
-            break;
-        }
-
-        data = 0;
-
-        res = i2csessionSendAuto(&session, &reg, 1, I2cTransactionOption_Start);
-        if (R_FAILED(res)) {
-            i2csessionClose(&session);
-            millis = -1;
-            break;
-        }
-
-        res = i2csessionReceiveAuto(&session, (u8 *) &data, 2, I2cTransactionOption_Stop);
-
-        i2csessionClose(&session);
-
-        millis = (std::int32_t) data * 10 / 256;
-        break;
-    case HocClkThermalSensor_PMIC:
-        millis = 50000;  // Literally the only reasonable value the PMIC can return
-        break;
-    default:
+    }
+    else
+    {
         ASSERT_ENUM_VALID(SysClkThermalSensor, sensor);
     }
 
@@ -437,13 +450,14 @@ std::uint32_t Board::GetTemperatureMilli(SysClkThermalSensor sensor)
 
 std::int32_t Board::GetPowerMw(SysClkPowerSensor sensor)
 {
-    switch (sensor) {
-    case SysClkPowerSensor_Now:
-        return max17050PowerNow();
-    case SysClkPowerSensor_Avg:
-        return max17050PowerAvg();
-    default:
-        ASSERT_ENUM_VALID(SysClkPowerSensor, sensor);
+    switch(sensor)
+    {
+        case SysClkPowerSensor_Now:
+            return max17050PowerNow();
+        case SysClkPowerSensor_Avg:
+            return max17050PowerAvg();
+        default:
+            ASSERT_ENUM_VALID(SysClkPowerSensor, sensor);
     }
 
     return 0;
@@ -451,22 +465,23 @@ std::int32_t Board::GetPowerMw(SysClkPowerSensor sensor)
 
 std::uint32_t Board::GetRamLoad(SysClkRamLoad loadSource)
 {
-    switch (loadSource) {
-    case SysClkRamLoad_All:
-        return t210EmcLoadAll();
-    case SysClkRamLoad_Cpu:
-        return t210EmcLoadCpu();
-    default:
-        ASSERT_ENUM_VALID(SysClkRamLoad, loadSource);
+    switch(loadSource)
+    {
+        case SysClkRamLoad_All:
+            return t210EmcLoadAll();
+        case SysClkRamLoad_Cpu:
+            return t210EmcLoadCpu();
+        default:
+            ASSERT_ENUM_VALID(SysClkRamLoad, loadSource);
     }
 
     return 0;
 }
 
-SysClkSocType Board::GetSocType()
-{
+SysClkSocType Board::GetSocType() {
     return g_socType;
 }
+
 
 void Board::FetchHardwareInfos()
 {
@@ -479,16 +494,17 @@ void Board::FetchHardwareInfos()
 
     splExit();
 
-    switch (sku) {
-    case 2:
-    case 3:
-    case 5:
-        g_socType = SysClkSocType_Mariko;
-        break;
-    case 4:
-        g_socType = SysClkSocType_MarikoLite;
-        break;
-    default:
-        g_socType = SysClkSocType_Erista;
+    switch(sku)
+    {
+        case 2:
+        case 3:
+        case 5:
+            g_socType = SysClkSocType_Mariko;
+            break;
+        case 4:
+            g_socType = SysClkSocType_MarikoLite;
+            break;
+        default:
+            g_socType = SysClkSocType_Erista;
     }
 }

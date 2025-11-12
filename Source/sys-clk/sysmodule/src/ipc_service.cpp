@@ -191,7 +191,7 @@ Result IpcService::ServiceHandlerFunc(void* arg, const IpcServerRequest* r, u8* 
                 return ipcSrv->SetReverseNXRTMode(mode);
             }
             break;
-        case HocClkIpcCmd_UpdateEMC: // Trigger, not data
+        case HocClkIpcCmd_UpdateEMCRegs: // Trigger, not data
             return ipcSrv->PatchEmcRegs();
             break;
     }
@@ -354,6 +354,6 @@ Result IpcService::SetReverseNXRTMode(ReverseNXMode mode) {
 
 
 Result IpcService::PatchEmcRegs() {
-//  EMCpatcher::GetInstance()->Run();
+    EMCpatcher::GetInstance()->Run();
     return 0;
 }

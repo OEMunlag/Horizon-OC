@@ -33,7 +33,6 @@
 class Board
 {
   public:
-    u16 max17050_get_reg(u8 reg);
     static const char* GetProfileName(SysClkProfile profile, bool pretty);
     static const char* GetModuleName(SysClkModule module, bool pretty);
     static const char* GetThermalSensorName(SysClkThermalSensor sensor, bool pretty);

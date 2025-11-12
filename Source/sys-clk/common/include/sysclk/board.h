@@ -62,9 +62,6 @@ typedef enum
     SysClkThermalSensor_SOC = 0,
     SysClkThermalSensor_PCB,
     SysClkThermalSensor_Skin,
-//  HocClkThermalSensor_BQ24193,
-    HocClkThermalSensor_Battery,
-    HocClkThermalSensor_PMIC,
     SysClkThermalSensor_EnumMax
 } SysClkThermalSensor;
 
@@ -90,16 +87,6 @@ typedef enum
     ReverseNX_Docked,
 } ReverseNXMode;
 
-typedef enum {
-    HocClkConsoleType_V1 = 0,
-    HocClkConsoleType_UnreleasedErista,
-    HocClkConsoleType_UnreleasedMariko,
-    HocClkConsoleType_V2,
-    HocClkConsoleType_Lite,
-    HocClkConsoleType_UnreleasedMariko2,
-    HocClkConsoleType_OLED,
-    HocClkConsoleType_EnumMax,
-} HocClkConsoleType;
 
 #define SYSCLK_ENUM_VALID(n, v) ((v) < n##_EnumMax)
 

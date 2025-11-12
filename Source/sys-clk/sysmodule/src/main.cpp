@@ -38,9 +38,6 @@
 #include "clock_manager.h"
 #include "ipc_service.h"
 #include "fancontrol.h"
-#include "emc_patcher.h"
-#include "pwm_dimming.h"
-
 #define INNER_HEAP_SIZE 0x30000
 
 extern "C"
@@ -116,25 +113,17 @@ int main(int argc, char** argv)
     {
         Board::Initialize();
         ProcessManagement::Initialize();
-        PWMDimmer::Initialize();
+
         ProcessManagement::WaitForQLaunch();
 
         ClockManager* clockMgr = new ClockManager();
         IpcService* ipcSrv = new IpcService(clockMgr);
-        EMCpatcher* emcPatcher = new EMCpatcher();
-        PWMDimmer* pwmDimmer = PWMDimmer::GetInstance();
 
         FileUtils::LogLine("Ready");
 
         clockMgr->SetRunning(true);
         clockMgr->GetConfig()->SetEnabled(true);
         ipcSrv->SetRunning(true);
-        pwmDimmer->Initialize();
-
-        emcPatcher->GetConfig()->SetEnabled(true);
-        emcPatcher->Run();
-        pwmDimmer->Start();
-
         TemperaturePoint *table;
         ReadConfigFile(&table);
         InitFanController(table);
