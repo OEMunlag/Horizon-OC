@@ -48,6 +48,9 @@ const std::array<u32,    10>  tRTW_values   = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}; /*
 const std::array<double, 10>  tWTR_values   = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
 const std::array<u32,    7>  tREFpb_values = {488, 732, 488 * 2, 488 * 3, 488 * 4, 488 * 6, 488 * 8}; /* TODO: Figure out if it's actually 8 and if this is even right. */
 
+struct SOC_THERM_THERMCTL_LEVEL0_GROUP_CPU_0 {
+    
+};
 
 class EMCpatcher
 {

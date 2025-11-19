@@ -293,6 +293,7 @@ void MemMtcTableAutoAdjust(EristaMtcTable *table) {
             {"CPU Volt Dfll",  &CpuVoltDfll,           1, nullptr, 0xFFEAD0FF },
             {"GPU Freq Table", GpuFreqCvbTable<false>, 1, nullptr, GpuCvbDefaultMaxFreq},
             {"GPU Freq Asm", &GpuFreqMaxAsm, 2, &GpuMaxClockPatternFn},
+            {"GPU Volt Thermal", &GpuFreqMaxAsm, 1, &GpuMaxClockPatternFn},
             {"GPU Freq PLL", &GpuFreqPllLimit, 1, nullptr, GpuClkPllLimit},
             {"MEM Freq Mtc", &MemFreqMtcTable, 0, nullptr, EmcClkOSLimit},
             {"MEM Freq Max", &MemFreqMax, 0, nullptr, EmcClkOSLimit},

@@ -269,7 +269,7 @@ Result IpcService::SetProfiles(SysClkIpc_SetProfiles_Args* args)
 
     if(!config->SetProfiles(args->tid, &profiles, true))
     {
-        return SYSCLK_ERROR(ConfigSaveFailed);
+        return SYSCLK_ERROR(ConfigSaveFailed); // 0x584
     }
 
     return 0;

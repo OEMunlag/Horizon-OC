@@ -140,12 +140,12 @@ namespace ams::ldr::oc::pcv::mariko
             PATCH_OFFSET(&(entry->tune1_low), 0x021107FF);
             PATCH_OFFSET(&(entry->tune1_high), 0x026617FF);
             break;
-        case 8:
-            PATCH_OFFSET(&(entry->tune0_low), 0x0000FFFF); // EOS UV6
-            PATCH_OFFSET(&(entry->tune0_high), 0x0000FFFF);
-            PATCH_OFFSET(&(entry->tune1_low), 0x021107FF);
-            PATCH_OFFSET(&(entry->tune1_high), 0x028817FF);
-            break;
+        // case 8:
+        //     PATCH_OFFSET(&(entry->tune0_low), 0x0000FFFF); // EOS UV6
+        //     PATCH_OFFSET(&(entry->tune0_high), 0x0000FFFF);
+        //     PATCH_OFFSET(&(entry->tune1_low), 0x021107FF);
+        //     PATCH_OFFSET(&(entry->tune1_high), 0x028817FF);
+        //     break;
         default:
             break;
         }
@@ -191,16 +191,13 @@ namespace ams::ldr::oc::pcv::mariko
     }
 
     Result GpuFreqPllLimit(u32 *ptr) {
-        clk_pll_param *entry = reinterpret_cast<clk_pll_param *>(ptr);
+        int UPPER_GPU_FREQ = -1; // uncap the gpu frequency
+        PATCH_OFFSET(ptr, UPPER_GPU_FREQ);
+        R_SUCCEED();
+    }
 
-        // All zero except for freq
-        for (size_t i = 1; i < sizeof(clk_pll_param) / sizeof(u32); i++) {
-            R_UNLESS(*(ptr + i) == 0, ldr::ResultInvalidGpuPllEntry());
-        }
-
-        // Double the max clk simply
-        u32 max_clk = entry->freq * 2;
-        entry->freq = max_clk;
+    Result GpuFreqMax(u32 *ptr) {
+        PATCH_OFFSET(ptr, 3600000);
         R_SUCCEED();
     }
 
@@ -531,7 +528,8 @@ namespace ams::ldr::oc::pcv::mariko
             {"CPU Volt Dfll", &CpuVoltDfll, 1, nullptr, 0x0000FFCF},
             {"GPU Freq Table", GpuFreqCvbTable<true>, 1, nullptr, GpuCvbDefaultMaxFreq},
             {"GPU Freq Asm", &GpuFreqMaxAsm, 2, &GpuMaxClockPatternFn},
-            {"GPU Freq PLL", &GpuFreqPllLimit, 0, nullptr, GpuClkPllLimit},
+            {"GPU Freq Max (Patch 1)", &GpuFreqMax, 1, nullptr, GpuClkMax},
+            {"GPU Freq PLL (Patch 2)", &GpuFreqPllLimit, 0, nullptr, GpuClkPllLimit},
             {"MEM Freq Mtc", &MemFreqMtcTable, 0, nullptr, EmcClkOSLimit},
             {"MEM Freq Dvb", &MemFreqDvbTable, 1, nullptr, EmcClkOSLimit},
             {"MEM Freq Max", &MemFreqMax, 0, nullptr, EmcClkOSLimit},

@@ -38,7 +38,9 @@
 #include "clock_manager.h"
 #include "ipc_service.h"
 #include "fancontrol.h"
-#define INNER_HEAP_SIZE 0x30000
+#include "emc_patcher.h"
+
+#define INNER_HEAP_SIZE 0xFFFFF
 
 extern "C"
 {
@@ -66,12 +68,22 @@ extern "C"
 
     void __appInit(void)
     {
+        Result rc;
         if (R_FAILED(smInitialize()))
         {
             fatalThrow(MAKERESULT(Module_Libnx, LibnxError_InitFail_SM));
         }
 
-        Result rc = setsysInitialize();
+        rc = fanInitialize();
+        if (R_FAILED(rc))
+            diagAbortWithResult(MAKERESULT(Module_Libnx, LibnxError_ShouldNotHappen));
+    
+        rc = i2cInitialize();
+        if (R_FAILED(rc))
+            diagAbortWithResult(MAKERESULT(Module_Libnx, LibnxError_ShouldNotHappen));
+
+
+        rc = setsysInitialize();
         if (R_SUCCEEDED(rc))
         {
             SetSysFirmwareVersion fw;
@@ -81,13 +93,6 @@ extern "C"
             setsysExit();
         }
         
-        rc = fanInitialize();
-        if (R_FAILED(rc))
-            diagAbortWithResult(MAKERESULT(Module_Libnx, LibnxError_ShouldNotHappen));
-    
-        rc = i2cInitialize();
-        if (R_FAILED(rc))
-            diagAbortWithResult(MAKERESULT(Module_Libnx, LibnxError_ShouldNotHappen));
     }
 
     void __appExit(void)
@@ -96,7 +101,8 @@ extern "C"
         fanExit();
         i2cExit();
         fsExit();
-        fsdevUnmountAll();    
+        fsdevUnmountAll();   
+        smExit();
         }
 }
 
@@ -118,8 +124,8 @@ int main(int argc, char** argv)
 
         ClockManager* clockMgr = new ClockManager();
         IpcService* ipcSrv = new IpcService(clockMgr);
-
-        FileUtils::LogLine("Ready");
+        
+        FileUtils::LogLine("Starting Horizon OC Sysmodule");
 
         clockMgr->SetRunning(true);
         clockMgr->GetConfig()->SetEnabled(true);
