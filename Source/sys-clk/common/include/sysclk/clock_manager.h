@@ -40,7 +40,7 @@ typedef struct
     uint32_t overrideFreqs[SysClkModule_EnumMax];
     uint32_t temps[SysClkThermalSensor_EnumMax];
     int32_t power[SysClkPowerSensor_EnumMax];
-    uint32_t ramLoad[SysClkRamLoad_EnumMax];
+    uint32_t partLoad[SysClkPartLoad_EnumMax];
 //  uint32_t perfConfId;
 } SysClkContext;
 

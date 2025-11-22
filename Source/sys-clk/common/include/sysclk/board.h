@@ -74,10 +74,11 @@ typedef enum
 
 typedef enum
 {
-    SysClkRamLoad_All = 0,
-    SysClkRamLoad_Cpu,
-    SysClkRamLoad_EnumMax
-} SysClkRamLoad;
+    SysClkPartLoad_EMC = 0,
+    SysClkPartLoad_EMCCpu,
+    HocClkPartLoad_GPU,
+    SysClkPartLoad_EnumMax
+} SysClkPartLoad;
 
 typedef enum
 {

@@ -40,7 +40,7 @@
 #include "fancontrol.h"
 #include "emc_patcher.h"
 
-#define INNER_HEAP_SIZE 0xFFFFF
+#define INNER_HEAP_SIZE 0x50000
 
 extern "C"
 {
@@ -92,7 +92,7 @@ extern "C"
                 hosversionSet(MAKEHOSVERSION(fw.major, fw.minor, fw.micro));
             setsysExit();
         }
-        
+
     }
 
     void __appExit(void)
@@ -124,7 +124,7 @@ int main(int argc, char** argv)
 
         ClockManager* clockMgr = new ClockManager();
         IpcService* ipcSrv = new IpcService(clockMgr);
-        
+
         FileUtils::LogLine("Starting Horizon OC Sysmodule");
 
         clockMgr->SetRunning(true);

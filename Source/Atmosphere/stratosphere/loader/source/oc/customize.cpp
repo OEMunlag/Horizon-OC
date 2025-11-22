@@ -23,6 +23,7 @@
 #define ENABLED 1
 #define DISABLED 0
 #define CPU_MAX_MAX_VOLT 1375000
+
 namespace ams::ldr::oc {
 
 //volatile EristaMtcTable EristaMtcTablePlaceholder = { .rev = ERISTA_MTC_MAGIC, };
@@ -199,8 +200,8 @@ volatile CustomizeTable C = {
 .marikoCpuDvfsTableSLT = {
     // {   204000, {   732856,  -17335,    113 }, {  } },
     // {   306000, {   760024,  -18195,    113 }, {  } },
-    {   408000, {   789258,  -19055,    113 }, {  } },
-    {   510000, {   789258,  -19915,    113 }, {  } },
+    // {   408000, {   789258,  -19055,    113 }, {  } },
+    // {   510000, {   789258,  -19915,    113 }, {  } },
     {   612000, {   789258,  -19055,    113 }, {  } },
     {   714000, {   820558,  -19915,    113 }, {  } },
     {   816000, {   853926,  -20775,    113 }, {  } },
@@ -223,8 +224,8 @@ volatile CustomizeTable C = {
     {  2601000, {  1702903,  -36675,    113 }, { CPU_MAX_MAX_VOLT } },
     {  2703000, {  1748360,  -37535,    113 }, { CPU_MAX_MAX_VOLT } },
     {  2805000, {  1793817,  -38395,    113 }, { CPU_MAX_MAX_VOLT } },
-    // {  2907000, {  1839274,  -39255,    113 }, { CPU_MAX_MAX_VOLT } },
-    // {  3009000, {  1884731,  -40115,    113 }, { CPU_MAX_MAX_VOLT } },
+    {  2907000, {  1839274,  -39255,    113 }, { CPU_MAX_MAX_VOLT } },
+    {  3009000, {  1884731,  -40115,    113 }, { CPU_MAX_MAX_VOLT } },
 },
 
 /* - Erista GPU DVFS Table:

@@ -24,6 +24,7 @@
  * --------------------------------------------------------------------------
  */
 
+#include "notification.h"
 
 #include "clock_manager.h"
 #include <cstring>
@@ -34,6 +35,10 @@
 #include "ipc_service.h"
 
 #define HOSPPC_HAS_BOOST (hosversionAtLeast(7,0,0))
+
+bool HAS_TDP_BEEN_FIRED = false;
+bool HAS_EBL_BEEN_FIRED = false;
+bool HAS_TT_BEEN_FIRED = false;
 
 ClockManager *ClockManager::instance = NULL;
 
@@ -228,6 +233,7 @@ void ClockManager::RefreshFreqTableRow(SysClkModule module)
 
 void ClockManager::Tick()
 {
+    
     std::uint32_t mode = 0;
     AppletOperationMode opMode = appletGetOperationMode();
     Result rc = apmExtGetCurrentPerformanceConfiguration(&mode);
@@ -257,25 +263,47 @@ void ClockManager::Tick()
     if(this->config->GetConfigValue(HocClkConfigValue_HandheldTDP) && opMode == AppletOperationMode_Handheld) {
             if(Board::GetSocType() == SysClkSocType_MarikoLite) {
                 if(Board::GetPowerMw(SysClkPowerSensor_Avg) < -(int)this->config->GetConfigValue(HocClkConfigValue_LiteTDPLimit)) {
+                    if(!HAS_TDP_BEEN_FIRED)
+                        writeNotification("Horizon OC\nTDP has been activated");
+                    HAS_TDP_BEEN_FIRED = true;
                     ResetToStockClocks();
                     return;
+                } else {
+                    HAS_TDP_BEEN_FIRED = false;
                 }
             } else {
                 if(Board::GetPowerMw(SysClkPowerSensor_Avg) < -(int)this->config->GetConfigValue(HocClkConfigValue_HandheldTDPLimit)) {
+                    if(!HAS_TDP_BEEN_FIRED)
+                        writeNotification("Horizon OC\nTDP has been activated");
+                    HAS_TDP_BEEN_FIRED = true;
                     ResetToStockClocks();
                     return;
+                } else {
+                    HAS_TDP_BEEN_FIRED = false;
                 }
             }
     } else if(opMode == AppletOperationMode_Console && this->config->GetConfigValue(HocClkConfigValue_EnforceBoardLimit)) {
         if(Board::GetPowerMw(SysClkPowerSensor_Avg) < 0) {
+            if(!HAS_EBL_BEEN_FIRED)
+                writeNotification("Horizon OC\nBoard Limit has been exeeded");
+            HAS_EBL_BEEN_FIRED = true;
             ResetToStockClocks();
             return;
+        } else {
+            HAS_EBL_BEEN_FIRED = false;
         }
     }
 
-    if(((tmp451TempSoc() / 1000) > (int)this->config->GetConfigValue(HocClkConfigValue_ThermalThrottleThreshold)) && this->config->GetConfigValue(HocClkConfigValue_ThermalThrottle)) {
-        ResetToStockClocks();
-        return;
+    if(this->config->GetConfigValue(HocClkConfigValue_ThermalThrottle)) {
+        if(tmp451TempSoc() / 1000 > (int)this->config->GetConfigValue(HocClkConfigValue_ThermalThrottleThreshold)) {
+            if(!HAS_TT_BEEN_FIRED)
+                writeNotification("Horizon OC\nThermal Throttle has started");
+            HAS_TT_BEEN_FIRED = true;
+            ResetToStockClocks();
+            return;
+        } else {
+            HAS_TT_BEEN_FIRED = false;
+        }
     }
 
     std::scoped_lock lock{this->contextMutex};
@@ -454,9 +482,9 @@ bool ClockManager::RefreshContext()
     }
 
     // ram load do not and should not force a refresh, hasChanged untouched
-    for (unsigned int loadSource = 0; loadSource < SysClkRamLoad_EnumMax; loadSource++)
+    for (unsigned int loadSource = 0; loadSource < SysClkPartLoad_EnumMax; loadSource++)
     {
-        this->context->ramLoad[loadSource] = Board::GetRamLoad((SysClkRamLoad)loadSource);
+        this->context->partLoad[loadSource] = Board::GetPartLoad((SysClkPartLoad)loadSource);
     }
 
     if (this->ConfigIntervalTimeout(SysClkConfigValue_CsvWriteIntervalMs, ns, &this->lastCsvWriteNs))
@@ -481,31 +509,29 @@ void ClockManager::set_sd1_voltage(uint32_t voltage_uv)
 	const u8 volt_addr = 0x17;      // MAX77620_REG_SD1
 	const u8 volt_mask = 0x7F;      // MAX77620_SD1_VOLT_MASK
 
-	// Validate input voltage
 	if (voltage_uv < uv_min || voltage_uv > uv_max)
 		return;
 
-	// Calculate voltage multiplier
 	u32 mult = (voltage_uv + uv_step - 1 - uv_min) / uv_step;
 	mult = mult & volt_mask;
 
-	// Open I2C session to MAX77620 PMIC
 	I2cSession session;
 	Result res = i2cOpenSession(&session, I2cDevice_Max77620Pmic);
 	if (R_FAILED(res)) {
 		return;
 	}
 
-	// Read current register value
 	u8 current_val = 0;
 	res = i2csessionSendAuto(&session, &volt_addr, 1, I2cTransactionOption_Start);
 	if (R_FAILED(res)) {
+        writeNotification("I2C write failed. This may be a hardware issue");
 		i2csessionClose(&session);
 		return;
 	}
 
 	res = i2csessionReceiveAuto(&session, &current_val, 1, I2cTransactionOption_Stop);
 	if (R_FAILED(res)) {
+        writeNotification("I2C write failed. This may be a hardware issue");
 		i2csessionClose(&session);
 		return;
 	}

@@ -31,6 +31,10 @@
 
 #define HOSSVC_HAS_CLKRST (hosversionAtLeast(8,0,0))
 #define HOSSVC_HAS_TC (hosversionAtLeast(5,0,0))
+#define NVGPU_GPU_IOCTL_PMU_GET_GPU_LOAD 0x80044715
+
+Result nvCheck = 1;
+u32 fd = 0;
 
 static SysClkSocType g_socType = SysClkSocType_Erista;
 
@@ -117,6 +121,11 @@ void Board::Initialize()
     rc = tmp451Initialize();
     ASSERT_RESULT_OK(rc, "tmp451Initialize");
 
+    // u32 fd = 0;
+
+    // if (R_SUCCEEDED(nvInitialize())) nvCheck = nvOpen(&fd, "/dev/nvhost-ctrl-gpu");
+
+
     FetchHardwareInfos();
 }
 
@@ -141,6 +150,7 @@ void Board::Exit()
 
     max17050Exit();
     tmp451Exit();
+    nvExit();
 }
 
 SysClkProfile Board::GetProfile()
@@ -463,16 +473,23 @@ std::int32_t Board::GetPowerMw(SysClkPowerSensor sensor)
     return 0;
 }
 
-std::uint32_t Board::GetRamLoad(SysClkRamLoad loadSource)
+std::uint32_t Board::GetPartLoad(SysClkPartLoad loadSource)
 {
+    // u32 temp, GPU_Load_u = 0;
+
     switch(loadSource)
     {
-        case SysClkRamLoad_All:
+        case SysClkPartLoad_EMC:
             return t210EmcLoadAll();
-        case SysClkRamLoad_Cpu:
+        case SysClkPartLoad_EMCCpu:
             return t210EmcLoadCpu();
+        // case HocClkPartLoad_GPU:
+        // 	#define gpu_samples_average 10
+        //     // nvIoctl(fd, NVGPU_GPU_IOCTL_PMU_GET_GPU_LOAD, &temp);
+        //     GPU_Load_u = ((GPU_Load_u * (gpu_samples_average-1)) + temp) / gpu_samples_average;
+        //     return GPU_Load_u / 10;
         default:
-            ASSERT_ENUM_VALID(SysClkRamLoad, loadSource);
+            ASSERT_ENUM_VALID(SysClkPartLoad, loadSource);
     }
 
     return 0;

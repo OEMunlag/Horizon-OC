@@ -60,6 +60,7 @@ freqs_mhz_cpu = [
 variables = [
     ("custRev", "u32"),
     ("mtcConf", "u32"),
+    ("hpMode", "u32"),
     ("commonCpuBoostClock", "u32"),
     ("commonEmcMemVolt", "u32"),
     ("eristaCpuMaxVolt", "u32"),

@@ -59,7 +59,8 @@ void MiscGui::addConfigButton(SysClkConfigValue configVal,
     const char* altName, 
     const ValueRange& range,
     const std::string& categoryName,
-    const ValueThresholds* thresholds)
+    const ValueThresholds* thresholds,
+    const std::map<uint32_t, std::string>& labels)
 {
     const char* configName = altName ? altName : sysclkFormatConfigValue(configVal, true);
 
@@ -82,7 +83,7 @@ void MiscGui::addConfigButton(SysClkConfigValue configVal,
     ValueThresholds thresholdsCopy = (thresholds ? *thresholds : ValueThresholds{});
 
     listItem->setClickListener(
-        [this, configVal, range, categoryName, thresholdsCopy](u64 keys)
+        [this, configVal, range, categoryName, thresholdsCopy, labels](u64 keys)
         {
             if ((keys & HidNpadButton_A) == 0)
                 return false;
@@ -106,7 +107,8 @@ void MiscGui::addConfigButton(SysClkConfigValue configVal,
                         return true;
                     },
                     thresholdsCopy,
-                    true  
+                    true,
+                    labels     // <── NEW
                 );
             } else {
 
@@ -123,7 +125,10 @@ void MiscGui::addConfigButton(SysClkConfigValue configVal,
                         }
                         this->lastContextUpdate = armGetSystemTick();
                         return true;
-                    }
+                    },
+                    ValueThresholds(),
+                    false,
+                    labels       // <── NEW
                 );
             }
 
@@ -135,7 +140,11 @@ void MiscGui::addConfigButton(SysClkConfigValue configVal,
     this->configRanges[configVal] = range;  
 }
 
-void MiscGui::addFreqButton(SysClkConfigValue configVal, const char* altName, SysClkModule module) {
+void MiscGui::addFreqButton(SysClkConfigValue configVal,
+                            const char* altName,
+                            SysClkModule module,
+                            const std::map<uint32_t, std::string>& labels)
+{
     const char* configName = altName ? altName : sysclkFormatConfigValue(configVal, true);
 
     tsl::elm::ListItem* listItem = new tsl::elm::ListItem(configName);
@@ -145,45 +154,48 @@ void MiscGui::addFreqButton(SysClkConfigValue configVal, const char* altName, Sy
     snprintf(valueText, sizeof(valueText), "%lu MHz", currentMHz);
     listItem->setValue(valueText);
 
-    listItem->setClickListener([this, configVal, module](u64 keys) {
-        if ((keys & HidNpadButton_A) == 0)
-            return false;
+    listItem->setClickListener(
+        [this, configVal, module, labels](u64 keys)
+        {
+            if ((keys & HidNpadButton_A) == 0)
+                return false;
 
-        std::uint32_t hzList[SYSCLK_FREQ_LIST_MAX];
-        std::uint32_t hzCount;
+            std::uint32_t hzList[SYSCLK_FREQ_LIST_MAX];
+            std::uint32_t hzCount;
 
-        Result rc = sysclkIpcGetFreqList(module, hzList, SYSCLK_FREQ_LIST_MAX, &hzCount);
-        if (R_FAILED(rc)) {
-            FatalGui::openWithResultCode("sysclkIpcGetFreqList", rc);
-            return false;
-        }
+            Result rc = sysclkIpcGetFreqList(module, hzList, SYSCLK_FREQ_LIST_MAX, &hzCount);
+            if (R_FAILED(rc)) {
+                FatalGui::openWithResultCode("sysclkIpcGetFreqList", rc);
+                return false;
+            }
 
-        std::uint32_t currentHz = this->configList->values[configVal] * 1'000'000;
+            std::uint32_t currentHz = this->configList->values[configVal] * 1'000'000;
 
-        tsl::changeTo<FreqChoiceGui>(
-            currentHz,
-            hzList,
-            hzCount,
-            module,
-            [this, configVal](std::uint32_t hz) {
+            tsl::changeTo<FreqChoiceGui>(
+                currentHz,
+                hzList,
+                hzCount,
+                module,
+                [this, configVal](std::uint32_t hz)
+                {
+                    uint64_t mhz = hz / 1'000'000;
+                    this->configList->values[configVal] = mhz;
 
-                uint64_t mhz = hz / 1'000'000;
-                this->configList->values[configVal] = mhz;
+                    Result rc = sysclkIpcSetConfigValues(this->configList);
+                    if (R_FAILED(rc)) {
+                        FatalGui::openWithResultCode("sysclkIpcSetConfigValues", rc);
+                        return false;
+                    }
 
-                Result rc = sysclkIpcSetConfigValues(this->configList);
-                if (R_FAILED(rc)) {
-                    FatalGui::openWithResultCode("sysclkIpcSetConfigValues", rc);
-                    return false;
-                }
+                    this->lastContextUpdate = armGetSystemTick();
+                    return true;
+                },
+                false,
+                labels
+            );
 
-                this->lastContextUpdate = armGetSystemTick();
-                return true;
-            },
-            false
-        );
-
-        return true;
-    });
+            return true;
+        });
 
     this->listElement->addItem(listItem);
     this->configButtons[configVal] = listItem;
@@ -204,18 +216,24 @@ void MiscGui::listUI()
     addConfigToggle(HocClkConfigValue_UncappedClocks, nullptr);
     addConfigToggle(HocClkConfigValue_OverwriteBoostMode, nullptr);
 
-    this->listElement->addItem(new tsl::elm::CategoryHeader("Experimental"));
+    // this->listElement->addItem(new tsl::elm::CategoryHeader("Experimental"));
     addConfigToggle(HocClkConfigValue_ThermalThrottle, nullptr);
     addConfigToggle(HocClkConfigValue_HandheldTDP, nullptr);
     addConfigToggle(HocClkConfigValue_EnforceBoardLimit, nullptr);
-
+    std::map<uint32_t, std::string> labels_pwr_r = {
+        {8600, "Official Rating"}
+    };
+    std::map<uint32_t, std::string> labels_pwr_l = {
+        {6400, "Official Rating"}
+    };
     ValueThresholds tdpThresholds(8600, 9500);
     addConfigButton(
         HocClkConfigValue_HandheldTDPLimit,
         "TDP Threshold",
         ValueRange(5000, 10000, 200, "mW", 1),
         "Power",
-        &tdpThresholds
+        &tdpThresholds,
+        labels_pwr_r
     );
 
     ValueThresholds tdpThresholdsLite(6400, 7500);
@@ -224,7 +242,8 @@ void MiscGui::listUI()
         "Lite TDP Threshold",
         ValueRange(4000, 8000, 200, "mW", 1),
         "Power",
-        &tdpThresholdsLite
+        &tdpThresholdsLite,
+        labels_pwr_l
     );
 
     ValueThresholds throttleThresholds(70, 80);
@@ -235,45 +254,130 @@ void MiscGui::listUI()
         "Temp",
         &throttleThresholds
     );
-    this->listElement->addItem(new tsl::elm::CategoryHeader("Max Clocks"));
+    std::map<uint32_t, std::string> cpu_freq_label_m = {
+        {612000000, "Sleep Mode"},
+        {1020000000, "Stock"},
+        {1224000000, "Dev OC"},
+        {1785000000, "Boost Mode"},
+        {1963000000, "Safe Max"},
+        {2397000000, "Unsafe Max"},
+        {2805000000, "Aboslute Max"},
+    };
+
+    std::map<uint32_t, std::string> cpu_freq_label_e = {
+        {612000000, "Sleep Mode"},
+        {1020000000, "Stock"},
+        {1224000000, "Dev OC"},
+        {1785000000, "Boost Mode & Safe Max"},
+        {2091000000, "Unsafe Max"},
+        {2295000000, "Aboslute Max"},
+    };
+
+    std::map<uint32_t, std::string> gpu_freq_label_e = {
+        {76800000, "Boost Mode"},
+        {307200000, "Handheld"},
+        {384000000, "Handheld"},
+        {460800000, "Handheld Safe Max"},
+        {768000000, "Docked"},
+        {844000000, "Safe Max"},
+        {998400000, "Unsafe Max"},
+        {1075200000, "Aboslute Max"},
+    };
+
+    std::map<uint32_t, std::string> gpu_freq_label_m = {
+        {76800000, "Boost Mode"},
+        {307200000, "Handheld"},
+        {384000000, "Handheld"},
+        {460800000, "Handheld"},
+        {614400000, "Handheld Safe Max"},
+        {768000000, "Docked"},
+        {1152200000, "Safe Max"},
+        {1305600000, "Unsafe Max"},
+        {1536000000, "Aboslute Max"},
+    };
+
+    std::map<uint32_t, std::string> emc_freq_label_e = {
+        {133120000, "Handheld"},
+        {160000000, "Docked & Safe Max"},
+        {213100000, "JEDEC Max"},
+        {236000000, "Absolute Max"},
+    };
+
+
+    std::map<uint32_t, std::string> emc_freq_label_m = {
+        {133120000, "Handheld"},
+        {160000000, "Docked"},
+        {186600000, "Safe Max (3733MT/s)"},
+        {213300000, "Safe Max (4266MT/s)"},
+        {320000000, "Absolute Max"},
+    };
+
+
+    this->listElement->addItem(new tsl::elm::CategoryHeader("Clocks"));
     if(IsMariko()) {
-        addFreqButton(HocClkConfigValue_MarikoMaxCpuClock, nullptr, SysClkModule_CPU);
-        addFreqButton(HocClkConfigValue_MarikoMaxGpuClock, nullptr, SysClkModule_GPU);
-        addFreqButton(HocClkConfigValue_MarikoMaxMemClock, nullptr, SysClkModule_MEM);
+        addFreqButton(HocClkConfigValue_MarikoMaxCpuClock, nullptr, SysClkModule_CPU, cpu_freq_label_m);
+        addFreqButton(HocClkConfigValue_MarikoMaxGpuClock, nullptr, SysClkModule_GPU, gpu_freq_label_m);
+        addFreqButton(HocClkConfigValue_MarikoMaxMemClock, nullptr, SysClkModule_MEM, emc_freq_label_m);
     } else {
-        addFreqButton(HocClkConfigValue_EristaMaxCpuClock, nullptr, SysClkModule_CPU);
-        addFreqButton(HocClkConfigValue_EristaMaxGpuClock, nullptr, SysClkModule_GPU);
-        addFreqButton(HocClkConfigValue_EristaMaxMemClock, nullptr, SysClkModule_MEM);
+        addFreqButton(HocClkConfigValue_EristaMaxCpuClock, nullptr, SysClkModule_CPU, cpu_freq_label_e);
+        addFreqButton(HocClkConfigValue_EristaMaxGpuClock, nullptr, SysClkModule_GPU, gpu_freq_label_e);
+        addFreqButton(HocClkConfigValue_EristaMaxMemClock, nullptr, SysClkModule_MEM, emc_freq_label_e);
     }
+
+    this->listElement->addItem(new tsl::elm::CategoryHeader("EMC"));
 
     addConfigToggle(HocClkConfigValue_EMCDVFS, nullptr);
 
-    ValueThresholds emcUvThresholds(1212500, 1250000);
-    addConfigButton(
-        HocClkConfigValue_EMCVdd2VoltageUV,
-        "EMC VDD2 Voltage",
-        ValueRange(1100000, 1237500, 12500, "mV", 1000, 1),
-        "EMC VDD2 Voltage",
-        &emcUvThresholds
-    );
+    std::map<uint32_t, std::string> emc_voltage_label_m = {
+        {1100000, "Default"},
+        {1175000, "Rating"},
+        {1212500, "Safe Max"},
+    };
 
-    // if(IsMariko()) {
-    //     addConfigButton(
-    //         HocClkConfigValue_EMCVdd2VoltageUVStockMariko,
-    //         "EMC Stock VDD2 Voltage",
-    //         ValueRange(912500, 1175000, 12500, "mV", 1000, 1),
-    //         "EMC Stock VDD2 Voltage",
-    //         &emcUvThresholds
-    //     );
-    // } else {
+    std::map<uint32_t, std::string> emc_voltage_label_e = {
+        {1125000, "Default"},
+        {1175000, "Rating"},
+        {1237500, "Safe Max"},
+    };
+
+
+    if(IsMariko()) {
+        ValueThresholds emcUvThresholds(1212500, 1250000);
+        addConfigButton(
+            HocClkConfigValue_EMCVdd2VoltageUV,
+            "EMC VDD2 Voltage",
+            ValueRange(1100000, 1237500, 12500, "mV", 1000, 1),
+            "EMC VDD2 Voltage",
+            &emcUvThresholds,
+            emc_voltage_label_m
+        );
+        addConfigButton(
+            HocClkConfigValue_EMCVdd2VoltageUVStockMariko,
+            "EMC Stock VDD2 Voltage",
+            ValueRange(912500, 1175000, 12500, "mV", 1000, 1),
+            "EMC Stock VDD2 Voltage",
+            &emcUvThresholds,
+            emc_voltage_label_m
+        );
+    } else {
+        ValueThresholds emcUvThresholds(1237500, 1300000);
+        addConfigButton(
+            HocClkConfigValue_EMCVdd2VoltageUV,
+            "EMC VDD2 Voltage",
+            ValueRange(1100000, 1237500, 12500, "mV", 1000, 1),
+            "EMC VDD2 Voltage",
+            &emcUvThresholds,
+            emc_voltage_label_e
+        );
         addConfigButton(
             HocClkConfigValue_EMCVdd2VoltageUVStockErista,
             "EMC Stock VDD2 Voltage",
             ValueRange(1000000, 1175000, 12500, "mV", 1000, 1),
             "EMC Stock VDD2 Voltage",
-            &emcUvThresholds
+            &emcUvThresholds,
+            emc_voltage_label_e
         );
-    // }
+    }
     
     tsl::elm::ListItem* applyBtn = new tsl::elm::ListItem("Apply EMC Regs");
     applyBtn->setClickListener([](u64 keys) {

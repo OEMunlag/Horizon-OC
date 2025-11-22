@@ -9,13 +9,15 @@ ValueChoiceGui::ValueChoiceGui(std::uint32_t selectedValue,
                                const std::string& categoryName,
                                ValueChoiceListener listener,
                                const ValueThresholds& thresholds,
-                               bool enableThresholds)
+                               bool enableThresholds,
+                               std::map<std::uint32_t, std::string> labels)
     : selectedValue(selectedValue),
       range(range),
       categoryName(categoryName),
       listener(listener),
       thresholds(thresholds),
-      enableThresholds(enableThresholds)
+      enableThresholds(enableThresholds),
+      labels(labels)
 {
 }
 
@@ -31,12 +33,10 @@ std::string ValueChoiceGui::formatValue(std::uint32_t value)
         return VALUE_DEFAULT_TEXT;
     }
 
-    // Convert to floating point for division
     double displayValue = static_cast<double>(value) / static_cast<double>(range.divisor);
 
-    // Set precision and formatting
     oss << std::fixed << std::setprecision(range.decimalPlaces) << displayValue;
-    
+
     if (!range.suffix.empty()) {
         oss << " " << range.suffix;
     }
@@ -45,12 +45,6 @@ std::string ValueChoiceGui::formatValue(std::uint32_t value)
 
 int ValueChoiceGui::getSafetyLevel(std::uint32_t value)
 {
-    // if (!enableThresholds) {
-    //     return 0;
-    // }
-
-    std::uint32_t scaledValue = value / range.divisor;
-
     if (value > thresholds.danger) {
         return 2;
     }
@@ -67,7 +61,13 @@ tsl::elm::ListItem* ValueChoiceGui::createValueListItem(std::uint32_t value, boo
         text += " \uE14B";
     }
 
-    tsl::elm::ListItem* listItem = new tsl::elm::ListItem(text, "", false);
+    std::string rightText = "";
+    auto it = labels.find(value);
+    if (it != labels.end()) {
+        rightText = it->second;
+    }
+
+    tsl::elm::ListItem* listItem = new tsl::elm::ListItem(text, rightText, false);
 
     switch (safety)
     {
@@ -84,6 +84,9 @@ tsl::elm::ListItem* ValueChoiceGui::createValueListItem(std::uint32_t value, boo
         listItem->setValueColor(tsl::Color(255, 0, 0, 255));
         break;
     }
+
+    if (!rightText.empty())
+        listItem->setValueColor(tsl::Color(180, 180, 180, 255));
 
     listItem->setClickListener([this, value](u64 keys)
     {
