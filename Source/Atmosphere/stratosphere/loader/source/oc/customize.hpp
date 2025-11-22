@@ -46,7 +46,7 @@
      u8  cust[4] = {'C', 'U', 'S', 'T'};
      u32 custRev = CUST_REV;
      u32 mtcConf = AUTO_ADJ;
-     bool hpMode;
+     u32 hpMode;
      u32 commonCpuBoostClock;
      u32 commonEmcMemVolt;
      u32 eristaCpuMaxVolt;

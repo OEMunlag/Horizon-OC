@@ -36,19 +36,19 @@ volatile CustomizeTable C = {
 
 .commonCpuBoostClock = 1785000, // Default boost clock
 
-.commonEmcMemVolt = 1212500, // LPDDR4X JEDEC Specification
+.commonEmcMemVolt = 1175000, // LPDDR4X JEDEC Specification
 
 .eristaCpuMaxVolt  = 1235,
 
-.eristaEmcMaxClock = 2300000, // Maximum HB-MGCH ram rating
+.eristaEmcMaxClock = 1600001, // Maximum HB-MGCH ram rating
 
 .marikoCpuMaxVolt = 1120,
 
-.marikoEmcMaxClock = 1866000, // Hynix NME and Samsung AM-MGCJ Rating (others are 4766MT, 2133MHz)
+.marikoEmcMaxClock = 3000000, // Hynix NME and Samsung AM-MGCJ Rating (others are 4766MT, 2133MHz)
 
 .marikoEmcVddqVolt = 640000,
 
-.marikoCpuUV = 5, // No undervolt
+.marikoCpuUV = 0, // No undervolt
 
 .marikoGpuUV = 3,
 
@@ -71,15 +71,15 @@ volatile CustomizeTable C = {
 // Defaults - (3-3-2) 0-1-4-3-6
 
 // Primary
-.t1_tRCD = 5,
-.t2_tRP  = 7,
-.t3_tRAS = 8,
+.t1_tRCD = 0,
+.t2_tRP  = 0,
+.t3_tRAS = 0,
 // Secondary
-.t4_tRRD = 1,
-.t5_tRFC = 2,
-.t6_tRTW = 5,
-.t7_tWTR = 4,
-.t8_tREFI= 6,
+.t4_tRRD = 0,
+.t5_tRFC = 0,
+.t6_tRTW = 0,
+.t7_tWTR = 0,
+.t8_tREFI= 0,
 
 // .mem_burst_latency = 0, // 0 - 1600l, 1 = 1866bl, 2 = 2133bl /* TODO: Remove/fix. */
 
@@ -110,12 +110,12 @@ volatile CustomizeTable C = {
     710  /* 1075 */,
     735  /* 1152 */,
     785  /* 1228 */,
-    780    /* 1267  (Disabled by default) */,
-    805    /* 1305  (Disabled by default) */,
-    870    /* 1344  (Disabled by default) */,
-    870    /* 1382  (Disabled by default) */,
-    870    /* 1420  (Disabled by default) */,
-    0    /* 1459  (Disabled by default) */,
+    785    /* 1267  (Disabled by default) */,
+    960    /* 1305  (Disabled by default) */,
+    960    /* 1344  (Disabled by default) */,
+    960    /* 1382  (Disabled by default) */,
+    960    /* 1420  (Disabled by default) */,
+    960    /* 1459  (Disabled by default) */,
     0    /* 1497  (Disabled by default) */,
     0    /* 1536  (Disabled by default) */,
 

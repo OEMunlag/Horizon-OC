@@ -26,8 +26,7 @@
 namespace ams::ldr::oc::pcv
 {
 
-    namespace mariko
-    {
+    namespace mariko {
         constexpr cvb_entry_t CpuCvbTableDefault[] = {
             // CPUB01_CVB_TABLE
             {204000, {721589, -12695, 27}, {}},
@@ -119,8 +118,7 @@ namespace ams::ldr::oc::pcv
         inline auto asm_set_imm16 = [](u32 ins, u16 imm)
         { return (ins & 0xFFE0001F) | ((imm & 0xFFFF) << 5); };
 
-        inline bool GpuMaxClockPatternFn(u32 *ptr32)
-        {
+        inline bool GpuMaxClockPatternFn(u32 *ptr32) {
             return asm_compare_no_rd(*ptr32, asm_pattern[0]);
         }
 
@@ -168,8 +166,7 @@ namespace ams::ldr::oc::pcv
 
     }
 
-    namespace erista
-    {
+    namespace erista {
         constexpr cvb_entry_t CpuCvbTableDefault[] = {
             // CPU_PLL_CVB_TABLE_ODN
             {204000, {721094}, {}},
@@ -199,8 +196,7 @@ namespace ams::ldr::oc::pcv
 
         constexpr u16 CpuMinVolts[] = {950, 850, 825, 810};
 
-        inline bool CpuMaxVoltPatternFn(u32 *ptr32)
-        {
+        inline bool CpuMaxVoltPatternFn(u32 *ptr32) {
             u32 val = *ptr32;
             return (val == 1132 || val == 1170 || val == 1227);
         }
@@ -229,8 +225,7 @@ namespace ams::ldr::oc::pcv
         inline auto asm_set_imm16 = [](u32 ins, u16 imm)
         { return (ins & 0xFFE0001F) | ((imm & 0xFFFF) << 5); };
 
-        inline bool GpuMaxClockPatternFn(u32 *ptr32)
-        {
+        inline bool GpuMaxClockPatternFn(u32 *ptr32) {
             return asm_compare_no_rd(*ptr32, asm_pattern[0]);
         }
 
@@ -260,8 +255,7 @@ namespace ams::ldr::oc::pcv
     }
 
     template <bool isMariko>
-    Result CpuFreqCvbTable(u32 *ptr)
-    {
+    Result CpuFreqCvbTable(u32 *ptr) {
         cvb_entry_t *default_table = isMariko ? (cvb_entry_t *)(&mariko::CpuCvbTableDefault) : (cvb_entry_t *)(&erista::CpuCvbTableDefault);
         cvb_entry_t *customize_table = nullptr; // impossible to reach, there will always be a way to set a pointer
 
@@ -284,12 +278,9 @@ namespace ams::ldr::oc::pcv
         }
         u32 cpu_max_volt = isMariko ? C.marikoCpuMaxVolt : C.eristaCpuMaxVolt;
         u32 cpu_freq_threshold = 1020'000;
-        if (isMariko)
-        {
+        if (isMariko) {
             cpu_freq_threshold = C.marikoCpuUV ? 2193'000 : 2091'000;
-        }
-        else
-        {
+        } else {
             cpu_freq_threshold = cpu_max_volt >= 1300 ? 1887'000 : 1428'000;
         }
 
@@ -307,19 +298,13 @@ namespace ams::ldr::oc::pcv
         std::memcpy(cpu_cvb_table_head, static_cast<void *>(customize_table), customize_table_size);
 
         // Patch CPU max volt
-        if (cpu_max_volt)
-        {
+        if (cpu_max_volt) {
             cvb_entry_t *entry = static_cast<cvb_entry_t *>(cpu_cvb_table_head);
-            for (size_t i = 0; i < customize_entry_count; i++)
-            {
-                if (entry->freq >= cpu_freq_threshold)
-                {
-                    if (isMariko)
-                    {
+            for (size_t i = 0; i < customize_entry_count; i++) {
+                if (entry->freq >= cpu_freq_threshold) {
+                    if (isMariko) {
                         PATCH_OFFSET(&(entry->cvb_pll_param.c0), cpu_max_volt * 1000);
-                    }
-                    else
-                    {
+                    } else {
                         PATCH_OFFSET(&(entry->cvb_dfll_param.c0), cpu_max_volt * 1000);
                     }
                 }
@@ -331,14 +316,11 @@ namespace ams::ldr::oc::pcv
     }
 
     template <bool isMariko>
-    Result GpuFreqCvbTable(u32 *ptr)
-    {
+    Result GpuFreqCvbTable(u32 *ptr) {
         cvb_entry_t *default_table = isMariko ? (cvb_entry_t *)(&mariko::GpuCvbTableDefault) : (cvb_entry_t *)(&erista::GpuCvbTableDefault);
         cvb_entry_t *customize_table;
-        if (isMariko)
-        {
-            switch (C.marikoGpuUV)
-            {
+        if (isMariko) {
+            switch (C.marikoGpuUV) {
             case 0:
                 customize_table = const_cast<cvb_entry_t *>(C.marikoGpuDvfsTable);
                 break;
@@ -349,24 +331,18 @@ namespace ams::ldr::oc::pcv
                 customize_table = const_cast<cvb_entry_t *>(C.marikoGpuDvfsTableHiOPT);
                 break;
             case 3:
-                if(C.enableMarikoGpuUnsafeFreqs)
-                {
+                if(C.enableMarikoGpuUnsafeFreqs) {
                 customize_table = const_cast<cvb_entry_t *>(C.marikoGpuDvfsTableUv3UnsafeFreqs);
-                }
-                else
-                {
-                customize_table = const_cast<cvb_entry_t *>(C.marikoGpuDvfsTable);
+                } else {
+                    customize_table = const_cast<cvb_entry_t *>(C.marikoGpuDvfsTable);
                 }
                 break;
             default:
                 customize_table = const_cast<cvb_entry_t *>(C.marikoGpuDvfsTable);
                 break;
             }
-        }
-        else
-        {
-            switch (C.eristaGpuUV)
-            {
+        } else {
+            switch (C.eristaGpuUV) {
             case 0:
                 customize_table = const_cast<cvb_entry_t *>(C.eristaGpuDvfsTable);
                 break;
@@ -377,13 +353,10 @@ namespace ams::ldr::oc::pcv
                 customize_table = const_cast<cvb_entry_t *>(C.eristaGpuDvfsTableHigh);
                 break;
             case 3:
-                if(C.enableEristaGpuUnsafeFreqs)
-                {
-                customize_table = const_cast<cvb_entry_t *>(C.eristaGpuDvfsTableUv3UnsafeFreqs);
-                }
-                else
-                {
-                customize_table = const_cast<cvb_entry_t *>(C.eristaGpuDvfsTable);
+                if(C.enableEristaGpuUnsafeFreqs) {
+                    customize_table = const_cast<cvb_entry_t *>(C.eristaGpuDvfsTableUv3UnsafeFreqs);
+                } else {
+                    customize_table = const_cast<cvb_entry_t *>(C.eristaGpuDvfsTable);
                 }
                 break;
             default:
@@ -406,23 +379,16 @@ namespace ams::ldr::oc::pcv
         std::memcpy(gpu_cvb_table_head, (void *)customize_table, customize_table_size);
 
         // Patch GPU volt
-        if (C.marikoGpuUV == 3 || C.eristaGpuUV == 3)
-        {
+        if (C.marikoGpuUV == 3 || C.eristaGpuUV == 3) {
             cvb_entry_t *entry = static_cast<cvb_entry_t *>(gpu_cvb_table_head);
-            for (size_t i = 0; i < customize_entry_count; i++)
-            {
-                if (isMariko)
-                {
-                    if (C.marikoGpuVoltArray[i] == 0)
-                    {
+            for (size_t i = 0; i < customize_entry_count; i++) {
+                if (isMariko) {
+                    if (C.marikoGpuVoltArray[i] == 0) {
                         continue;
                     }
                     PATCH_OFFSET(&(entry->cvb_pll_param.c0), C.marikoGpuVoltArray[i] * 1000);
-                }
-                else
-                {
-                    if (C.eristaGpuVoltArray[i] == 0)
-                    {
+                } else {
+                    if (C.eristaGpuVoltArray[i] == 0) {
                         continue;
                     }
                     PATCH_OFFSET(&(entry->cvb_pll_param.c0), C.eristaGpuVoltArray[i] * 1000);
@@ -434,12 +400,9 @@ namespace ams::ldr::oc::pcv
                 PATCH_OFFSET(&(entry->cvb_pll_param.c5), 0);
                 entry++;
             }
-        }
-        else if (C.commonGpuVoltOffset)
-        {
+        } else if (C.commonGpuVoltOffset) {
             cvb_entry_t *entry = static_cast<cvb_entry_t *>(gpu_cvb_table_head);
-            for (size_t i = 0; i < customize_entry_count; i++)
-            {
+            for (size_t i = 0; i < customize_entry_count; i++)   {
                 PATCH_OFFSET(&(entry->cvb_pll_param.c0), (entry->cvb_pll_param.c0 - C.commonGpuVoltOffset * 1000));
                 entry++;
             }
@@ -452,21 +415,18 @@ namespace ams::ldr::oc::pcv
     Result MemVoltHandler(u32 *ptr); // Used for Erista MEM Vdd2 + EMC Vddq or Mariko MEM Vdd2
 
     template <typename T>
-    Result MemMtcCustomizeTable(T *dst, T *src)
-    {
+    Result MemMtcCustomizeTable(T *dst, T *src) {
         constexpr u32 mtc_magic = std::is_same_v<T, MarikoMtcTable> ? MARIKO_MTC_MAGIC : ERISTA_MTC_MAGIC;
         R_UNLESS(src->rev == mtc_magic, ldr::ResultInvalidMtcMagic());
 
         constexpr u32 ZERO_VAL = UINT32_MAX;
         // Skip params from dvfs_ver to clock_src;
-        for (size_t offset = offsetof(T, clk_src_emc); offset < sizeof(T); offset += sizeof(u32))
-        {
+        for (size_t offset = offsetof(T, clk_src_emc); offset < sizeof(T); offset += sizeof(u32)) {
             u32 *src_ent = reinterpret_cast<u32 *>(reinterpret_cast<size_t>(src) + offset);
             u32 *dst_ent = reinterpret_cast<u32 *>(reinterpret_cast<size_t>(dst) + offset);
             u32 src_val = *src_ent;
 
-            if (src_val)
-            {
+            if (src_val){
                 PATCH_OFFSET(dst_ent, src_val == ZERO_VAL ? 0 : src_val);
             }
         }

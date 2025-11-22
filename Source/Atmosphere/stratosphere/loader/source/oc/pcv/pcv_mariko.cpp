@@ -21,47 +21,38 @@
 #include "pcv.hpp"
 #include "../mtc_timing_value.hpp"
 
-namespace ams::ldr::oc::pcv::mariko
-{
+namespace ams::ldr::oc::pcv::mariko {
 
-    Result GpuVmin(u32 *ptr)
-    {
+    Result GpuVmin(u32 *ptr) {
         if (!C.marikoGpuVmin)
             R_SKIP();
         PATCH_OFFSET(ptr, (int)C.marikoGpuVmin);
         R_SUCCEED();
     }
 
-    Result GpuVmax(u32 *ptr)
-    {
+    Result GpuVmax(u32 *ptr) {
         if (!C.marikoGpuVmax)
             R_SKIP();
         PATCH_OFFSET(ptr, (int)C.marikoGpuVmax);
         R_SUCCEED();
     }
 
-    Result CpuFreqVdd(u32 *ptr)
-    {
+    Result CpuFreqVdd(u32 *ptr) {
         dvfs_rail *entry = reinterpret_cast<dvfs_rail *>(reinterpret_cast<u8 *>(ptr) - offsetof(dvfs_rail, freq));
 
         R_UNLESS(entry->id == 1, ldr::ResultInvalidCpuFreqVddEntry());
         R_UNLESS(entry->min_mv == 250'000, ldr::ResultInvalidCpuFreqVddEntry());
         R_UNLESS(entry->step_mv == 5000, ldr::ResultInvalidCpuFreqVddEntry());
         R_UNLESS(entry->max_mv == 1525'000, ldr::ResultInvalidCpuFreqVddEntry());
-        if (C.enableMarikoCpuUnsafeFreqs)
-        {
+        if (C.enableMarikoCpuUnsafeFreqs) {
             PATCH_OFFSET(ptr, GetDvfsTableLastEntry(C.marikoCpuDvfsTable)->freq);
         }
-        else
-        {
-            if (C.marikoCpuUV)
-            {
-                if (!C.enableMarikoCpuUnsafeFreqs)
-                {
+        else {
+            if (C.marikoCpuUV) {
+                if (!C.enableMarikoCpuUnsafeFreqs) {
                     PATCH_OFFSET(ptr, GetDvfsTableLastEntry(C.marikoCpuDvfsTableSLT)->freq);
                 }
-                else
-                {
+                else {
                     PATCH_OFFSET(ptr, GetDvfsTableLastEntry(C.marikoCpuDvfsTableUnsafeFreqs)->freq);
                 }
             }
@@ -69,11 +60,9 @@ namespace ams::ldr::oc::pcv::mariko
         R_SUCCEED();
     }
 
-    Result CpuVoltRange(u32 *ptr)
-    {
+    Result CpuVoltRange(u32 *ptr) {
         u32 min_volt_got = *(ptr - 1);
-        for (const auto &mv : CpuMinVolts)
-        {
+        for (const auto &mv : CpuMinVolts) {
             if (min_volt_got != mv)
                 continue;
 
@@ -82,14 +71,11 @@ namespace ams::ldr::oc::pcv::mariko
 
             PATCH_OFFSET(ptr, C.marikoCpuMaxVolt);
             // Patch vmin for slt
-            if (C.marikoCpuUV)
-            {
-                if (*(ptr - 5) == 620)
-                {
+            if (C.marikoCpuUV) {
+                if (*(ptr - 5) == 620) {
                     PATCH_OFFSET((ptr - 5), C.marikoCpuVmin);
                 }
-                if (*(ptr - 1) == 620)
-                {
+                if (*(ptr - 1) == 620) {
                     PATCH_OFFSET((ptr - 1), 600);
                 }
             }
@@ -98,16 +84,14 @@ namespace ams::ldr::oc::pcv::mariko
         R_THROW(ldr::ResultInvalidCpuMinVolt());
     }
 
-    Result CpuVoltDfll(u32 *ptr)
-    {
+    Result CpuVoltDfll(u32 *ptr) {
         cvb_cpu_dfll_data *entry = reinterpret_cast<cvb_cpu_dfll_data *>(ptr);
 
         R_UNLESS(entry->tune0_low == 0x0000FFCF, ldr::ResultInvalidCpuVoltDfllEntry());
         R_UNLESS(entry->tune0_high == 0x00000000, ldr::ResultInvalidCpuVoltDfllEntry());
         R_UNLESS(entry->tune1_low == 0x012207FF, ldr::ResultInvalidCpuVoltDfllEntry());
         R_UNLESS(entry->tune1_high == 0x03FFF7FF, ldr::ResultInvalidCpuVoltDfllEntry());
-        switch (C.marikoCpuUV)
-        {
+        switch (C.marikoCpuUV) {
         case 0:
             break;
         case 1:
@@ -164,8 +148,7 @@ namespace ams::ldr::oc::pcv::mariko
         R_SUCCEED();
     }
 
-    Result GpuFreqMaxAsm(u32 *ptr32)
-    {
+    Result GpuFreqMaxAsm(u32 *ptr32) {
         // Check if both two instructions match the pattern
         u32 ins1 = *ptr32, ins2 = *(ptr32 + 1);
         if (!(asm_compare_no_rd(ins1, asm_pattern[0]) && asm_compare_no_rd(ins2, asm_pattern[1])))
@@ -177,8 +160,7 @@ namespace ams::ldr::oc::pcv::mariko
             R_THROW(ldr::ResultInvalidGpuFreqMaxPattern());
 
         u32 max_clock;
-        switch (C.marikoGpuUV)
-        {
+        switch (C.marikoGpuUV) {
         case 0:
             max_clock = GetDvfsTableLastEntry(C.marikoGpuDvfsTable)->freq;
             break;
@@ -189,12 +171,10 @@ namespace ams::ldr::oc::pcv::mariko
             max_clock = GetDvfsTableLastEntry(C.marikoGpuDvfsTableHiOPT)->freq;
             break;
         case 3:
-            if (C.enableMarikoGpuUnsafeFreqs)
-            {
+            if (C.enableMarikoGpuUnsafeFreqs) {
                 max_clock = GetDvfsTableLastEntry(C.marikoGpuDvfsTableUv3UnsafeFreqs)->freq;
             }
-            else
-            {
+            else {
                 max_clock = GetDvfsTableLastEntry(C.marikoGpuDvfsTable)->freq;
             }
             break;
@@ -204,20 +184,20 @@ namespace ams::ldr::oc::pcv::mariko
         }
         u32 asm_patch[2] = {
             asm_set_rd(asm_set_imm16(asm_pattern[0], max_clock), rd),
-            asm_set_rd(asm_set_imm16(asm_pattern[1], max_clock >> 16), rd)};
+            asm_set_rd(asm_set_imm16(asm_pattern[1], max_clock >> 16), rd)
+        };
+
         PATCH_OFFSET(ptr32, asm_patch[0]);
         PATCH_OFFSET(ptr32 + 1, asm_patch[1]);
 
         R_SUCCEED();
     }
 
-    Result GpuFreqPllLimit(u32 *ptr)
-    {
+    Result GpuFreqPllLimit(u32 *ptr) {
         clk_pll_param *entry = reinterpret_cast<clk_pll_param *>(ptr);
 
         // All zero except for freq
-        for (size_t i = 1; i < sizeof(clk_pll_param) / sizeof(u32); i++)
-        {
+        for (size_t i = 1; i < sizeof(clk_pll_param) / sizeof(u32); i++) {
             R_UNLESS(*(ptr + i) == 0, ldr::ResultInvalidGpuPllEntry());
         }
 
@@ -227,183 +207,193 @@ namespace ams::ldr::oc::pcv::mariko
         R_SUCCEED();
     }
 
-    /* Get RAM vendor data, ty b0rd2death! */
-    /* Note: I know this is horrible but I don't care atm. */
-    bool IsMicron()
-    {
-        u64 packed_version;
-        splGetConfig((SplConfigItem)2, &packed_version);
-
-        switch (packed_version)
-        {
-        case 11:
-        case 15:
-        case 25:
-        case 26:
-        case 27:
-        case 32:
-        case 33:
-        case 34:
-            /* RAM is Micron. */
-            return true;
-        default:
-            /* Not Micron. */
-            return false;
-        }
-    }
-
-
     void MemMtcTableAutoAdjustBaseLatency(MarikoMtcTable *table) {
         #define WRITE_PARAM_ALL_REG(TABLE, PARAM, VALUE) \
             TABLE->burst_regs.PARAM = VALUE;             \
             TABLE->shadow_regs_ca_train.PARAM   = VALUE; \
             TABLE->shadow_regs_rdwr_train.PARAM = VALUE;
 
-        WRITE_PARAM_ALL_REG(table, emc_cfg, 0xf3200000);
-        WRITE_PARAM_ALL_REG(table, emc_rc, 0x00000070);
-        WRITE_PARAM_ALL_REG(table, emc_rfc, 0x0000020b);
-        WRITE_PARAM_ALL_REG(table, emc_ras, 0x0000004f);
-        WRITE_PARAM_ALL_REG(table, emc_rp, 0x00000022);
-        WRITE_PARAM_ALL_REG(table, emc_r2w, 0x0000002e);
-        WRITE_PARAM_ALL_REG(table, emc_w2r, 0x00000025);
-        WRITE_PARAM_ALL_REG(table, emc_r2p, 0x0000000e);
-        WRITE_PARAM_ALL_REG(table, emc_w2p, 0x00000033);
-        WRITE_PARAM_ALL_REG(table, emc_rd_rcd, 0x00000022);
-        WRITE_PARAM_ALL_REG(table, emc_wr_rcd, 0x00000022);
-        WRITE_PARAM_ALL_REG(table, emc_rrd, 0x00000013);
-        WRITE_PARAM_ALL_REG(table, emc_rext, 0x0000001a);
+        #define GET_CYCLE_CEIL(PARAM) u32(CEIL(double(PARAM) / tCK_avg))
 
-        WRITE_PARAM_ALL_REG(table, emc_qsafe, 0x00000038);
-        WRITE_PARAM_ALL_REG(table, emc_refresh, 0x00001c2d);
-        WRITE_PARAM_ALL_REG(table, emc_burst_refresh_num, 0x00000000);
-        WRITE_PARAM_ALL_REG(table, emc_pdex2wr, 0x00000013);
-        WRITE_PARAM_ALL_REG(table, emc_pdex2rd, 0x00000013);
-        WRITE_PARAM_ALL_REG(table, emc_pchg2pden, 0x00000004);
-        WRITE_PARAM_ALL_REG(table, emc_act2pden, 0x0000001b);
-        WRITE_PARAM_ALL_REG(table, emc_ar2pden, 0x00000004);
-        WRITE_PARAM_ALL_REG(table, emc_rw2pden, 0x0000003f);
-        WRITE_PARAM_ALL_REG(table, emc_txsr, 0x00000219);
-        WRITE_PARAM_ALL_REG(table, emc_tcke, 0x00000010);
-        WRITE_PARAM_ALL_REG(table, emc_tfaw, 0x0000004b);
-        WRITE_PARAM_ALL_REG(table, emc_trpab, 0x00000028);
-        WRITE_PARAM_ALL_REG(table, emc_tclkstable, 0x00000004);
-        WRITE_PARAM_ALL_REG(table, emc_tclkstop, 0x00000017);
-        WRITE_PARAM_ALL_REG(table, emc_trefbw, 0x00001c6d);
-        WRITE_PARAM_ALL_REG(table, emc_tppd, 0x00000004);
-        WRITE_PARAM_ALL_REG(table, emc_odt_write, 0x00000000);
-        WRITE_PARAM_ALL_REG(table, emc_pdex2mrr, 0x00000037);
-        WRITE_PARAM_ALL_REG(table, emc_wext, 0x00000016);
-        WRITE_PARAM_ALL_REG(table, emc_rfc_slr, 0x00000000);
-        WRITE_PARAM_ALL_REG(table, emc_mrs_wait_cnt2, 0x01d3001b);
-        WRITE_PARAM_ALL_REG(table, emc_mrs_wait_cnt, 0x074a0034);
-        table->emc_mrs = 0x00000000;
-        table->emc_emrs = 0x00000000;
-        table->emc_mrw = 0x00170040;
-        WRITE_PARAM_ALL_REG(table, emc_fbio_spare, 0x00000012);
-        WRITE_PARAM_ALL_REG(table, emc_fbio_cfg5, 0x9160a00d);
-        WRITE_PARAM_ALL_REG(table, emc_pdex2cke, 0x00000002);
-        WRITE_PARAM_ALL_REG(table, emc_cke2pden, 0x00000010);
-        WRITE_PARAM_ALL_REG(table, emc_r2r, 0x00000000);
-        WRITE_PARAM_ALL_REG(table, emc_einput, 0x00000015);
-        WRITE_PARAM_ALL_REG(table, emc_einput_duration, 0x00000020);
-        WRITE_PARAM_ALL_REG(table, emc_puterm_extra, 0x00000001);
-        WRITE_PARAM_ALL_REG(table, emc_tckesr, 0x0000001c);
-        WRITE_PARAM_ALL_REG(table, emc_tpd, 0x0000000e);
-        table->emc_cfg_2 = 0x0011083d;
-        WRITE_PARAM_ALL_REG(table, emc_cfg_dig_dll, 0x002c03a9);
-        WRITE_PARAM_ALL_REG(table, emc_cfg_dig_dll_period, 0x00008000);
-        WRITE_PARAM_ALL_REG(table, emc_rdv_mask, 0x00000040);
-        WRITE_PARAM_ALL_REG(table, emc_wdv_mask, 0x00000010);
-        WRITE_PARAM_ALL_REG(table, emc_rdv_early_mask, 0x0000003e);
-        WRITE_PARAM_ALL_REG(table, emc_rdv_early, 0x0000003c);
-        WRITE_PARAM_ALL_REG(table, emc_fdpd_ctrl_dq, 0x8020221f);
-        WRITE_PARAM_ALL_REG(table, emc_fdpd_ctrl_cmd, 0x0220f40f);
-        table->emc_sel_dpd_ctrl = 0x0004000c;
-        WRITE_PARAM_ALL_REG(table, emc_pre_refresh_req_cnt, 0x0000070b);
-        WRITE_PARAM_ALL_REG(table, emc_dyn_self_ref_control, 0x80003873);
-        WRITE_PARAM_ALL_REG(table, emc_txsrdll, 0x00000219);
-        WRITE_PARAM_ALL_REG(table, emc_ibdly, 0x1000001f);
-        WRITE_PARAM_ALL_REG(table, emc_obdly, 0x10000004);
-        WRITE_PARAM_ALL_REG(table, emc_txdsrvttgen, 0x00000000);
-        WRITE_PARAM_ALL_REG(table, emc_we_duration, 0x0000000e);
-        WRITE_PARAM_ALL_REG(table, emc_ws_duration, 0x00000008);
-        WRITE_PARAM_ALL_REG(table, emc_wev, 0x0000000c);
-        WRITE_PARAM_ALL_REG(table, emc_cfg_3, 0x00000040);
-        WRITE_PARAM_ALL_REG(table, emc_wdv_chk, 0x00000006);
-        WRITE_PARAM_ALL_REG(table, emc_cfg_pipe_2, 0x00000000);
-        WRITE_PARAM_ALL_REG(table, emc_cfg_pipe_1, 0x0fff0000);
-        WRITE_PARAM_ALL_REG(table, emc_cfg_pipe, 0x0fff0000);
-        WRITE_PARAM_ALL_REG(table, emc_quse_width, 0x00000009);
-        WRITE_PARAM_ALL_REG(table, emc_puterm_width, 0x80000000);
-        WRITE_PARAM_ALL_REG(table, emc_fbio_cfg7, 0x00003bff);
-        WRITE_PARAM_ALL_REG(table, emc_rfcpb, 0x00000106);
-        WRITE_PARAM_ALL_REG(table, emc_ccdmw, 0x00000020);
-        WRITE_PARAM_ALL_REG(table, emc_config_sample_delay, 0x00000020);
-        table->dram_timings.t_rp = 0x00000106;
-        table->dram_timings.t_rfc = 0x0000020b;
+        if (C.hpMode) {
+            WRITE_PARAM_ALL_REG(table, emc_cfg, 0x13200000);
+        } else {
+            WRITE_PARAM_ALL_REG(table, emc_cfg, 0xF3200000);
+        }
 
-        table->dram_timings.rl = 32;                      /*                                                    */
-        WRITE_PARAM_ALL_REG(table, emc_wdv, 0x00000010);  /*                                                    */
-        WRITE_PARAM_ALL_REG(table, emc_quse, 0x00000028); /*                                                    */
-        WRITE_PARAM_ALL_REG(table, emc_qrst, 0x0007000c); /* These timings cause issues and I have no idea why. */
-        WRITE_PARAM_ALL_REG(table, emc_rdv, 0x0000003e);  /*                                                    */
-        WRITE_PARAM_ALL_REG(table, emc_wsv, 0x0000000e);  /*                                                    */
-        WRITE_PARAM_ALL_REG(table, emc_qpop, 0x00000030); /*                                                    */
+        u32 refresh_raw = 0xFFFF;
+        if (C.t8_tREFI != 6) {
+            refresh_raw = std::floor(tREFpb_values[C.t8_tREFI] / tCK_avg) - 0x40;
+            refresh_raw = MIN(refresh_raw, static_cast<u32>(0xFFFF));
+        }
 
-        table->burst_mc_regs.mc_emem_arb_cfg = 0x0000000E;
-        table->burst_mc_regs.mc_emem_arb_outstanding_req = 0x80000080;
-        table->burst_mc_regs.mc_emem_arb_timing_rcd = 0x00000007;
-        table->burst_mc_regs.mc_emem_arb_timing_rp = 0x00000008;
-        table->burst_mc_regs.mc_emem_arb_timing_rc = 0x0000001C;
-        table->burst_mc_regs.mc_emem_arb_timing_ras = 0x00000012;
-        table->burst_mc_regs.mc_emem_arb_timing_faw = 0x00000012;
-        table->burst_mc_regs.mc_emem_arb_timing_rrd = 0x00000004;
-        table->burst_mc_regs.mc_emem_arb_timing_rap2pre = 0x00000004;
-        table->burst_mc_regs.mc_emem_arb_timing_wap2pre = 0x0000000F;
-        table->burst_mc_regs.mc_emem_arb_timing_r2r = 0x00000001;
-        table->burst_mc_regs.mc_emem_arb_timing_w2w = 0x00000001;
-        table->burst_mc_regs.mc_emem_arb_timing_r2w = 0x0000000D;
-        table->burst_mc_regs.mc_emem_arb_timing_w2r = 0x0000000B;
-        table->burst_mc_regs.mc_emem_arb_da_turns = 0x05060000;
-        table->burst_mc_regs.mc_emem_arb_da_covers = 0x000F0A0E;
-        table->burst_mc_regs.mc_emem_arb_misc0 = 0x726E2A1D;
-        table->burst_mc_regs.mc_emem_arb_misc1 = 0x70000F0F;
-        table->burst_mc_regs.mc_emem_arb_misc2 = 0x00000000;
-        table->burst_mc_regs.mc_emem_arb_ring1_throttle = 0x001F0000;
-        table->burst_mc_regs.mc_emem_arb_timing_rfcpb = 0x00000041;
-        table->burst_mc_regs.mc_emem_arb_timing_ccdmw = 0x00000008;
-        table->burst_mc_regs.mc_emem_arb_dhyst_ctrl = 0x00000002;
-        table->burst_mc_regs.mc_emem_arb_dhyst_timeout_util_0 = 0x0000001A;
-        table->burst_mc_regs.mc_emem_arb_dhyst_timeout_util_1 = 0x0000001A;
-        table->burst_mc_regs.mc_emem_arb_dhyst_timeout_util_2 = 0x0000001A;
-        table->burst_mc_regs.mc_emem_arb_dhyst_timeout_util_3 = 0x0000001A;
-        table->burst_mc_regs.mc_emem_arb_dhyst_timeout_util_4 = 0x0000001A;
-        table->burst_mc_regs.mc_emem_arb_dhyst_timeout_util_5 = 0x0000001A;
-        table->burst_mc_regs.mc_emem_arb_dhyst_timeout_util_6 = 0x0000001A;
-        table->burst_mc_regs.mc_emem_arb_dhyst_timeout_util_7 = 0x0000001A;
-        table->la_scale_regs.mc_mll_mpcorer_ptsa_rate = 0x000000F2;
-        table->la_scale_regs.mc_ftop_ptsa_rate = 0x0000001B;
-        table->la_scale_regs.mc_ptsa_grant_decrement = 0x00001501;
-        table->la_scale_regs.mc_latency_allowance_avpc_0 = 0x006D0004;
-        table->la_scale_regs.mc_latency_allowance_sdmmcaa_0 = 0x006D0005;
-        table->la_scale_regs.mc_latency_allowance_sdmmca_0 = 0x006D0014;
-        table->la_scale_regs.mc_latency_allowance_isp2_0 = 0x0000002C;
-        table->la_scale_regs.mc_latency_allowance_isp2_1 = 0x006D006D;
-        table->la_scale_regs.mc_latency_allowance_vic_0 = 0x006D0019;
-        table->la_scale_regs.mc_latency_allowance_nvdec_0 = 0x006D0095;
-        table->la_scale_regs.mc_latency_allowance_tsec_0 = 0x006D0041;
-        table->la_scale_regs.mc_latency_allowance_ppcs_1 = 0x006D0080;
-        table->la_scale_regs.mc_latency_allowance_xusb_0 = 0x006D003D;
-        table->la_scale_regs.mc_latency_allowance_ppcs_0 = 0x00340049;
-        table->la_scale_regs.mc_latency_allowance_gpu2_0 = 0x006D0016;
-        table->la_scale_regs.mc_latency_allowance_hc_1 = 0x0000006D;
-        table->la_scale_regs.mc_latency_allowance_sdmmc_0 = 0x006D0090;
-        table->la_scale_regs.mc_latency_allowance_mpcore_0 = 0x006D0004;
-        table->la_scale_regs.mc_latency_allowance_vi2_0 = 0x0000006D;
-        table->la_scale_regs.mc_latency_allowance_hc_0 = 0x00080013;
-        table->la_scale_regs.mc_latency_allowance_gpu_0 = 0x006D0016;
-        table->la_scale_regs.mc_latency_allowance_sdmmcab_0 = 0x006D0005;
-        table->la_scale_regs.mc_latency_allowance_nvenc_0 = 0x006D0018;
+        u32 trefbw = refresh_raw + 0x40;
+        trefbw = MIN(trefbw, static_cast<u32>(0x3FFF));
+
+        WRITE_PARAM_ALL_REG(table, emc_rd_rcd, GET_CYCLE_CEIL(tRCD));
+        WRITE_PARAM_ALL_REG(table, emc_wr_rcd, GET_CYCLE_CEIL(tRCD));
+        WRITE_PARAM_ALL_REG(table, emc_rc, GET_CYCLE_CEIL(tRC));
+        WRITE_PARAM_ALL_REG(table, emc_ras, GET_CYCLE_CEIL(tRAS));
+        WRITE_PARAM_ALL_REG(table, emc_rrd, GET_CYCLE_CEIL(tRRD));
+        WRITE_PARAM_ALL_REG(table, emc_rfcpb, GET_CYCLE_CEIL(tRFCpb));
+        WRITE_PARAM_ALL_REG(table, emc_rfc, GET_CYCLE_CEIL(tRFCab));
+        WRITE_PARAM_ALL_REG(table, emc_rp, GET_CYCLE_CEIL(tRPpb));
+        WRITE_PARAM_ALL_REG(table, emc_txsr, MIN(GET_CYCLE_CEIL(tXSR), static_cast<u32>(0x3fe)));
+        WRITE_PARAM_ALL_REG(table, emc_txsrdll, MIN(GET_CYCLE_CEIL(tXSR), static_cast<u32>(0x3fe)));
+        WRITE_PARAM_ALL_REG(table, emc_tfaw, GET_CYCLE_CEIL(tFAW));
+        WRITE_PARAM_ALL_REG(table, emc_trpab, GET_CYCLE_CEIL(tRPab));
+        WRITE_PARAM_ALL_REG(table, emc_tckesr, GET_CYCLE_CEIL(tSR));
+        WRITE_PARAM_ALL_REG(table, emc_tcke, GET_CYCLE_CEIL(tXP) + 1);
+        WRITE_PARAM_ALL_REG(table, emc_tpd, GET_CYCLE_CEIL(tXP));
+        WRITE_PARAM_ALL_REG(table, emc_tclkstop, GET_CYCLE_CEIL(tXP) + 8);
+        WRITE_PARAM_ALL_REG(table, emc_r2p, GET_CYCLE_CEIL(tR2P));
+        WRITE_PARAM_ALL_REG(table, emc_r2w, tR2W);
+        WRITE_PARAM_ALL_REG(table, emc_trtm, tRTM);
+        WRITE_PARAM_ALL_REG(table, emc_tratm, tRATM);
+        WRITE_PARAM_ALL_REG(table, emc_w2p, tW2P);
+        WRITE_PARAM_ALL_REG(table, emc_w2r, tW2R);
+        WRITE_PARAM_ALL_REG(table, emc_twtm, tWTM);
+        WRITE_PARAM_ALL_REG(table, emc_twatm, tWATM);
+        WRITE_PARAM_ALL_REG(table, emc_rext, 26);
+        WRITE_PARAM_ALL_REG(table, emc_refresh, refresh_raw);
+        WRITE_PARAM_ALL_REG(table, emc_pre_refresh_req_cnt, refresh_raw / 4);
+        WRITE_PARAM_ALL_REG(table, emc_trefbw, trefbw);
+        const u32 dyn_self_ref_control = (((u32)(7605.0 / tCK_avg)) + 260U) | (table->burst_regs.emc_dyn_self_ref_control & 0xffff0000U);
+        WRITE_PARAM_ALL_REG(table, emc_dyn_self_ref_control, dyn_self_ref_control);
+        WRITE_PARAM_ALL_REG(table, emc_pdex2wr, GET_CYCLE_CEIL(10.0));
+        WRITE_PARAM_ALL_REG(table, emc_pdex2rd, GET_CYCLE_CEIL(10.0));
+        WRITE_PARAM_ALL_REG(table, emc_pchg2pden, GET_CYCLE_CEIL(1.75));
+        WRITE_PARAM_ALL_REG(table, emc_ar2pden, GET_CYCLE_CEIL(1.75));
+        WRITE_PARAM_ALL_REG(table, emc_act2pden, GET_CYCLE_CEIL(14.0));
+        WRITE_PARAM_ALL_REG(table, emc_cke2pden, GET_CYCLE_CEIL(5.0));
+        WRITE_PARAM_ALL_REG(table, emc_pdex2mrr, GET_CYCLE_CEIL(tPDEX2MRR));
+        WRITE_PARAM_ALL_REG(table, emc_rw2pden, tWTPDEN);
+        WRITE_PARAM_ALL_REG(table, emc_einput, 0xF);
+        WRITE_PARAM_ALL_REG(table, emc_einput_duration, 0x31);
+        WRITE_PARAM_ALL_REG(table, emc_obdly, 0x10000002);
+        WRITE_PARAM_ALL_REG(table, emc_ibdly, 0x1000001C);
+        WRITE_PARAM_ALL_REG(table, emc_wdv_mask, 0x12);
+        WRITE_PARAM_ALL_REG(table, emc_quse_width, 0xD);
+        WRITE_PARAM_ALL_REG(table, emc_quse, 0x2F);
+        WRITE_PARAM_ALL_REG(table, emc_wdv, 0x12);
+        WRITE_PARAM_ALL_REG(table, emc_wsv, 0x10);
+        WRITE_PARAM_ALL_REG(table, emc_wev, 0xE);
+        WRITE_PARAM_ALL_REG(table, emc_qrst, 0x00080005);
+        WRITE_PARAM_ALL_REG(table, emc_qsafe, 0x44);
+        WRITE_PARAM_ALL_REG(table, emc_tr_qpop, 0x3B);
+        WRITE_PARAM_ALL_REG(table, emc_rdv, 0x49);
+        WRITE_PARAM_ALL_REG(table, emc_qpop, 0x3B);
+        WRITE_PARAM_ALL_REG(table, emc_tr_rdv_mask, 0x4B);
+        WRITE_PARAM_ALL_REG(table, emc_rdv_early, 0x47);
+        WRITE_PARAM_ALL_REG(table, emc_rdv_early_mask, 0x49);
+        WRITE_PARAM_ALL_REG(table, emc_rdv_mask, 0x4B);
+        WRITE_PARAM_ALL_REG(table, emc_tr_rdv, 0x49);
+
+        constexpr u32 MC_ARB_DIV = 4;
+        constexpr u32 MC_ARB_SFA = 2;
+
+        table->burst_mc_regs.mc_emem_arb_cfg          = C.marikoEmcMaxClock           / (33.3 * 1000) / MC_ARB_DIV;
+        table->burst_mc_regs.mc_emem_arb_timing_rcd   = (u32) (GET_CYCLE_CEIL(tRCD)   / MC_ARB_DIV) - 2;
+        table->burst_mc_regs.mc_emem_arb_timing_rp    = (u32) (GET_CYCLE_CEIL(tRPpb)  / MC_ARB_DIV) - 1 + MC_ARB_SFA;
+        table->burst_mc_regs.mc_emem_arb_timing_rc    = (u32) (GET_CYCLE_CEIL(tRC)    / MC_ARB_DIV) - 1;
+        table->burst_mc_regs.mc_emem_arb_timing_ras   = (u32) (GET_CYCLE_CEIL(tRAS)   / MC_ARB_DIV) - 2;
+        table->burst_mc_regs.mc_emem_arb_timing_faw   = (u32) (GET_CYCLE_CEIL(tFAW)   / MC_ARB_DIV) - 1;
+        table->burst_mc_regs.mc_emem_arb_timing_rrd   = (u32) (GET_CYCLE_CEIL(tRRD)   / MC_ARB_DIV) - 1;
+        table->burst_mc_regs.mc_emem_arb_timing_rfcpb = (u32) (GET_CYCLE_CEIL(tRFCpb) / MC_ARB_DIV);
+        table->burst_mc_regs.mc_emem_arb_timing_rap2pre = (u32) (GET_CYCLE_CEIL(tR2P) / MC_ARB_DIV);
+        table->burst_mc_regs.mc_emem_arb_timing_wap2pre = (u32) (tW2P / MC_ARB_DIV);
+        table->burst_mc_regs.mc_emem_arb_timing_r2r = (u32) (table->burst_regs.emc_rext / 4) - 1 + MC_ARB_SFA;
+        table->burst_mc_regs.mc_emem_arb_timing_r2w = (u32) (tR2W / MC_ARB_DIV) - 1 + MC_ARB_SFA;
+        table->burst_mc_regs.mc_emem_arb_timing_w2r = (u32) (tW2R / MC_ARB_DIV) - 1 + MC_ARB_SFA;
+
+        u32 da_turns = 0;
+        da_turns |= u8(table->burst_mc_regs.mc_emem_arb_timing_r2w / 2) << 16;
+        da_turns |= u8(table->burst_mc_regs.mc_emem_arb_timing_w2r / 2) << 24;
+        table->burst_mc_regs.mc_emem_arb_da_turns = da_turns;
+
+        u32 da_covers = 0;
+        u8 r_cover = (table->burst_mc_regs.mc_emem_arb_timing_rap2pre + table->burst_mc_regs.mc_emem_arb_timing_rp + table->burst_mc_regs.mc_emem_arb_timing_rcd) / 2;
+        u8 w_cover = (table->burst_mc_regs.mc_emem_arb_timing_wap2pre + table->burst_mc_regs.mc_emem_arb_timing_rp + table->burst_mc_regs.mc_emem_arb_timing_rcd) / 2;
+        da_covers |= (u8) (table->burst_mc_regs.mc_emem_arb_timing_rc / 2);
+        da_covers |= (r_cover << 8);
+        da_covers |= (w_cover << 16);
+        table->burst_mc_regs.mc_emem_arb_da_covers = da_covers;
+
+        table->burst_mc_regs.mc_emem_arb_misc0 &= 0xFFE08000U;
+        table->burst_mc_regs.mc_emem_arb_misc0 |= ((table->burst_mc_regs.mc_emem_arb_timing_rc + 1) & 0xFF); /* TODO, check this */
+
+        table->la_scale_regs.mc_mll_mpcorer_ptsa_rate =         MIN((u32)((C.marikoEmcMaxClock / 1600000) * 0xd0U), (u32)0x115);
+        table->la_scale_regs.mc_ftop_ptsa_rate =         MIN((u32)((C.marikoEmcMaxClock / 1600000) * 0x18U), (u32)0x1f);
+        table->la_scale_regs.mc_ptsa_grant_decrement =         MIN((u32)((C.marikoEmcMaxClock / 1600000) * 0x1203U), (u32)0x17ff);
+
+        u32 mc_latency_allowance = 0;
+        if (C.marikoEmcMaxClock / 1000 != 0) {
+            mc_latency_allowance = 204800 / (C.marikoEmcMaxClock / 1000);
+        }
+
+        const u32 mc_latency_allowance2 = mc_latency_allowance & 0xFF;
+        const u32 mc_latency_allowance3 = (mc_latency_allowance & 0xFF) << 0x10;
+        table->la_scale_regs.mc_latency_allowance_xusb_0 = (table->la_scale_regs.mc_latency_allowance_xusb_0 & 0xff00ffffU) | mc_latency_allowance3;
+        table->la_scale_regs.mc_latency_allowance_sdmmc_0 = (table->la_scale_regs.mc_latency_allowance_sdmmc_0 & 0xff00ffffU) | mc_latency_allowance3;
+        table->la_scale_regs.mc_latency_allowance_xusb_1 = (table->la_scale_regs.mc_latency_allowance_xusb_1 & 0xff00ffffU) | mc_latency_allowance3;
+        table->la_scale_regs.mc_latency_allowance_tsec_0 = (table->la_scale_regs.mc_latency_allowance_tsec_0 & 0xff00ffffU) | mc_latency_allowance3;
+        table->la_scale_regs.mc_latency_allowance_sdmmca_0 = (table->la_scale_regs.mc_latency_allowance_sdmmca_0 & 0xff00ffffU) | mc_latency_allowance3;
+        table->la_scale_regs.mc_latency_allowance_sdmmcaa_0 = (table->la_scale_regs.mc_latency_allowance_sdmmcaa_0 & 0xff00ffffU) | mc_latency_allowance3;
+        table->la_scale_regs.mc_latency_allowance_sdmmcab_0 = (table->la_scale_regs.mc_latency_allowance_sdmmcab_0 & 0xff00ffffU) | mc_latency_allowance3;
+        table->la_scale_regs.mc_latency_allowance_ppcs_1 = (table->la_scale_regs.mc_latency_allowance_ppcs_1 & 0xff00ffffU) | mc_latency_allowance3;
+        table->la_scale_regs.mc_latency_allowance_mpcore_0 = (table->la_scale_regs.mc_latency_allowance_mpcore_0 & 0xff00ffffU) | mc_latency_allowance3;
+        table->la_scale_regs.mc_latency_allowance_avpc_0 = (table->la_scale_regs.mc_latency_allowance_avpc_0 & 0xff00ffffU) | mc_latency_allowance3;
+
+        u32 mc_latency_allowance_hc_0 = 0;
+        if (C.marikoEmcMaxClock / 1000 != 0) {
+            mc_latency_allowance_hc_0 = 35200 / (C.marikoEmcMaxClock / 1000);
+        }
+
+        table->la_scale_regs.mc_latency_allowance_nvdec_0 = (table->la_scale_regs.mc_latency_allowance_nvdec_0 & 0xff00ffffU) | mc_latency_allowance3;
+        table->la_scale_regs.mc_latency_allowance_hc_0 = (table->la_scale_regs.mc_latency_allowance_hc_0 & 0xffffff00U) | mc_latency_allowance_hc_0;
+
+        table->la_scale_regs.mc_latency_allowance_isp2_1 = (table->la_scale_regs.mc_latency_allowance_isp2_1 & 0xff00ff00U) | mc_latency_allowance3 | mc_latency_allowance2;
+        table->la_scale_regs.mc_latency_allowance_hc_1 = (table->la_scale_regs.mc_latency_allowance_hc_1 & 0xffffff00U) | mc_latency_allowance2;
+
+        u32 mc_latency_allowance_gpu_0 = 0;
+        if (C.marikoEmcMaxClock / 1000 != 0) {
+            mc_latency_allowance_gpu_0 = 40000 / (C.marikoEmcMaxClock / 1000);
+        }
+
+        table->la_scale_regs.mc_latency_allowance_gpu_0 = ((mc_latency_allowance_gpu_0 | table->la_scale_regs.mc_latency_allowance_gpu_0) & 0xff00ff00U) | mc_latency_allowance3;
+
+        u32 mc_latency_allowance_gpu2_0 = 0;
+        if (C.marikoEmcMaxClock / 1000 != 0) {
+        mc_latency_allowance_gpu2_0 = 40000 / (C.marikoEmcMaxClock / 1000);
+        }
+
+        table->la_scale_regs.mc_latency_allowance_gpu2_0 = ((mc_latency_allowance_gpu2_0 | table->la_scale_regs.mc_latency_allowance_gpu2_0) & 0xff00ff00U) | mc_latency_allowance3;
+
+        u32 mc_latency_allowance_nvenc_0 = 0;
+        if (C.marikoEmcMaxClock / 1000 != 0) {
+            mc_latency_allowance_nvenc_0 = 38400 / (C.marikoEmcMaxClock / 1000);
+        }
+
+        table->la_scale_regs.mc_latency_allowance_nvenc_0 = ((mc_latency_allowance_nvenc_0 | table->la_scale_regs.mc_latency_allowance_nvenc_0) & 0xff00ff00U) | mc_latency_allowance3;
+
+        u32 mc_latency_allowance_vic_0 = 0;
+        if (C.marikoEmcMaxClock / 1000 != 0) {
+            mc_latency_allowance_vic_0 = 0xb540 / (C.marikoEmcMaxClock / 1000);
+        }
+
+        table->la_scale_regs.mc_latency_allowance_vic_0 = ((mc_latency_allowance_vic_0 | table->la_scale_regs.mc_latency_allowance_vic_0) & 0xff00ff00U) | mc_latency_allowance3;
+        table->la_scale_regs.mc_latency_allowance_vi2_0 = (table->la_scale_regs.mc_latency_allowance_vi2_0 & 0xffffff00U) | mc_latency_allowance2;
+
+        table->pllm_ss_ctrl1 = 0xb55fe01;
+        table->pllm_ss_ctrl2 = 0x10170b55;
+        table->pllmb_ss_ctrl1 = 0xb55fe01;
+        table->pllmb_ss_ctrl2 = 0x10170b55;
+
+        table->dram_timings.t_rp = tRFCpb;
+        table->dram_timings.t_rfc = tRFCab;
+        table->dram_timings.rl = RL - 10;
+        table->emc_mrw2 = 0x8802003F;
+        table->emc_cfg_2 = 0x11083D;
     }
 
     void MemMtcTableAutoAdjust(MarikoMtcTable *table) {
@@ -429,7 +419,7 @@ namespace ams::ldr::oc::pcv::mariko
             TABLE->shadow_regs_ca_train.PARAM   = VALUE; \
             TABLE->shadow_regs_rdwr_train.PARAM = VALUE;
 
-        #define GET_CYCLE(PARAM) ((u32)((double)(PARAM) / tCK_avg))
+        #define GET_CYCLE_CEIL(PARAM) u32(CEIL(double(PARAM) / tCK_avg))
 
         WRITE_PARAM_ALL_REG(table, emc_rc, 0x60);
 //        WRITE_PARAM_ALL_REG(table, emc_rfc, GET_CYCLE_CEIL(tRFCab));
@@ -483,28 +473,25 @@ namespace ams::ldr::oc::pcv::mariko
 //        WRITE_PARAM_BURST_MC_REG(table, mc_emem_arb_timing_rfcpb, CEIL(GET_CYCLE_CEIL(tRFCpb) / MC_ARB_DIV))
     }
 
-    void MemMtcPllmbDivisor(MarikoMtcTable *table)
-    {
+    void MemMtcPllmbDivisor(MarikoMtcTable *table) {
         // Calculate DIVM and DIVN (clock divisors)
         // Common PLL oscillator is 38.4 MHz
         // PLLMB_OUT = 38.4 MHz / PLLLMB_DIVM * PLLMB_DIVN
-        typedef struct
-        {
+        typedef struct {
             u8 numerator : 4;
             u8 denominator : 4;
         } pllmb_div;
 
         constexpr pllmb_div div[] = {
-            {3, 4}, {2, 3}, {1, 2}, {1, 3}, {1, 4}, {0, 2}};
+            {3, 4}, {2, 3}, {1, 2}, {1, 3}, {1, 4}, {0, 2}
+        };
 
         constexpr u32 pll_osc_in = 38'400;
         u32 divm{}, divn{};
         const u32 remainder = C.marikoEmcMaxClock % pll_osc_in;
-        for (const auto &index : div)
-        {
+        for (const auto &index : div) {
             // Round down
-            if (remainder >= pll_osc_in * index.numerator / index.denominator)
-            {
+            if (remainder >= pll_osc_in * index.numerator / index.denominator) {
                 divm = index.denominator;
                 divn = C.marikoEmcMaxClock / pll_osc_in * divm + index.numerator;
                 break;
@@ -515,15 +502,13 @@ namespace ams::ldr::oc::pcv::mariko
         table->pllmb_divn = divn;
     }
 
-    Result MemFreqMtcTable(u32 *ptr)
-    {
+    Result MemFreqMtcTable(u32 *ptr) {
         u32 khz_list[] = {1600000, 1331200, 204000};
         u32 khz_list_size = sizeof(khz_list) / sizeof(u32);
 
         // Generate list for mtc table pointers
         MarikoMtcTable *table_list[khz_list_size];
-        for (u32 i = 0; i < khz_list_size; i++)
-        {
+        for (u32 i = 0; i < khz_list_size; i++) {
             u8 *table = reinterpret_cast<u8 *>(ptr) - offsetof(MarikoMtcTable, rate_khz) - i * sizeof(MarikoMtcTable);
             table_list[i] = reinterpret_cast<MarikoMtcTable *>(table);
             R_UNLESS(table_list[i]->rate_khz == khz_list[i], ldr::ResultInvalidMtcTable());
@@ -546,6 +531,7 @@ namespace ams::ldr::oc::pcv::mariko
         } else {
             MemMtcTableAutoAdjustBaseLatency(table_max);
         }
+
         MemMtcPllmbDivisor(table_max);
         // Overwrite 13312000 table with unmodified 1600000 table copied back
         std::memcpy(reinterpret_cast<void *>(table_alt), reinterpret_cast<void *>(tmp), sizeof(MarikoMtcTable));
@@ -553,17 +539,10 @@ namespace ams::ldr::oc::pcv::mariko
         delete tmp;
 
         PATCH_OFFSET(ptr, C.marikoEmcMaxClock);
-
-        // Handle customize table replacement
-        // if (C.mtcConf == CUSTOMIZED_ALL) {
-        //    MemMtcCustomizeTable(table_list[0], reinterpret_cast<MarikoMtcTable *>(reinterpret_cast<u8 *>(C.marikoMtcTable)));
-        // }
-
         R_SUCCEED();
     }
 
-    Result MemFreqDvbTable(u32 *ptr)
-    {
+    Result MemFreqDvbTable(u32 *ptr) {
         emc_dvb_dvfs_table_t *default_end = reinterpret_cast<emc_dvb_dvfs_table_t *>(ptr);
         emc_dvb_dvfs_table_t *new_start = default_end + 1;
 
@@ -579,45 +558,25 @@ namespace ams::ldr::oc::pcv::mariko
 
 #define DVB_VOLT(zero, one, two) std::min(zero + voltAdd, 1050), std::min(one + voltAdd, 1025), std::min(two + voltAdd, 1000),
 
-        if (C.marikoEmcMaxClock < 1862400)
-        {
+        if (C.marikoEmcMaxClock < 1862400) {
             std::memcpy(new_start, default_end, sizeof(emc_dvb_dvfs_table_t));
-        }
-        else if (C.marikoEmcMaxClock < 2131200)
-        {
-            emc_dvb_dvfs_table_t oc_table = {1862400, {
-                                                          700,
-                                                          675,
-                                                          650,
-                                                      }};
+        } else if (C.marikoEmcMaxClock < 2131200) {
+            emc_dvb_dvfs_table_t oc_table = {1862400, {700, 675, 650, }};
             std::memcpy(new_start, &oc_table, sizeof(emc_dvb_dvfs_table_t));
-        }
-        else if (C.marikoEmcMaxClock < 2400000)
-        {
-            emc_dvb_dvfs_table_t oc_table = {2131200, {
-                                                          725,
-                                                          700,
-                                                          675,
-                                                      }};
+        } else if (C.marikoEmcMaxClock < 2400000) {
+            emc_dvb_dvfs_table_t oc_table = {2131200, { 725, 700, 675} };
             std::memcpy(new_start, &oc_table, sizeof(emc_dvb_dvfs_table_t));
-        }
-        else if (C.marikoEmcMaxClock < 2665600)
-        {
+        } else if (C.marikoEmcMaxClock < 2665600) {
             emc_dvb_dvfs_table_t oc_table = {2400000, {DVB_VOLT(750, 725, 700)}};
             std::memcpy(new_start, &oc_table, sizeof(emc_dvb_dvfs_table_t));
-        }
-        else if (C.marikoEmcMaxClock < 2931200)
-        {
+        } else if (C.marikoEmcMaxClock < 2931200) {
             emc_dvb_dvfs_table_t oc_table = {2665600, {DVB_VOLT(775, 750, 725)}};
             std::memcpy(new_start, &oc_table, sizeof(emc_dvb_dvfs_table_t));
         }
-        else if (C.marikoEmcMaxClock < 3200000)
-        {
+        else if (C.marikoEmcMaxClock < 3200000) {
             emc_dvb_dvfs_table_t oc_table = {2931200, {DVB_VOLT(800, 775, 750)}};
             std::memcpy(new_start, &oc_table, sizeof(emc_dvb_dvfs_table_t));
-        }
-        else
-        {
+        } else {
             emc_dvb_dvfs_table_t oc_table = {3200000, {DVB_VOLT(800, 800, 775)}};
             std::memcpy(new_start, &oc_table, sizeof(emc_dvb_dvfs_table_t));
         }
@@ -629,8 +588,7 @@ namespace ams::ldr::oc::pcv::mariko
         R_SUCCEED();
     }
 
-    Result MemFreqMax(u32 *ptr)
-    {
+    Result MemFreqMax(u32 *ptr) {
         if (C.marikoEmcMaxClock <= EmcClkOSLimit)
             R_SKIP();
 
@@ -638,10 +596,8 @@ namespace ams::ldr::oc::pcv::mariko
         R_SUCCEED();
     }
 
-    Result I2cSet_U8(I2cDevice dev, u8 reg, u8 val)
-    {
-        struct
-        {
+    Result I2cSet_U8(I2cDevice dev, u8 reg, u8 val) {
+        struct {
             u8 reg;
             u8 val;
         } __attribute__((packed)) cmd;
@@ -658,15 +614,13 @@ namespace ams::ldr::oc::pcv::mariko
         return res;
     }
 
-    Result EmcVddqVolt(u32 *ptr)
-    {
+    Result EmcVddqVolt(u32 *ptr) {
         regulator *entry = reinterpret_cast<regulator *>(reinterpret_cast<u8 *>(ptr) - offsetof(regulator, type_2_3.default_uv));
 
         constexpr u32 uv_step = 5'000;
         constexpr u32 uv_min = 250'000;
 
-        auto validator = [entry]()
-        {
+        auto validator = [entry]() {
             R_UNLESS(entry->id == 2, ldr::ResultInvalidRegulatorEntry());
             R_UNLESS(entry->type == 3, ldr::ResultInvalidRegulatorEntry());
             R_UNLESS(entry->type_2_3.step_uv == uv_step, ldr::ResultInvalidRegulatorEntry());
@@ -692,8 +646,7 @@ namespace ams::ldr::oc::pcv::mariko
         R_SUCCEED();
     }
 
-    void Patch(uintptr_t mapped_nso, size_t nso_size)
-    {
+    void Patch(uintptr_t mapped_nso, size_t nso_size) {
         u32 CpuCvbDefaultMaxFreq = static_cast<u32>(GetDvfsTableLastEntry(CpuCvbTableDefault)->freq);
         u32 GpuCvbDefaultMaxFreq = static_cast<u32>(GetDvfsTableLastEntry(GpuCvbTableDefault)->freq);
 
@@ -715,23 +668,20 @@ namespace ams::ldr::oc::pcv::mariko
             {"GPU Vmax", &GpuVmax, 0, nullptr, gpuVmax},
         };
 
-        for (uintptr_t ptr = mapped_nso;
-             ptr <= mapped_nso + nso_size - sizeof(MarikoMtcTable);
-             ptr += sizeof(u32))
-        {
+        for (uintptr_t ptr = mapped_nso; ptr <= mapped_nso + nso_size - sizeof(MarikoMtcTable); ptr += sizeof(u32)) {
             u32 *ptr32 = reinterpret_cast<u32 *>(ptr);
-            for (auto &entry : patches)
-            {
-                if (R_SUCCEEDED(entry.SearchAndApply(ptr32)))
+            for (auto &entry : patches) {
+                if (R_SUCCEEDED(entry.SearchAndApply(ptr32))) {
                     break;
+                }
             }
         }
 
-        for (auto &entry : patches)
-        {
+        for (auto &entry : patches) {
             LOGGING("%s Count: %zu", entry.description, entry.patched_count);
-            if (R_FAILED(entry.CheckResult()))
+            if (R_FAILED(entry.CheckResult())) {
                 CRASH(entry.description);
+            }
         }
     }
 

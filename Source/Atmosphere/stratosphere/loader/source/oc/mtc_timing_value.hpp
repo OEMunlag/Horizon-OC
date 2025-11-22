@@ -28,36 +28,43 @@ namespace ams::ldr::oc {
     const std::array<u32,  8> tRCD_values  =  {18, 17, 16, 15, 14, 13, 12, 11};
     const std::array<u32,  8> tRP_values   =  {18, 17, 16, 15, 14, 13, 12, 11};
     const std::array<u32, 10> tRAS_values  =  {42, 36, 34, 32, 30, 28, 26, 24, 22, 20};
-
-    /* Secondary timings. */
     const std::array<double,    8>  tRRD_values   = {10.0, 7.5, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0};
-    const std::array<u32,       6>  tRFC_values   = {90, 80, 70, 60, 50, 40};
+    const std::array<u32,      11>  tRFC_values   = {140, 130, 120, 110, 100, 90, 80, 70, 60, 50, 40};
     const std::array<u32,      10>  tWTR_values   = {10, 9, 8, 7, 6, 5, 4, 3, 3, 1};
     const std::array<u32,       6>  tREFpb_values = {3900, 5850, 7800, 11700, 15600, 99999};
+
+    const u32 BL = 16;
 
     /* Set to 4 read and 2 write for 1866bl. */
     /* For 2131bl: 8 read and 4 write. */
     const u32 latency_offset_read = 0;
     const u32 latency_offset_write = 0;
 
-    const u32 BL = 16;
-    const u32 RL = 28 + latency_offset_read;
-    const u32 WL = 14 + latency_offset_write;
-
     /* Precharge to Precharge Delay. (Cycles) */
-    /* Don't touch! */
     const u32 tPPD = 4;
 
     /* DQS output access time from CK_t/CK_c. */
     const double tDQSCK_max = 3.5;
-    const double tWPRE = 2.0;
+    const double tWPRE = 1.8;
 
     /* tCK Read postamble. */
     const double tRPST = 0.5;
 
+    /* Minimum Self-Refresh Time. (Entry to Exit) */
+    const double tSR = 15.0;
+
+    /* Exit power down to next valid command delay. */
+    const double tXP = 7.5;
+
+    const double tDQSS_max = 1.25;
+    const double tDQS2DQ_max = 0.8;
+
+    /* TOOD: Fix erista */
     namespace pcv::erista {
-        /* tCK_avg may have to be improved... */
         const double tCK_avg = 1000'000.0 / C.eristaEmcMaxClock;
+
+        const u32 RL = 28 + latency_offset_read;
+        const u32 WL = 14 + latency_offset_write;
 
         /* Primary timings. */
         const u32 tRCD  = tRCD_values[C.t1_tRCD];
@@ -76,33 +83,57 @@ namespace ams::ldr::oc {
         /* Latency stuff. */
         const int tR2W = (int)((3.5 / tCK_avg) + 32 + (BL / 2) - 14 - 6 + tWPRE + 12 - (C.t6_tRTW * 3));
         const int tW2R = (int)((tWTR / tCK_avg) + 18 - (BL / 2));
-        const int tRW2PDEN = (int)((1.25 / tCK_avg) + 46 + (0.8 / tCK_avg) + 6);
+        const int tRW2PDEN = (int)((tDQSS_max / tCK_avg) + 46 + (tDQS2DQ_max / tCK_avg) + 6);
 
         /* Refresh Cycle time. (All Banks) */
         const u32 tRFCab = tRFCpb * 2;
 
-        /* Do not touch stuff. */
         /* ACTIVATE-to-ACTIVATE command period. (same bank) */
         const u32 tRC = tRAS + tRPpb;
 
-        /* Minimum Self-Refresh Time. (Entry to Exit) */
-        const double tSR = 15.0;
         /* SELF REFRESH exit to next valid command delay. */
         const double tXSR = (double) (tRFCab + 7.5);
-
-        /* Exit power down to next valid command delay. */
-        const double tXP = 7.5; // I assume this is correct.
 
         /* u32ernal READ to PRECHARGE command delay. */
         const int pdex2mrr = (tCK_avg * 3.0) + tRCD_values[C.t1_tRCD] + 1;
 
         /* Row Precharge Time. (all banks) */
-        const double tRPab = tRPpb + 3;
+        const u32 tRPab = tRPpb + 3;
     }
 
-    /* TODO. */
     namespace pcv::mariko {
+        const double tCK_avg = 1000'000.0 / C.marikoEmcMaxClock;
 
+        const u32 tRCD  = tRCD_values[C.t1_tRCD];
+        const u32 tRPpb = tRP_values[C.t2_tRP];
+        const u32 tRAS  = tRAS_values[C.t3_tRAS];
+        const double tRRD = tRRD_values[C.t4_tRRD];
+        const u32 tRFCpb = tRFC_values[C.t5_tRFC];
+        const u32 tWTR   = tWTR_values[C.t7_tWTR];
+
+        const u32 RL = 36;
+        const u32 WL = 18;
+
+        const u32 tRC = tRAS + tRPpb;
+        const u32 tRFCab = tRFCpb * 2;
+        const double tXSR = (double) (tRFCab + 7.5);
+        const u32 tFAW = (u32) (tRRD * 4.0);
+        const double tRPab = tRPpb + 3;
+
+        const double tR2P = 7.5; /* Tighten up? */
+        const u32 tR2W = CEIL(RL + (tDQSCK_max / tCK_avg) + (BL / 2) - WL + tWPRE + FLOOR(tRPST)); /* TODO */
+        const u32 tRTM = RL + 9 + (tDQSCK_max / tCK_avg) + FLOOR(tRPST) + CEIL(7.5 / tCK_avg);
+        const u32 tRATM = tRTM + CEIL(tR2P / tCK_avg) - (BL / 2);
+
+        /* Note: Dividing WL is probably incorect but it works out by pure chance :) */
+        const u32 tW2P = WL + (BL / 2) + 1 + CEIL(WL / tCK_avg); /* Tighten? */
+        const u32 tW2R = WL + (BL / 2) + 1 + CEIL(tWTR / tCK_avg);
+        const u32 tWTM = WL + (BL / 2) + 1 + CEIL(7.5 / tCK_avg);
+        const u32 tWATM = tWTM + CEIL(WL / tCK_avg);
+
+        const double tMMRI = tRCD + (tCK_avg * 3);
+        const double tPDEX2MRR = tMMRI + 10;
+        const u32 tWTPDEN = tW2P + 1 + CEIL(tDQSS_max / tCK_avg) + CEIL(tDQS2DQ_max / tCK_avg) + 6.0;
     }
 
 }
