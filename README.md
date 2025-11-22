@@ -40,8 +40,8 @@ It enables advanced CPU, GPU, and RAM tuning with user-friendly configuration to
 * Built-in configurator
 * Compatible with most homebrew
 
-> ⚡ *Higher (potentially dangerous) frequencies are unlockable.*
-> ⚙️ *Exact maximum values vary per console.*
+> *Higher (potentially dangerous) frequencies are unlockable.*
+> *Exact maximum values vary per console.*
 
 ---
 
