@@ -86,7 +86,7 @@ volatile CustomizeTable C = {
 
 .marikoGpuVmax = 850,
 // NOTE: These tables should NOT BE USED and are only here as placeholders. Always try and find your own optimal tables.
-// Ensure the voltages actually increase or stay the sameot
+// Ensure the voltages actually increase or stay the same
 
 .marikoGpuVoltArray = {
     610  /* 76 */,
