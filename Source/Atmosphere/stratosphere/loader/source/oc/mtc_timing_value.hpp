@@ -1,6 +1,8 @@
 /*
  * Copyright (c) 2023 hanai3Bi
  *
+ * Copyright (c) 2025 Lightos_
+ *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
  * version 2, as published by the Free Software Foundation.
@@ -37,15 +39,18 @@ namespace ams::ldr::oc {
 
     /* Set to 4 read and 2 write for 1866bl. */
     /* For 2131bl: 8 read and 4 write. */
-    const u32 latency_offset_read = 0;
-    const u32 latency_offset_write = 0;
+    const u32 rl_offset = 8;
+    const u32 wl_offset = 4;
+
+    const u32 RL = 28 + rl_offset;
+    const u32 WL = 14 + wl_offset;
 
     /* Precharge to Precharge Delay. (Cycles) */
     const u32 tPPD = 4;
 
     /* DQS output access time from CK_t/CK_c. */
     const double tDQSCK_max = 3.5;
-    const double tWPRE = 1.8;
+    const u32 tWPRE = 2;
 
     /* tCK Read postamble. */
     const double tRPST = 0.5;
@@ -62,9 +67,6 @@ namespace ams::ldr::oc {
     /* TOOD: Fix erista */
     namespace pcv::erista {
         const double tCK_avg = 1000'000.0 / C.eristaEmcMaxClock;
-
-        const u32 RL = 28 + latency_offset_read;
-        const u32 WL = 14 + latency_offset_write;
 
         /* Primary timings. */
         const u32 tRCD  = tRCD_values[C.t1_tRCD];
@@ -111,9 +113,6 @@ namespace ams::ldr::oc {
         const u32 tRFCpb = tRFC_values[C.t5_tRFC];
         const u32 tWTR   = tWTR_values[C.t7_tWTR];
 
-        const u32 RL = 36;
-        const u32 WL = 18;
-
         const u32 tRC = tRAS + tRPpb;
         const u32 tRFCab = tRFCpb * 2;
         const double tXSR = (double) (tRFCab + 7.5);
@@ -134,6 +133,11 @@ namespace ams::ldr::oc {
         const double tMMRI = tRCD + (tCK_avg * 3);
         const double tPDEX2MRR = tMMRI + 10;
         const u32 tWTPDEN = tW2P + 1 + CEIL(tDQSS_max / tCK_avg) + CEIL(tDQS2DQ_max / tCK_avg) + 6.0;
+
+        inline u32 obdly = 0x10000002 + wl_offset;
+        const u32 wdv = 0xE + wl_offset;
+        const u32 wsv = 0xC + wl_offset;
+        const u32 wev = 0xA + wl_offset;
     }
 
 }

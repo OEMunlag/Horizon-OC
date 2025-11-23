@@ -66,10 +66,10 @@ namespace ams::ldr::oc::pcv::mariko {
             // Patch vmin for slt
             if (C.marikoCpuUV) {
                 if (*(ptr - 5) == 620) {
-                    PATCH_OFFSET((ptr - 5), C.marikoCpuVmin);
+                    PATCH_OFFSET((ptr - 5), C.marikoCpuHighVmin); // hf vmin
                 }
                 if (*(ptr - 1) == 620) {
-                    PATCH_OFFSET((ptr - 1), 600);
+                    PATCH_OFFSET((ptr - 1), C.marikoCpuLowVmin); // lf vmin
                 }
             }
             R_SUCCEED();
@@ -180,8 +180,16 @@ namespace ams::ldr::oc::pcv::mariko {
     }
 
     Result GpuFreqPllLimit(u32 *ptr) {
-        int UPPER_GPU_FREQ = -1; // uncap the gpu frequency
-        PATCH_OFFSET(ptr, UPPER_GPU_FREQ);
+        clk_pll_param *entry = reinterpret_cast<clk_pll_param *>(ptr);
+
+        // All zero except for freq
+        for (size_t i = 1; i < sizeof(clk_pll_param) / sizeof(u32); i++) {
+            R_UNLESS(*(ptr + i) == 0, ldr::ResultInvalidGpuPllEntry());
+        }
+
+        // Double the max clk simply
+        u32 max_clk = entry->freq * 2;
+        entry->freq = max_clk;
         R_SUCCEED();
     }
 
@@ -190,7 +198,7 @@ namespace ams::ldr::oc::pcv::mariko {
         R_SUCCEED();
     }
 
-    void MemMtcTableAutoAdjustBaseLatency(MarikoMtcTable *table) {
+void MemMtcTableAutoAdjustBaseLatency(MarikoMtcTable *table) {
         #define WRITE_PARAM_ALL_REG(TABLE, PARAM, VALUE) \
             TABLE->burst_regs.PARAM = VALUE;             \
             TABLE->shadow_regs_ca_train.PARAM   = VALUE; \
@@ -212,6 +220,15 @@ namespace ams::ldr::oc::pcv::mariko {
 
         u32 trefbw = refresh_raw + 0x40;
         trefbw = MIN(trefbw, static_cast<u32>(0x3FFF));
+
+        /* TODO: Make this less uggly and actually work by finding real clocks */
+        if (C.marikoEmcMaxClock > 3'100'000) {
+            obdly -= 2;
+        }
+
+        if (C.marikoEmcMaxClock > 2'500'000) {
+            obdly -= 2;
+        }
 
         WRITE_PARAM_ALL_REG(table, emc_rd_rcd, GET_CYCLE_CEIL(tRCD));
         WRITE_PARAM_ALL_REG(table, emc_wr_rcd, GET_CYCLE_CEIL(tRCD));
@@ -253,14 +270,14 @@ namespace ams::ldr::oc::pcv::mariko {
         WRITE_PARAM_ALL_REG(table, emc_rw2pden, tWTPDEN);
         WRITE_PARAM_ALL_REG(table, emc_einput, 0xF);
         WRITE_PARAM_ALL_REG(table, emc_einput_duration, 0x31);
-        WRITE_PARAM_ALL_REG(table, emc_obdly, 0x10000002);
+        WRITE_PARAM_ALL_REG(table, emc_obdly, obdly);
         WRITE_PARAM_ALL_REG(table, emc_ibdly, 0x1000001C);
-        WRITE_PARAM_ALL_REG(table, emc_wdv_mask, 0x12);
+        WRITE_PARAM_ALL_REG(table, emc_wdv_mask, wdv);
         WRITE_PARAM_ALL_REG(table, emc_quse_width, 0xD);
         WRITE_PARAM_ALL_REG(table, emc_quse, 0x2F);
-        WRITE_PARAM_ALL_REG(table, emc_wdv, 0x12);
-        WRITE_PARAM_ALL_REG(table, emc_wsv, 0x10);
-        WRITE_PARAM_ALL_REG(table, emc_wev, 0xE);
+        WRITE_PARAM_ALL_REG(table, emc_wdv, wdv);
+        WRITE_PARAM_ALL_REG(table, emc_wsv, wsv);
+        WRITE_PARAM_ALL_REG(table, emc_wev, wev);
         WRITE_PARAM_ALL_REG(table, emc_qrst, 0x00080005);
         WRITE_PARAM_ALL_REG(table, emc_qsafe, 0x44);
         WRITE_PARAM_ALL_REG(table, emc_tr_qpop, 0x3B);
@@ -640,8 +657,7 @@ namespace ams::ldr::oc::pcv::mariko {
             {"CPU Volt Dfll", &CpuVoltDfll, 1, nullptr, 0x0000FFCF},
             {"GPU Freq Table", GpuFreqCvbTable<true>, 1, nullptr, GpuCvbDefaultMaxFreq},
             {"GPU Freq Asm", &GpuFreqMaxAsm, 2, &GpuMaxClockPatternFn},
-            {"GPU Freq Max (Patch 1)", &GpuFreqMax, 1, nullptr, GpuClkMax},
-            {"GPU Freq PLL (Patch 2)", &GpuFreqPllLimit, 0, nullptr, GpuClkPllLimit},
+            {"GPU Freq PLL", &GpuFreqPllLimit, 1, nullptr, GpuClkPllLimit},
             {"MEM Freq Mtc", &MemFreqMtcTable, 0, nullptr, EmcClkOSLimit},
             {"MEM Freq Dvb", &MemFreqDvbTable, 1, nullptr, EmcClkOSLimit},
             {"MEM Freq Max", &MemFreqMax, 0, nullptr, EmcClkOSLimit},

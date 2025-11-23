@@ -23,24 +23,25 @@
 
 namespace ams::ldr::oc::pcv::erista {
 
+    /* Remove? */
     Result CpuFreqVdd(u32* ptr) {
         dvfs_rail* entry = reinterpret_cast<dvfs_rail *>(reinterpret_cast<u8 *>(ptr) - offsetof(dvfs_rail, freq));
 
-    PATCH_OFFSET(ptr, GetDvfsTableLastEntry(C.eristaCpuDvfsTable)->freq);
-    R_SUCCEED();
-}
-Result GpuVmin(u32 *ptr) {
-    if (!C.eristaGpuVmin)
-        R_SKIP();
-        PATCH_OFFSET(ptr, (int)C.eristaGpuVmin);
+        R_UNLESS(entry->id == 1,            ldr::ResultInvalidCpuFreqVddEntry());
+        R_UNLESS(entry->min_mv == 250'000,  ldr::ResultInvalidCpuFreqVddEntry());
+        R_UNLESS(entry->step_mv == 5000,    ldr::ResultInvalidCpuFreqVddEntry());
+        R_UNLESS(entry->max_mv == 1525'000, ldr::ResultInvalidCpuFreqVddEntry());
+
         R_SUCCEED();
     }
 
     Result GpuVmin(u32 *ptr) {
-        if (!C.eristaGpuVmin)
+        if (!C.eristaGpuVmin) {
             R_SKIP();
-            PATCH_OFFSET(ptr, (int)C.eristaGpuVmin);
-            R_SUCCEED();
+        }
+
+        PATCH_OFFSET(ptr, (int)C.eristaGpuVmin);
+        R_SUCCEED();
     }
 
     Result CpuVoltRange(u32 *ptr) {
@@ -68,6 +69,7 @@ Result GpuVmin(u32 *ptr) {
         if(!C.eristaCpuUV) {
             R_SKIP();
         }
+
         PATCH_OFFSET(&(entry->dvco_calibration_max), 0x1C);
         PATCH_OFFSET(&(entry->tune1_high), 0x10);
         PATCH_OFFSET(&(entry->tune_high_margin_millivolts), 0xc);

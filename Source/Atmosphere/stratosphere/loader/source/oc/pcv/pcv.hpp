@@ -94,9 +94,7 @@ namespace ams::ldr::oc::pcv
             {},
         };
 
-        constexpr u32 GpuClkPllLimit = 2600'000;
-
-        constexpr u32 GpuClkMax = 1300'000'000;
+        constexpr u32 GpuClkPllLimit = 1300'000'000;
 
         /* GPU Max Clock asm Pattern:
          *
