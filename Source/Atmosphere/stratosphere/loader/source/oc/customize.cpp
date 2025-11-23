@@ -22,7 +22,7 @@
 
 #define ENABLED 1
 #define DISABLED 0
-#define CPU_MAX_MAX_VOLT 1375000
+#define CPU_MAX_MAX_VOLT 1235000
 
 namespace ams::ldr::oc {
 
