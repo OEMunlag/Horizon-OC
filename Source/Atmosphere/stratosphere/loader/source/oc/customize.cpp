@@ -37,7 +37,7 @@ volatile CustomizeTable C = {
 
 .commonCpuBoostClock = 1785000, // Default boost clock
 
-.commonEmcMemVolt  = 1125000, // LPDDR4X JEDEC Specification
+.commonEmcMemVolt  = 1175000, // LPDDR4X JEDEC Specification
 
 .eristaCpuMaxVolt  = 1235,
 
@@ -45,13 +45,13 @@ volatile CustomizeTable C = {
 
 .marikoCpuMaxVolt = 1120,
 
-.marikoEmcMaxClock = 3000000, // Hynix NME and Samsung AM-MGCJ Rating (others are 4766MT, 2133MHz)
+.marikoEmcMaxClock = 2700000, // Hynix NME and Samsung AM-MGCJ Rating (others are 4766MT, 2133MHz)
 
 .marikoEmcVddqVolt = 640000,
 
 .marikoCpuUV = 0, // No undervolt
 
-.marikoGpuUV = 3,
+.marikoGpuUV = 2,
 
 .eristaCpuUV = 0,
 
@@ -64,21 +64,21 @@ volatile CustomizeTable C = {
 // Defaults - Zeroed
 
 // Primary
-.t1_tRCD = 0,
-.t2_tRP  = 0,
-.t3_tRAS = 0,
+.t1_tRCD = 4,
+.t2_tRP  = 3,
+.t3_tRAS = 8,
 // Secondary
-.t4_tRRD = 0,
-.t5_tRFC = 0,
-.t6_tRTW = 0,
-.t7_tWTR = 0,
-.t8_tREFI= 0,
+.t4_tRRD = 2,
+.t5_tRFC = 5,
+.t6_tRTW = 4,
+.t7_tWTR = 4,
+.t8_tREFI= 6,
 
 // .mem_burst_latency = 0, // 0 - 1600l, 1 = 1866bl, 2 = 2133bl /* TODO: Remove/fix. */
 
-.marikoCpuHighVmin = 750,
+.marikoCpuHighVmin = 800,
 
-.marikoCpuLowVmin = 600,
+.marikoCpuLowVmin = 650,
 
 .eristaGpuVmin = 810,
 
@@ -99,18 +99,18 @@ volatile CustomizeTable C = {
     610  /* 614 */,
     610  /* 691 */,
     610  /* 768 */,
-    620  /* 844 */,
-    640  /* 921 */,
-    675  /* 998 */,
-    710  /* 1075 */,
-    735  /* 1152 */,
-    785  /* 1228 */,
-    785    /* 1267  (Disabled by default) */,
-    960    /* 1305  (Disabled by default) */,
-    960    /* 1344  (Disabled by default) */,
-    960    /* 1382  (Disabled by default) */,
-    960    /* 1420  (Disabled by default) */,
-    960    /* 1459  (Disabled by default) */,
+    610  /* 844 */,
+    625  /* 921 */,
+    655  /* 998 */,
+    685  /* 1075 */,
+    725  /* 1152 */,
+    750  /* 1228 */,
+    765    /* 1267  (Disabled by default) */,
+    790    /* 1305  (Disabled by default) */,
+    0    /* 1344  (Disabled by default) */,
+    0    /* 1382  (Disabled by default) */,
+    0    /* 1420  (Disabled by default) */,
+    0    /* 1459  (Disabled by default) */,
     0    /* 1497  (Disabled by default) */,
     0    /* 1536  (Disabled by default) */,
 

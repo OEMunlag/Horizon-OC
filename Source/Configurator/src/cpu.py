@@ -74,11 +74,17 @@ def populate():
     dpg.add_combo(
         items=vmin_processed_voltages,
         default_value="Default (600mV)",
-        label="CPU vMin (Mariko)",
-        tag="marikoCpuVmin",
+        label="CPU High vMin (Mariko)",
+        tag="marikoCpuHighVmin",
         callback=k.grab_kip_storage_values_no_mult
     )
-
+    dpg.add_combo(
+        items=vmin_processed_voltages,
+        default_value="Default (800mV)",
+        label="CPU Low vMin (Mariko)",
+        tag="marikoCpuLowVmin",
+        callback=k.grab_kip_storage_values_no_mult
+    )
     dpg.add_combo(
         items=processed_voltages,
         default_value="Disabled",

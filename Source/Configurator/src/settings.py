@@ -18,8 +18,8 @@ freqs_khz = [
     1459200, 1497600, 1536000
 ]
 freqs_khz_e = [
-    76800, 153600, 230400, 307200, 384000, 460800, 537600, 614400, 691200, 768000,
-    844800, 921600, 998400, 1075200 #, 1152000, 1228800 # Disabled by default as these freqs can cause board damage
+    76800, 115200, 153600, 192000, 230400, 268800, 307200, 345600, 384000, 422400, 460800, 499200, 537600,
+    576000,614400, 652800,691200,729600, 768000,806400, 844800,883200, 921600,960000, 998400,1036800, 1075200# ,
 ]
 
 freqs_mhz = [
@@ -84,7 +84,8 @@ variables = [
     ("t7_tWTR", "u32"),
     ("t8_tREFI", "u32"),
     ("mem_burst_latency", "u32"),
-    ("marikoCpuVmin", "u32"),
+    ("marikoCpuHighVmin", "u32"),
+    ("marikoCpuLowVmin", "u32"),
     ("eristaGpuVmin", "u32"),
     ("marikoGpuVmin", "u32"),
     ("marikoGpuVmax", "u32"),
@@ -115,18 +116,31 @@ variables = [
 
     
     ("g_volt_e_76800", "u32"),
+    ("g_volt_e_115200", "u32"),
     ("g_volt_e_153600", "u32"),
+    ("g_volt_e_192000", "u32"),
     ("g_volt_e_230400", "u32"),
+    ("g_volt_e_268800", "u32"),
     ("g_volt_e_307200", "u32"),
+    ("g_volt_e_345600", "u32"),
     ("g_volt_e_384000", "u32"),
+    ("g_volt_e_422400", "u32"),
     ("g_volt_e_460800", "u32"),
+    ("g_volt_e_499200", "u32"),
     ("g_volt_e_537600", "u32"),
+    ("g_volt_e_576000", "u32"),
     ("g_volt_e_614400", "u32"),
+    ("g_volt_e_652800", "u32"),
     ("g_volt_e_691200", "u32"),
+    ("g_volt_e_729600", "u32"),
     ("g_volt_e_768000", "u32"),
+    ("g_volt_e_806400", "u32"),
     ("g_volt_e_844800", "u32"),
+    ("g_volt_e_883200", "u32"),
     ("g_volt_e_921600", "u32"),
+    ("g_volt_e_960000", "u32"),
     ("g_volt_e_998400", "u32"),
+    ("g_volt_e_1036800", "u32"),
     ("g_volt_e_1075200", "u32"),
 #    ("g_volt_e_1152000", "u32"),
 #    ("g_volt_e_1228800", "u32"),
@@ -142,6 +156,7 @@ fmt_map = {
 def load_all_vars():
     c.load_entry_object("custRev", 0)
     c.load_entry_object("mtcConf", 0)
+    c.load_entry_object("hpMode", 0)
     c.load_entry_object("commonCpuBoostClock", 1)
     c.load_entry_object("commonEmcMemVolt", 2)
     c.load_entry_object("eristaCpuMaxVolt", 3)
@@ -166,7 +181,8 @@ def load_all_vars():
     c.load_entry_object("t7_tWTR", 5)
     c.load_entry_object("t8_tREFI", 5)
     c.load_entry_object("mem_burst_latency", 5)
-    c.load_entry_object("marikoCpuVmin", 3)
+    c.load_entry_object("marikoCpuHighVmin", 3)
+    c.load_entry_object("marikoCpuLowVmin", 3)
     c.load_entry_object("eristaGpuVmin", 3)
     c.load_entry_object("marikoGpuVmin", 3)
     c.load_entry_object("marikoGpuVmax", 3)
@@ -180,8 +196,8 @@ def load_all_vars():
         c.load_entry_object(f"g_volt_{freq}", 3)
 
     for e_freq in [
-        "76800", "153600", "230400", "307200", "384000", "460800", "537600",
-        "614400", "691200", "768000", "844800", "921600", "998400", "1075200"# ,
+        "76800", "115200", "153600", "192000", "230400", "268800", "307200", "345600", "384000", "422400", "460800", "499200", "537600",
+        "576000","614400", "652800","691200","729600", "768000","806400", "844800","883200", "921600","960000", "998400","1036800", "1075200"# ,
         # "1152000", "1228800"
     ]:
         c.load_entry_object(f"g_volt_e_{e_freq}", 3)

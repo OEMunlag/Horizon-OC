@@ -32,7 +32,7 @@
 #include "clock_manager.h"
 
 #define SYSCLK_IPC_API_VERSION 4
-#define SYSCLK_IPC_SERVICE_NAME "horizon:oc"
+#define SYSCLK_IPC_SERVICE_NAME "hoc:sys"
 
 enum SysClkIpcCmd
 {

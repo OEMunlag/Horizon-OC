@@ -50,6 +50,23 @@ def populate():
     dpg.add_button(label="Apply Tight Preset", callback=preset.apply_st_timings)
     dpg.add_button(label="Load Default Preset", callback=preset.load_defaults)
 
+    dpg.add_combo(
+        items=["0", "1"],
+        default_value="0",
+        label="MTC Configuraton",
+        tag="mtcConf",
+        callback=k.grab_kip_storage_values
+    )
+
+
+    dpg.add_combo(
+        items=["0", "1"],
+        default_value="0",
+        label="HP Mode",
+        tag="hpMode",
+        callback=k.grab_kip_storage_values
+    )
+
     dpg.add_separator(label="Frequencies (Mariko)")
     dpg.add_text("Multiple Ram Frequencies on Mariko is in development")
     dpg.add_combo(
@@ -114,7 +131,7 @@ def populate():
     dpg.add_combo(
         items=["0 (1600bl)", "2 (1866bl)", "4 (2133bl)"],
         default_value="2",
-        label="Base Latency",
+        label="Base Latency (unused)",
         callback=k.grab_kip_storage_values_no_mult,
         tag="mem_burst_latency"
     )
