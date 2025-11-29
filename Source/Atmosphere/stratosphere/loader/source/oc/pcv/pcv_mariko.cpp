@@ -516,8 +516,8 @@ void MemMtcTableAutoAdjustBaseLatency(MarikoMtcTable *table) {
 
         u32 actual_freq_khz = static_cast<u32>(fma_out * (38400.0 / static_cast<double>(divm_candidate)));
 
-        constexpr u32 SscTargetCenterKHz    = 0x241a31;
-        constexpr u32 SscTargetToleranceKHz = 0x20b6f;
+        constexpr u32 SscTargetCenterKHz    = 2366001;
+        constexpr u32 SscTargetToleranceKHz = 133999;
 
         u32 diff_from_ssc_center = target_freq_for_div - SscTargetCenterKHz;
 
