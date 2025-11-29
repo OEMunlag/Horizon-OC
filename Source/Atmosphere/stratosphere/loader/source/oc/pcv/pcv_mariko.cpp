@@ -386,10 +386,10 @@ void MemMtcTableAutoAdjustBaseLatency(MarikoMtcTable *table) {
         table->la_scale_regs.mc_latency_allowance_vic_0 = ((mc_latency_allowance_vic_0 | table->la_scale_regs.mc_latency_allowance_vic_0) & 0xff00ff00U) | mc_latency_allowance3;
         table->la_scale_regs.mc_latency_allowance_vi2_0 = (table->la_scale_regs.mc_latency_allowance_vi2_0 & 0xffffff00U) | mc_latency_allowance2;
 
-        table->pllm_ss_ctrl1 = 0xb55fe01;
-        table->pllm_ss_ctrl2 = 0x10170b55;
-        table->pllmb_ss_ctrl1 = 0xb55fe01;
-        table->pllmb_ss_ctrl2 = 0x10170b55;
+       // table->pllm_ss_ctrl1 = 0xb55fe01;
+       // table->pllm_ss_ctrl2 = 0x10170b55;
+       // table->pllmb_ss_ctrl1 = 0xb55fe01;
+       // table->pllmb_ss_ctrl2 = 0x10170b55;
 
         table->dram_timings.t_rp = tRFCpb;
         table->dram_timings.t_rfc = tRFCab;
@@ -475,33 +475,104 @@ void MemMtcTableAutoAdjustBaseLatency(MarikoMtcTable *table) {
 //        WRITE_PARAM_BURST_MC_REG(table, mc_emem_arb_timing_rfcpb, CEIL(GET_CYCLE_CEIL(tRFCpb) / MC_ARB_DIV))
     }
 
+    /* NOTE: This is reverse engineered eos code, naming may be inaccurate. */
     void MemMtcPllmbDivisor(MarikoMtcTable *table) {
-        // Calculate DIVM and DIVN (clock divisors)
-        // Common PLL oscillator is 38.4 MHz
-        // PLLMB_OUT = 38.4 MHz / PLLLMB_DIVM * PLLMB_DIVN
-        typedef struct {
-            u8 numerator : 4;
-            u8 denominator : 4;
-        } pllmb_div;
+        constexpr u32 PllOscInKHz   = 38400;
+        constexpr u32 PllOscHalfKHz = 19200;
 
-        constexpr pllmb_div div[] = {
-            {3, 4}, {2, 3}, {1, 2}, {1, 3}, {1, 4}, {0, 2}
-        };
+        u32 target_freq_khz     = C.marikoEmcMaxClock;
+        u32 target_freq_for_div = C.marikoEmcMaxClock;
 
-        constexpr u32 pll_osc_in = 38'400;
-        u32 divm{}, divn{};
-        const u32 remainder = C.marikoEmcMaxClock % pll_osc_in;
-        for (const auto &index : div) {
-            // Round down
-            if (remainder >= pll_osc_in * index.numerator / index.denominator) {
-                divm = index.denominator;
-                divn = C.marikoEmcMaxClock / pll_osc_in * divm + index.numerator;
-                break;
+        u32 divm_candidate = (C.marikoEmcMaxClock / PllOscHalfKHz) & 0xFF;
+
+        u32 remainder_half = C.marikoEmcMaxClock - (divm_candidate * PllOscHalfKHz);
+        u32 remainder_full = C.marikoEmcMaxClock - (((C.marikoEmcMaxClock / PllOscInKHz) & 0xFF) * PllOscInKHz);
+
+        bool better_with_half   = (remainder_half < remainder_full);
+        bool fractional_nonzero = (static_cast<u32>((((double)target_freq_khz / 19200.0 - (double)divm_candidate) - 0.5) * 8192.0)) != 0;
+
+        divm_candidate = (better_with_half && fractional_nonzero) + 1;
+
+        u32 div_step_khz = 0;
+        if (divm_candidate != 0) {
+            div_step_khz = PllOscInKHz / divm_candidate;
+        }
+
+        table->pllmb_divm = divm_candidate;
+
+        double div_step_d = static_cast<double>(div_step_khz);
+
+        u32 divn_integer = 0;
+        if (div_step_khz != 0) {
+            divn_integer = target_freq_for_div / div_step_khz;
+        }
+
+        double divn_int_d = static_cast<double>(divn_integer & 0xFF);
+        table->pllmb_divn = divn_integer & 0xFF;
+
+        u32 divn_fraction = static_cast<u32>(((static_cast<double>(target_freq_khz) / div_step_d - divn_int_d) - 0.5) * 8192.0);
+
+        double fma_out = std::fma(static_cast<double>(static_cast<s32>(divn_fraction)), 1.0 / 8192.0, divn_int_d + 0.5);
+
+        u32 actual_freq_khz = static_cast<u32>(fma_out * (38400.0 / static_cast<double>(divm_candidate)));
+
+        constexpr u32 SscTargetCenterKHz    = 0x241a31;
+        constexpr u32 SscTargetToleranceKHz = 0x20b6f;
+
+        u32 diff_from_ssc_center = target_freq_for_div - SscTargetCenterKHz;
+
+        if (diff_from_ssc_center > SscTargetToleranceKHz) {
+            table->pllm_ss_cfg   &= 0xBFFFFFFF;
+            table->pllmb_ss_cfg  &= 0xBFFFFFFF;
+
+            u32 needs_adjustment = (target_freq_for_div < actual_freq_khz) ? 1 : 0;
+            u32 pll_misc         = (table->pllm_ss_ctrl2 & 0xFFFF0000) | (divn_fraction - needs_adjustment);
+
+            table->pllm_ss_ctrl2   = pll_misc;
+            table->pllmb_ss_ctrl2  = pll_misc;
+            return;
+        }
+
+        u32 divn_fraction_ssc = static_cast<u32>(((((double)actual_freq_khz * 0.997) / div_step_d - divn_int_d) - 0.5) * 8192.0);
+
+        double delta_scaled = (0.3 / div_step_d + 0.3 / div_step_d) * static_cast<double>(static_cast<s32>(divn_fraction - divn_fraction_ssc));
+
+        s32 delta_int = static_cast<s32>(delta_scaled);
+        double delta_frac = delta_scaled - static_cast<double>(delta_int);
+
+        u32 setup_value;
+        if (delta_frac <= 0.5) {
+            double round_val = 0.0;
+            if (delta_int + static_cast<s32>(delta_frac + delta_frac) != 0) {
+                round_val = 0.5;
+            }
+
+            if (static_cast<s32>(delta_frac + delta_frac) == 0) {
+                setup_value = static_cast<u32>(round_val);
+            } else {
+                setup_value = static_cast<s32>(round_val + round_val) | 0x1000;
+            }
+        } else {
+            s32 frac_doubled = static_cast<s32>((delta_frac - 0.5) + (delta_frac - 0.5));
+            double round_val = 0.5;
+            if (delta_int + frac_doubled != 0) {
+                round_val = 1.0;
+            }
+
+            if (frac_doubled == 0) {
+                setup_value = static_cast<s32>(round_val + round_val) | 0x1000;
+            } else {
+                setup_value = static_cast<u32>(round_val);
             }
         }
 
-        table->pllmb_divm = divm;
-        table->pllmb_divn = divn;
+        u32 ctrl1 = (divn_fraction_ssc & 0xFFFF) | (divn_fraction << 16);
+        u32 ctrl2 = (divn_fraction & 0xFFFF) | (setup_value << 16);
+
+        table->pllm_ss_ctrl1   = ctrl1;
+        table->pllm_ss_ctrl2   = ctrl2;
+        table->pllmb_ss_ctrl1  = ctrl1;
+        table->pllmb_ss_ctrl2  = ctrl2;
     }
 
     Result MemFreqMtcTable(u32 *ptr) {
