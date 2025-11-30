@@ -472,10 +472,10 @@ namespace ams::ldr::oc::pcv::erista {
 
      //   using namespace pcv::erista;
      //
-     //   #define WRITE_PARAM_ALL_REG(TABLE, PARAM, VALUE) \
-     //       TABLE->burst_regs.PARAM = VALUE;             \
-     //       TABLE->shadow_regs_ca_train.PARAM = VALUE;   \
-     //       TABLE->shadow_regs_quse_train.PARAM = VALUE; \
+     //   #define WRITE_PARAM_ALL_REG(TABLE, PARAM, VALUE) // note: add backslashes to make the macro definition work
+     //       TABLE->burst_regs.PARAM = VALUE;             
+     //       TABLE->shadow_regs_ca_train.PARAM = VALUE;   
+     //       TABLE->shadow_regs_quse_train.PARAM = VALUE; 
      //       TABLE->shadow_regs_rdwr_train.PARAM = VALUE;
      //
       #define GET_CYCLE(PARAM) ((u32)((double)(PARAM) / (1000000.0 / 1600000.0)))
