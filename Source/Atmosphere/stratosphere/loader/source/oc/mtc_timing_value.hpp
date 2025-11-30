@@ -25,25 +25,30 @@ namespace ams::ldr::oc {
     #define MIN(A, B)   std::min(A, B)
     #define CEIL(A)     std::ceil(A)
     #define FLOOR(A)    std::floor(A)
+    #define ROUND(A)    std::lround(A)
+
+    #define GET_LOW_BYTES(x)        ((u16)((x) & 0xFFFF))
+    #define SET_LOW_BYTES(x, val)   (((x) & 0xFFFF0000) | ((u32)(val) & 0xFFFF))
+    #define INCREMENT_LOW_BYTES_BY(x, n)  SET_LOW_BYTES((x), (GET_LOW_BYTES(x) + (n)))
+    #define GET_HIGH_BYTES(x)       ((u16)(((x) >> 16) & 0xFFFF))
+    #define SET_HIGH_BYTES(x, val)  (((x) & 0x0000FFFF) | (((u32)(val) & 0xFFFF) << 16))
+    #define INCREMENT_HIGH_BYTES_BY(x, n) SET_HIGH_BYTES((x), (GET_HIGH_BYTES(x) + (n)))
 
     /* Primary timings. */
     const std::array<u32,  8> tRCD_values  =  {18, 17, 16, 15, 14, 13, 12, 11};
     const std::array<u32,  8> tRP_values   =  {18, 17, 16, 15, 14, 13, 12, 11};
     const std::array<u32, 10> tRAS_values  =  {42, 36, 34, 32, 30, 28, 26, 24, 22, 20};
-    const std::array<double,    8>  tRRD_values   = {10.0, 7.5, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0};
+    const std::array<double,    7>  tRRD_values   = {/*10.0,*/ 7.5, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0}; /* 10.0 is used for <2133mhz; do we care? */
     const std::array<u32,      11>  tRFC_values   = {140, 130, 120, 110, 100, 90, 80, 70, 60, 50, 40};
     const std::array<u32,      10>  tWTR_values   = {10, 9, 8, 7, 6, 5, 4, 3, 3, 1};
     const std::array<u32,       6>  tREFpb_values = {3900, 5850, 7800, 11700, 15600, 99999};
 
     const u32 BL = 16;
 
-    /* Set to 4 read and 2 write for 1866bl. */
-    /* For 2131bl: 8 read and 4 write. */
-    const u32 rl_offset = 8;
-    const u32 wl_offset = 4;
+    const u32 RL = 28 + C.mem_burst_read_latency;
+    const u32 WL = 14 + C.mem_burst_write_latency;
 
-    const u32 RL = 28 + rl_offset;
-    const u32 WL = 14 + wl_offset;
+    const u32 RL_DBI = RL + 4;
 
     /* Precharge to Precharge Delay. (Cycles) */
     const u32 tPPD = 4;
@@ -64,43 +69,45 @@ namespace ams::ldr::oc {
     const double tDQSS_max = 1.25;
     const double tDQS2DQ_max = 0.8;
 
+    const u32 tWR = 18;
+
     /* TOOD: Fix erista */
     namespace pcv::erista {
-        const double tCK_avg = 1000'000.0 / C.eristaEmcMaxClock;
-
-        /* Primary timings. */
-        const u32 tRCD  = tRCD_values[C.t1_tRCD];
-        const u32 tRPpb = tRP_values[C.t2_tRP];
-        const u32 tRAS  = tRAS_values[C.t3_tRAS];
-
-        /* Secondary timings. */
-        const double tRRD = tRRD_values[C.t4_tRRD];
-        const u32 tRFCpb = tRFC_values[C.t5_tRFC];
-        const u32 tWTR   = tWTR_values[C.t7_tWTR];
-        const u32 tREFpb = tREFpb_values[C.t8_tREFI];
-
-        /* Four-bank ACTIVATE Window */
-        const u32 tFAW = (u32) (tRRD * 4.0);
-
-        /* Latency stuff. */
-        const int tR2W = (int)((3.5 / tCK_avg) + 32 + (BL / 2) - 14 - 6 + tWPRE + 12 - (C.t6_tRTW * 3));
-        const int tW2R = (int)((tWTR / tCK_avg) + 18 - (BL / 2));
-        const int tRW2PDEN = (int)((tDQSS_max / tCK_avg) + 46 + (tDQS2DQ_max / tCK_avg) + 6);
-
-        /* Refresh Cycle time. (All Banks) */
-        const u32 tRFCab = tRFCpb * 2;
-
-        /* ACTIVATE-to-ACTIVATE command period. (same bank) */
-        const u32 tRC = tRAS + tRPpb;
-
-        /* SELF REFRESH exit to next valid command delay. */
-        const double tXSR = (double) (tRFCab + 7.5);
-
-        /* u32ernal READ to PRECHARGE command delay. */
-        const int pdex2mrr = (tCK_avg * 3.0) + tRCD_values[C.t1_tRCD] + 1;
-
-        /* Row Precharge Time. (all banks) */
-        const u32 tRPab = tRPpb + 3;
+     //   const double tCK_avg = 1000'000.0 / C.eristaEmcMaxClock;
+     //
+     //   /* Primary timings. */
+     //   const u32 tRCD  = tRCD_values[C.t1_tRCD];
+     //   const u32 tRPpb = tRP_values[C.t2_tRP];
+     //   const u32 tRAS  = tRAS_values[C.t3_tRAS];
+     //
+     //   /* Secondary timings. */
+     //   const double tRRD = tRRD_values[C.t4_tRRD];
+     //   const u32 tRFCpb = tRFC_values[C.t5_tRFC];
+     //   const u32 tWTR   = tWTR_values[C.t7_tWTR];
+     //   const u32 tREFpb = tREFpb_values[C.t8_tREFI];
+     //
+     //   /* Four-bank ACTIVATE Window */
+     //   const u32 tFAW = (u32) (tRRD * 4.0);
+     //
+     //   /* Latency stuff. */
+     //   const int tR2W = (int)((3.5 / tCK_avg) + 32 + (BL / 2) - 14 - 6 + tWPRE + 12 - (C.t6_tRTW * 3));
+     //   const int tW2R = (int)((tWTR / tCK_avg) + 18 - (BL / 2));
+     //   const int tRW2PDEN = (int)((tDQSS_max / tCK_avg) + 46 + (tDQS2DQ_max / tCK_avg) + 6);
+     //
+     //   /* Refresh Cycle time. (All Banks) */
+     //   const u32 tRFCab = tRFCpb * 2;
+     //
+     //   /* ACTIVATE-to-ACTIVATE command period. (same bank) */
+     //   const u32 tRC = tRAS + tRPpb;
+     //
+     //   /* SELF REFRESH exit to next valid command delay. */
+     //   const double tXSR = (double) (tRFCab + 7.5);
+     //
+     //   /* u32ernal READ to PRECHARGE command delay. */
+     //   const int pdex2mrr = (tCK_avg * 3.0) + tRCD_values[C.t1_tRCD] + 1;
+     //
+     //   /* Row Precharge Time. (all banks) */
+     //   const u32 tRPab = tRPpb + 3;
     }
 
     namespace pcv::mariko {
@@ -119,25 +126,37 @@ namespace ams::ldr::oc {
         const u32 tFAW = (u32) (tRRD * 4.0);
         const double tRPab = tRPpb + 3;
 
-        const double tR2P = 7.5; /* Tighten up? */
-        const u32 tR2W = CEIL(RL + (tDQSCK_max / tCK_avg) + (BL / 2) - WL + tWPRE + FLOOR(tRPST)); /* TODO */
-        const u32 tRTM = RL + 9 + (tDQSCK_max / tCK_avg) + FLOOR(tRPST) + CEIL(7.5 / tCK_avg);
+        const u32 tR2P = 12 + (C.mem_burst_read_latency / 2);
+        inline u32 tR2W;
+        const u32 tRTM = RL + 9 + (tDQSCK_max / tCK_avg) + FLOOR(tRPST) + CEIL(tR2P / tCK_avg);
         const u32 tRATM = tRTM + CEIL(tR2P / tCK_avg) - (BL / 2);
+        inline u32 rdv;
+        inline u32 einput;
+        inline u32 einput_duration;
+        inline u32 ibdly;
+        inline u32 obdly;
+        inline u32 quse;
+        inline u32 quse_width;
+        inline u32 rext;
+        inline u32 qrst;
+        inline u32 qsafe;
+        inline u32 qpop;
 
-        /* Note: Dividing WL is probably incorect but it works out by pure chance :) */
-        const u32 tW2P = WL + (BL / 2) + 1 + CEIL(WL / tCK_avg); /* Tighten? */
-        const u32 tW2R = WL + (BL / 2) + 1 + CEIL(tWTR / tCK_avg);
-        const u32 tWTM = WL + (BL / 2) + 1 + CEIL(7.5 / tCK_avg);
-        const u32 tWATM = tWTM + CEIL(WL / tCK_avg);
+        inline u32 tW2P;
+        inline u32 tWTPDEN;
+        inline u32 tW2R;
+        inline u32 tWTM;
+        inline u32 tWATM;
+
+        const u32 wdv = 0xE + C.mem_burst_write_latency;
+        const u32 wsv = 0xC + C.mem_burst_write_latency;
+        const u32 wev = 0xA + C.mem_burst_write_latency;
+
+        inline u32 pdex2rw;
+        inline u32 cke2pden;
 
         const double tMMRI = tRCD + (tCK_avg * 3);
-        const double tPDEX2MRR = tMMRI + 10;
-        const u32 tWTPDEN = tW2P + 1 + CEIL(tDQSS_max / tCK_avg) + CEIL(tDQS2DQ_max / tCK_avg) + 6.0;
-
-        inline u32 obdly = 0x10000002 + wl_offset;
-        const u32 wdv = 0xE + wl_offset;
-        const u32 wsv = 0xC + wl_offset;
-        const u32 wev = 0xA + wl_offset;
+        const double pdex2mrr = tMMRI + 10; /* Do this properly? */
     }
 
 }

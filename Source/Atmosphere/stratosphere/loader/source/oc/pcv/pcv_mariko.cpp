@@ -20,6 +20,7 @@
 
 #include "pcv.hpp"
 #include "../mtc_timing_value.hpp"
+#include "../mariko/calculate_timings.hpp"
 
 namespace ams::ldr::oc::pcv::mariko {
 
@@ -76,59 +77,58 @@ namespace ams::ldr::oc::pcv::mariko {
         }
         R_THROW(ldr::ResultInvalidCpuMinVolt());
     }
-Result CpuVoltDfll(u32 *ptr)
-    {
+
+    Result CpuVoltDfll(u32 *ptr) {
         cvb_cpu_dfll_data *entry = reinterpret_cast<cvb_cpu_dfll_data *>(ptr);
 
         R_UNLESS(entry->tune0_low == 0x0000FFCF, ldr::ResultInvalidCpuVoltDfllEntry());
         R_UNLESS(entry->tune0_high == 0x00000000, ldr::ResultInvalidCpuVoltDfllEntry());
         R_UNLESS(entry->tune1_low == 0x012207FF, ldr::ResultInvalidCpuVoltDfllEntry());
         R_UNLESS(entry->tune1_high == 0x03FFF7FF, ldr::ResultInvalidCpuVoltDfllEntry());
-        switch (C.marikoCpuUV)
-        {
+        switch (C.marikoCpuUV) {
         case 0:
             break;
         case 1:
-            PATCH_OFFSET(&(entry->tune0_low), 0x0000FFA0); // process_id 0 // EOS UV1
+            PATCH_OFFSET(&(entry->tune0_low), 0x0000FF90); // process_id 0 // EOS UV1
             PATCH_OFFSET(&(entry->tune0_high), 0x0000FFFF);
             PATCH_OFFSET(&(entry->tune1_low), 0x021107FF);
             PATCH_OFFSET(&(entry->tune1_high), 0x00000000);
             break;
         case 2:
-            // PATCH_OFFSET(&(entry->tune0_low), 0x0000FF92); /// EOS Uv2
-            PATCH_OFFSET(&(entry->tune0_high), 0x0000FFDF);
+            PATCH_OFFSET(&(entry->tune0_low), 0x0000FF92); /// EOS Uv2
+            PATCH_OFFSET(&(entry->tune0_high), 0x0000FFFF);
             PATCH_OFFSET(&(entry->tune1_low), 0x021107FF);
-            PATCH_OFFSET(&(entry->tune1_high), 0x027207FF);
+            PATCH_OFFSET(&(entry->tune1_high), 0x00000000);
             break;
         case 3:
-            PATCH_OFFSET(&(entry->tune0_low), 0x0000FFDF); // EOS UV3
-            PATCH_OFFSET(&(entry->tune0_high), 0x0000FFDF);
+            PATCH_OFFSET(&(entry->tune0_low), 0x0000FF9A); // EOS UV3
+            PATCH_OFFSET(&(entry->tune0_high), 0x0000FFFF);
             PATCH_OFFSET(&(entry->tune1_low), 0x021107FF);
-            PATCH_OFFSET(&(entry->tune1_high), 0x27307ff);
+            PATCH_OFFSET(&(entry->tune1_high), 0x00000000);
             break;
         case 4:
-            PATCH_OFFSET(&(entry->tune0_low), 0x0000FFFF); // EOS Uv4
-            PATCH_OFFSET(&(entry->tune0_high), 0x0000FFDF);
+            PATCH_OFFSET(&(entry->tune0_low), 0x0000FFA2); // EOS Uv4
+            PATCH_OFFSET(&(entry->tune0_high), 0x0000FFFF);
             PATCH_OFFSET(&(entry->tune1_low), 0x021107FF);
-            PATCH_OFFSET(&(entry->tune1_high), 0x27407ff);
+            PATCH_OFFSET(&(entry->tune1_high), 0x00000000);
             break;
         case 5:
-            // PATCH_OFFSET(&(entry->tune0_low), 0x0000FFFF); // EOS UV5
-            PATCH_OFFSET(&(entry->tune0_high), 0x0000FFDF);
-            PATCH_OFFSET(&(entry->tune1_low), 0x21607ff);
-            PATCH_OFFSET(&(entry->tune1_high), 0x27707ff);
+            PATCH_OFFSET(&(entry->tune0_low), 0x0000FFFF); // EOS UV5
+            PATCH_OFFSET(&(entry->tune0_high), 0x0000FFFF);
+            PATCH_OFFSET(&(entry->tune1_low), 0x021107FF);
+            PATCH_OFFSET(&(entry->tune1_high), 0x022217FF);
             break;
         case 6:
-            // PATCH_OFFSET(&(entry->tune0_low), 0x0000FFFF); // EOS UV6
-            PATCH_OFFSET(&(entry->tune0_high), 0x0000FFDF);
-            PATCH_OFFSET(&(entry->tune1_low), 0x21607ff);
-            PATCH_OFFSET(&(entry->tune1_high), 0x27807ff);
+            PATCH_OFFSET(&(entry->tune0_low), 0x0000FFFF); // EOS UV6
+            PATCH_OFFSET(&(entry->tune0_high), 0x0000FFFF);
+            PATCH_OFFSET(&(entry->tune1_low), 0x021107FF);
+            PATCH_OFFSET(&(entry->tune1_high), 0x024417FF);
             break;
         case 7:
-            /// PATCH_OFFSET(&(entry->tune0_low), 0x0000FFFF); // EOS UV6
+            PATCH_OFFSET(&(entry->tune0_low), 0x0000FFFF); // EOS UV6
             PATCH_OFFSET(&(entry->tune0_high), 0x0000FFFF);
-            PATCH_OFFSET(&(entry->tune1_low), 0x21607ff);
-            PATCH_OFFSET(&(entry->tune1_high), 0x27b07ff);
+            PATCH_OFFSET(&(entry->tune1_low), 0x021107FF);
+            PATCH_OFFSET(&(entry->tune1_high), 0x026617FF);
             break;
         // case 8:
         //     PATCH_OFFSET(&(entry->tune0_low), 0x0000FFFF); // EOS UV6
@@ -141,7 +141,6 @@ Result CpuVoltDfll(u32 *ptr)
         }
         R_SUCCEED();
     }
-
 
     Result GpuFreqMaxAsm(u32 *ptr32) {
         // Check if both two instructions match the pattern
@@ -200,7 +199,7 @@ Result CpuVoltDfll(u32 *ptr)
         R_SUCCEED();
     }
 
-void MemMtcTableAutoAdjustBaseLatency(MarikoMtcTable *table) {
+    void MemMtcTableAutoAdjustBaseLatency(MarikoMtcTable *table) {
         #define WRITE_PARAM_ALL_REG(TABLE, PARAM, VALUE) \
             TABLE->burst_regs.PARAM = VALUE;             \
             TABLE->shadow_regs_ca_train.PARAM   = VALUE; \
@@ -223,19 +222,12 @@ void MemMtcTableAutoAdjustBaseLatency(MarikoMtcTable *table) {
         u32 trefbw = refresh_raw + 0x40;
         trefbw = MIN(trefbw, static_cast<u32>(0x3FFF));
 
-        /* TODO: Make this less uggly and actually work by finding real clocks */
-        if (C.marikoEmcMaxClock > 3'100'000) {
-            obdly -= 2;
-        }
-
-        if (C.marikoEmcMaxClock > 2'500'000) {
-            obdly -= 2;
-        }
+        CalculateTimings();
 
         WRITE_PARAM_ALL_REG(table, emc_rd_rcd, GET_CYCLE_CEIL(tRCD));
         WRITE_PARAM_ALL_REG(table, emc_wr_rcd, GET_CYCLE_CEIL(tRCD));
-        WRITE_PARAM_ALL_REG(table, emc_rc, GET_CYCLE_CEIL(tRC));
-        WRITE_PARAM_ALL_REG(table, emc_ras, GET_CYCLE_CEIL(tRAS));
+        WRITE_PARAM_ALL_REG(table, emc_rc, MIN(GET_CYCLE_CEIL(tRC), static_cast<u32>(0xB8)));
+        WRITE_PARAM_ALL_REG(table, emc_ras, MIN(GET_CYCLE_CEIL(tRAS), static_cast<u32>(0x7F)));
         WRITE_PARAM_ALL_REG(table, emc_rrd, GET_CYCLE_CEIL(tRRD));
         WRITE_PARAM_ALL_REG(table, emc_rfcpb, GET_CYCLE_CEIL(tRFCpb));
         WRITE_PARAM_ALL_REG(table, emc_rfc, GET_CYCLE_CEIL(tRFCab));
@@ -243,12 +235,12 @@ void MemMtcTableAutoAdjustBaseLatency(MarikoMtcTable *table) {
         WRITE_PARAM_ALL_REG(table, emc_txsr, MIN(GET_CYCLE_CEIL(tXSR), static_cast<u32>(0x3fe)));
         WRITE_PARAM_ALL_REG(table, emc_txsrdll, MIN(GET_CYCLE_CEIL(tXSR), static_cast<u32>(0x3fe)));
         WRITE_PARAM_ALL_REG(table, emc_tfaw, GET_CYCLE_CEIL(tFAW));
-        WRITE_PARAM_ALL_REG(table, emc_trpab, GET_CYCLE_CEIL(tRPab));
+        WRITE_PARAM_ALL_REG(table, emc_trpab, MIN(GET_CYCLE_CEIL(tRPab), static_cast<u32>(0x3F)));
         WRITE_PARAM_ALL_REG(table, emc_tckesr, GET_CYCLE_CEIL(tSR));
         WRITE_PARAM_ALL_REG(table, emc_tcke, GET_CYCLE_CEIL(tXP) + 1);
         WRITE_PARAM_ALL_REG(table, emc_tpd, GET_CYCLE_CEIL(tXP));
         WRITE_PARAM_ALL_REG(table, emc_tclkstop, GET_CYCLE_CEIL(tXP) + 8);
-        WRITE_PARAM_ALL_REG(table, emc_r2p, GET_CYCLE_CEIL(tR2P));
+        WRITE_PARAM_ALL_REG(table, emc_r2p, tR2P);
         WRITE_PARAM_ALL_REG(table, emc_r2w, tR2W);
         WRITE_PARAM_ALL_REG(table, emc_trtm, tRTM);
         WRITE_PARAM_ALL_REG(table, emc_tratm, tRATM);
@@ -256,40 +248,41 @@ void MemMtcTableAutoAdjustBaseLatency(MarikoMtcTable *table) {
         WRITE_PARAM_ALL_REG(table, emc_w2r, tW2R);
         WRITE_PARAM_ALL_REG(table, emc_twtm, tWTM);
         WRITE_PARAM_ALL_REG(table, emc_twatm, tWATM);
-        WRITE_PARAM_ALL_REG(table, emc_rext, 26);
+        WRITE_PARAM_ALL_REG(table, emc_rext, rext);
+        WRITE_PARAM_ALL_REG(table, emc_wext, (C.marikoEmcMaxClock >= 2533000) ? 0x19 : 0x16);
         WRITE_PARAM_ALL_REG(table, emc_refresh, refresh_raw);
         WRITE_PARAM_ALL_REG(table, emc_pre_refresh_req_cnt, refresh_raw / 4);
         WRITE_PARAM_ALL_REG(table, emc_trefbw, trefbw);
         const u32 dyn_self_ref_control = (((u32)(7605.0 / tCK_avg)) + 260U) | (table->burst_regs.emc_dyn_self_ref_control & 0xffff0000U);
         WRITE_PARAM_ALL_REG(table, emc_dyn_self_ref_control, dyn_self_ref_control);
-        WRITE_PARAM_ALL_REG(table, emc_pdex2wr, GET_CYCLE_CEIL(10.0));
-        WRITE_PARAM_ALL_REG(table, emc_pdex2rd, GET_CYCLE_CEIL(10.0));
+        WRITE_PARAM_ALL_REG(table, emc_pdex2wr, pdex2rw);
+        WRITE_PARAM_ALL_REG(table, emc_pdex2rd, pdex2rw);
         WRITE_PARAM_ALL_REG(table, emc_pchg2pden, GET_CYCLE_CEIL(1.75));
         WRITE_PARAM_ALL_REG(table, emc_ar2pden, GET_CYCLE_CEIL(1.75));
         WRITE_PARAM_ALL_REG(table, emc_act2pden, GET_CYCLE_CEIL(14.0));
-        WRITE_PARAM_ALL_REG(table, emc_cke2pden, GET_CYCLE_CEIL(5.0));
-        WRITE_PARAM_ALL_REG(table, emc_pdex2mrr, GET_CYCLE_CEIL(tPDEX2MRR));
+        WRITE_PARAM_ALL_REG(table, emc_cke2pden, cke2pden);
+        WRITE_PARAM_ALL_REG(table, emc_pdex2mrr, GET_CYCLE_CEIL(pdex2mrr));
         WRITE_PARAM_ALL_REG(table, emc_rw2pden, tWTPDEN);
-        WRITE_PARAM_ALL_REG(table, emc_einput, 0xF);
-        WRITE_PARAM_ALL_REG(table, emc_einput_duration, 0x31);
+        WRITE_PARAM_ALL_REG(table, emc_einput, einput);
+        WRITE_PARAM_ALL_REG(table, emc_einput_duration, einput_duration);
         WRITE_PARAM_ALL_REG(table, emc_obdly, obdly);
-        WRITE_PARAM_ALL_REG(table, emc_ibdly, 0x1000001C);
+        WRITE_PARAM_ALL_REG(table, emc_ibdly, ibdly);
         WRITE_PARAM_ALL_REG(table, emc_wdv_mask, wdv);
-        WRITE_PARAM_ALL_REG(table, emc_quse_width, 0xD);
-        WRITE_PARAM_ALL_REG(table, emc_quse, 0x2F);
+        WRITE_PARAM_ALL_REG(table, emc_quse_width, quse_width);
+        WRITE_PARAM_ALL_REG(table, emc_quse, quse);
         WRITE_PARAM_ALL_REG(table, emc_wdv, wdv);
         WRITE_PARAM_ALL_REG(table, emc_wsv, wsv);
         WRITE_PARAM_ALL_REG(table, emc_wev, wev);
-        WRITE_PARAM_ALL_REG(table, emc_qrst, 0x00080005);
-        WRITE_PARAM_ALL_REG(table, emc_qsafe, 0x44);
-        WRITE_PARAM_ALL_REG(table, emc_tr_qpop, 0x3B);
-        WRITE_PARAM_ALL_REG(table, emc_rdv, 0x49);
-        WRITE_PARAM_ALL_REG(table, emc_qpop, 0x3B);
-        WRITE_PARAM_ALL_REG(table, emc_tr_rdv_mask, 0x4B);
-        WRITE_PARAM_ALL_REG(table, emc_rdv_early, 0x47);
-        WRITE_PARAM_ALL_REG(table, emc_rdv_early_mask, 0x49);
-        WRITE_PARAM_ALL_REG(table, emc_rdv_mask, 0x4B);
-        WRITE_PARAM_ALL_REG(table, emc_tr_rdv, 0x49);
+        WRITE_PARAM_ALL_REG(table, emc_qrst, qrst);
+        WRITE_PARAM_ALL_REG(table, emc_qsafe, qsafe);
+        WRITE_PARAM_ALL_REG(table, emc_tr_qpop, qpop);
+        WRITE_PARAM_ALL_REG(table, emc_rdv, rdv);
+        WRITE_PARAM_ALL_REG(table, emc_qpop, qpop);
+        WRITE_PARAM_ALL_REG(table, emc_tr_rdv_mask, rdv + 2);
+        WRITE_PARAM_ALL_REG(table, emc_rdv_early, rdv - 2);
+        WRITE_PARAM_ALL_REG(table, emc_rdv_early_mask, rdv);
+        WRITE_PARAM_ALL_REG(table, emc_rdv_mask, rdv + 2);
+        WRITE_PARAM_ALL_REG(table, emc_tr_rdv, rdv);
 
         constexpr u32 MC_ARB_DIV = 4;
         constexpr u32 MC_ARB_SFA = 2;
@@ -386,14 +379,14 @@ void MemMtcTableAutoAdjustBaseLatency(MarikoMtcTable *table) {
         table->la_scale_regs.mc_latency_allowance_vic_0 = ((mc_latency_allowance_vic_0 | table->la_scale_regs.mc_latency_allowance_vic_0) & 0xff00ff00U) | mc_latency_allowance3;
         table->la_scale_regs.mc_latency_allowance_vi2_0 = (table->la_scale_regs.mc_latency_allowance_vi2_0 & 0xffffff00U) | mc_latency_allowance2;
 
-       // table->pllm_ss_ctrl1 = 0xb55fe01;
-       // table->pllm_ss_ctrl2 = 0x10170b55;
-       // table->pllmb_ss_ctrl1 = 0xb55fe01;
-       // table->pllmb_ss_ctrl2 = 0x10170b55;
+        // table->pllm_ss_ctrl1 = 0xb55fe01;
+        // table->pllm_ss_ctrl2 = 0x10170b55;
+        // table->pllmb_ss_ctrl1 = 0xb55fe01;
+        // table->pllmb_ss_ctrl2 = 0x10170b55;
 
         table->dram_timings.t_rp = tRFCpb;
         table->dram_timings.t_rfc = tRFCab;
-        table->dram_timings.rl = RL - 10;
+        table->dram_timings.rl = RL_DBI;
         table->emc_mrw2 = 0x8802003F;
         table->emc_cfg_2 = 0x11083D;
     }
@@ -416,66 +409,201 @@ void MemMtcTableAutoAdjustBaseLatency(MarikoMtcTable *table) {
          * you'd better calculate timings yourself rather than relying on following algorithm.
          */
 
-        #define WRITE_PARAM_ALL_REG(TABLE, PARAM, VALUE) \
+                #define WRITE_PARAM_ALL_REG(TABLE, PARAM, VALUE) \
             TABLE->burst_regs.PARAM = VALUE;             \
             TABLE->shadow_regs_ca_train.PARAM   = VALUE; \
             TABLE->shadow_regs_rdwr_train.PARAM = VALUE;
 
-        #define GET_CYCLE_CEIL(PARAM) u32(CEIL(double(PARAM) / tCK_avg))
+        #define GET_CYCLE(PARAM) u32(CEIL(double(PARAM) / tCK_avg))
 
-        WRITE_PARAM_ALL_REG(table, emc_rc, 0x60);
-//        WRITE_PARAM_ALL_REG(table, emc_rfc, GET_CYCLE_CEIL(tRFCab));
-//        WRITE_PARAM_ALL_REG(table, emc_rfcpb, GET_CYCLE_CEIL(tRFCpb));
-//        WRITE_PARAM_ALL_REG(table, emc_ras, GET_CYCLE_CEIL(tRAS));
-//        WRITE_PARAM_ALL_REG(table, emc_rp, GET_CYCLE_CEIL(tRPpb));
-//        WRITE_PARAM_ALL_REG(table, emc_r2p, GET_CYCLE_CEIL(tRTP));
-//        WRITE_PARAM_ALL_REG(table, emc_rd_rcd, GET_CYCLE_CEIL(tRCD));
-//        WRITE_PARAM_ALL_REG(table, emc_wr_rcd, GET_CYCLE_CEIL(tRCD));
-//        WRITE_PARAM_ALL_REG(table, emc_rrd, GET_CYCLE_CEIL(tRRD));
-//        WRITE_PARAM_ALL_REG(table, emc_refresh, REFRESH);
-//        WRITE_PARAM_ALL_REG(table, emc_pre_refresh_req_cnt, REFRESH / 4);
-//
-//        WRITE_PARAM_ALL_REG(table, emc_r2w, R2W);
-//        WRITE_PARAM_ALL_REG(table, emc_w2r, W2R);
-//        WRITE_PARAM_ALL_REG(table, emc_w2p, WTP);
-//
-//        /* May or may not have to be patched in Micron; let's skip for now. */
-//        if (!IsMicron())
-//        {
-//            WRITE_PARAM_ALL_REG(table, emc_pdex2wr, GET_CYCLE_CEIL(tXP));
-//            WRITE_PARAM_ALL_REG(table, emc_pdex2rd, GET_CYCLE_CEIL(tXP));
-//        }
-//
-//        WRITE_PARAM_ALL_REG(table, emc_txsr, MIN(GET_CYCLE_CEIL(tXSR), (u32)0x3fe));
-//        WRITE_PARAM_ALL_REG(table, emc_txsrdll, MIN(GET_CYCLE_CEIL(tXSR), (u32)0x3fe));
-//        WRITE_PARAM_ALL_REG(table, emc_tckesr, GET_CYCLE_CEIL(tSR));
-//        WRITE_PARAM_ALL_REG(table, emc_tfaw, GET_CYCLE_CEIL(tFAW));
-//        WRITE_PARAM_ALL_REG(table, emc_trpab, GET_CYCLE_CEIL(tRPab));
-//        WRITE_PARAM_ALL_REG(table, emc_trefbw, REFBW);
-//
-///* Worth replacing with l4t dumps at some point. */
-//// Burst MC Regs
-//#define WRITE_PARAM_BURST_MC_REG(TABLE, PARAM, VALUE) TABLE->burst_mc_regs.PARAM = VALUE;
-//
-//        constexpr u32 MC_ARB_DIV = 4;
-//        constexpr u32 MC_ARB_SFA = 2;
-//
-//        WRITE_PARAM_BURST_MC_REG(table, mc_emem_arb_cfg, C.marikoEmcMaxClock / (33.3 * 1000) / MC_ARB_DIV); // CYCLES_PER_UPDATE: The number of mcclk cycles per deadline timer update
-//        WRITE_PARAM_BURST_MC_REG(table, mc_emem_arb_timing_rcd, CEIL(GET_CYCLE_CEIL(tRCD) / MC_ARB_DIV) - 2)
-//        WRITE_PARAM_BURST_MC_REG(table, mc_emem_arb_timing_rp, CEIL(GET_CYCLE_CEIL(tRPpb) / MC_ARB_DIV) - 1 + MC_ARB_SFA)
-//        WRITE_PARAM_BURST_MC_REG(table, mc_emem_arb_timing_rc, CEIL(GET_CYCLE_CEIL(tRC) / MC_ARB_DIV) - 1)
-//        WRITE_PARAM_BURST_MC_REG(table, mc_emem_arb_timing_ras, CEIL(GET_CYCLE_CEIL(tRAS) / MC_ARB_DIV) - 2)
-//        WRITE_PARAM_BURST_MC_REG(table, mc_emem_arb_timing_faw, CEIL(GET_CYCLE_CEIL(tFAW) / MC_ARB_DIV) - 1)
-//        WRITE_PARAM_BURST_MC_REG(table, mc_emem_arb_timing_rrd, CEIL(GET_CYCLE_CEIL(tRRD) / MC_ARB_DIV) - 1)
-//        WRITE_PARAM_BURST_MC_REG(table, mc_emem_arb_timing_rap2pre, CEIL(GET_CYCLE_CEIL(tRTP) / MC_ARB_DIV))
-//        WRITE_PARAM_BURST_MC_REG(table, mc_emem_arb_timing_wap2pre, CEIL((WTP) / MC_ARB_DIV))
-//        WRITE_PARAM_BURST_MC_REG(table, mc_emem_arb_timing_r2r, CEIL(table->burst_regs.emc_rext / MC_ARB_DIV) - 1 + MC_ARB_SFA)
-//        WRITE_PARAM_BURST_MC_REG(table, mc_emem_arb_timing_r2w, CEIL((R2W) / MC_ARB_DIV) - 1 + MC_ARB_SFA)
-//        WRITE_PARAM_BURST_MC_REG(table, mc_emem_arb_timing_w2r, CEIL((W2R) / MC_ARB_DIV) - 1 + MC_ARB_SFA)
-//        WRITE_PARAM_BURST_MC_REG(table, mc_emem_arb_timing_rfcpb, CEIL(GET_CYCLE_CEIL(tRFCpb) / MC_ARB_DIV))
+/* This condition is insane but it's done in eos. */
+        /* Need to clean up at some point. */
+      //  u32 rext;
+      //  u32 wext;
+      //  if (C.marikoEmcMaxClock < 3200001) {
+      //      if (C.marikoEmcMaxClock < 2133001) {
+      //          rext = 26;
+      //          wext = 22;
+      //      } else {
+      //          rext = 28;
+      //          wext = 22;
+      //
+      //          if (2400000 < C.marikoEmcMaxClock) {
+      //              wext = 25;
+      //          }
+      //      }
+      //  } else {
+      //      rext = 30;
+      //      wext = 25;
+      //  }
+      //
+      //  u32 refresh_raw = 0xFFFF;
+      //  u32 trefbw = 0;
+      //
+      //  if (C.t8_tREFI != 6) {
+      //      refresh_raw = static_cast<u32>(std::floor(static_cast<double>(tREFpb_values[C.t8_tREFI]) / tCK_avg)) - 0x40;
+      //      refresh_raw = MIN(refresh_raw, static_cast<u32>(0xFFFF));
+      //  }
+      //
+      //  trefbw = refresh_raw + 0x40;
+      //  trefbw = MIN(trefbw, static_cast<u32>(0x3FFF));
+      //
+      //  /* Primary timings. */
+      //  WRITE_PARAM_ALL_REG(table, emc_rd_rcd, GET_CYCLE(tRCD));
+      //  WRITE_PARAM_ALL_REG(table, emc_wr_rcd, GET_CYCLE(tRCD));
+      //  WRITE_PARAM_ALL_REG(table, emc_ras,    GET_CYCLE(tRAS));
+      //  WRITE_PARAM_ALL_REG(table, emc_rp,     GET_CYCLE(tRPpb));
+      //
+      //  /* Secondary timings. */
+      //  WRITE_PARAM_ALL_REG(table, emc_rrd,     GET_CYCLE(tRRD));
+      //  WRITE_PARAM_ALL_REG(table, emc_rfc,     GET_CYCLE(tRFCab));
+      //  WRITE_PARAM_ALL_REG(table, emc_rfcpb,   GET_CYCLE(tRFCpb));
+      //  WRITE_PARAM_ALL_REG(table, emc_r2w,     tR2W);
+      //  WRITE_PARAM_ALL_REG(table, emc_w2r,     tW2R);
+      WRITE_PARAM_ALL_REG(table, emc_r2p,   (u32)  0xC);
+      //  WRITE_PARAM_ALL_REG(table, emc_w2p,     (u32) 0x2D);
+      //
+      //  WRITE_PARAM_ALL_REG(table, emc_rext, rext);
+      //  WRITE_PARAM_ALL_REG(table, emc_wext, wext);
+      //
+      //  WRITE_PARAM_ALL_REG(table, emc_trpab,  GET_CYCLE(tRPab));
+      //  WRITE_PARAM_ALL_REG(table, emc_tfaw,   GET_CYCLE(tFAW));
+      //  WRITE_PARAM_ALL_REG(table, emc_rc,     GET_CYCLE(tRC));
+      //
+      //  WRITE_PARAM_ALL_REG(table, emc_tckesr,   GET_CYCLE(tSR));
+      //  WRITE_PARAM_ALL_REG(table, emc_tcke,     GET_CYCLE(tXP) + 2);
+      //  WRITE_PARAM_ALL_REG(table, emc_tpd,      GET_CYCLE(tXP));
+      //  WRITE_PARAM_ALL_REG(table, emc_tclkstop, GET_CYCLE(tXP) + 8);
+      //
+      //  WRITE_PARAM_ALL_REG(table, emc_txsr,    MIN(GET_CYCLE(tXSR), (u32) 1022));
+      //  WRITE_PARAM_ALL_REG(table, emc_txsrdll, MIN(GET_CYCLE(tXSR), (u32) 1022));
+      //
+      //  const u32 dyn_self_ref_control = (((u32)(7605.0 / tCK_avg)) + 260U) | (table->burst_regs.emc_dyn_self_ref_control & 0xffff0000U);
+      //  WRITE_PARAM_ALL_REG(table, emc_dyn_self_ref_control, dyn_self_ref_control);
+      //
+      //  WRITE_PARAM_ALL_REG(table, emc_rw2pden, ams::ldr::oc::pcv::erista::tRW2PDEN);
+      //  WRITE_PARAM_ALL_REG(table, emc_pdex2wr, GET_CYCLE(10.0));
+      //  WRITE_PARAM_ALL_REG(table, emc_pdex2rd, GET_CYCLE(10.0));
+      //
+      //  WRITE_PARAM_ALL_REG(table, emc_pchg2pden, GET_CYCLE(1.75));
+      //  WRITE_PARAM_ALL_REG(table, emc_ar2pden,   GET_CYCLE(1.75));
+      //  WRITE_PARAM_ALL_REG(table, emc_pdex2cke,  GET_CYCLE(1.75));
+      //  WRITE_PARAM_ALL_REG(table, emc_act2pden,  GET_CYCLE(14.0));
+      //  WRITE_PARAM_ALL_REG(table, emc_cke2pden,  GET_CYCLE(5.0));
+      //  WRITE_PARAM_ALL_REG(table, emc_pdex2mrr,  GET_CYCLE(ams::ldr::oc::pcv::erista::pdex2mrr));
+      //
+      //  WRITE_PARAM_ALL_REG(table, emc_refresh,                    refresh_raw);
+      //  WRITE_PARAM_ALL_REG(table, emc_pre_refresh_req_cnt, (u32) (refresh_raw / 4));
+      //  WRITE_PARAM_ALL_REG(table, emc_trefbw,                     trefbw);
+      //
+      //  const u32 mc_tRCD = (int)((double)(GET_CYCLE(tRCD) >> 2) - 2.0);
+      //  const u32 mc_tRPpb = (int)(((double)(GET_CYCLE(tRPpb) >> 2) - 1.0) + 2.0);
+      //  const u32 mc_tRC = (uint)((double)(GET_CYCLE(tRC) >> 2) - 1.0);
+      //  const u32 mc_tR2W = (uint)(((double)((uint)tR2W >> 2) - 1.0) + 2.0);
+      //  const u32 mc_tW2R = (uint)(((double)(tW2R >> 2) - 1.0) + 2.0);
+      //  const u32 mc_tRAS = MIN(GET_CYCLE(tRAS), (u32) 0x7F);
+      //  const u32 mc_tRRD = MIN(GET_CYCLE(tRRD), (u32) 31);
+      //
+      //  table->burst_mc_regs.mc_emem_arb_cfg = (int)(((double) C.marikoEmcMaxClock / 33300.0) * 0.25);
+      //  table->burst_mc_regs.mc_emem_arb_timing_ras = (int) ((double) (mc_tRAS >> 2) - 2.0);
+      //  table->burst_mc_regs.mc_emem_arb_timing_rcd = (int) ((double) (GET_CYCLE(tRCD) >> 2) - 2.0);
+      //  table->burst_mc_regs.mc_emem_arb_timing_rp = (int) (((double) (GET_CYCLE(tRPpb) >> 2) - 1.0) + 2.0);
+      //  table->burst_mc_regs.mc_emem_arb_timing_rc = (int) ((double) (GET_CYCLE(tRC) >> 2) - 1.0);
+      //  table->burst_mc_regs.mc_emem_arb_timing_faw = (int) ((double)(GET_CYCLE(tFAW) >> 2) - 1.0);
+      //  table->burst_mc_regs.mc_emem_arb_timing_rrd = (int)((double)(mc_tRRD >> 2) - 1.0);
+      //  table->burst_mc_regs.mc_emem_arb_timing_rap2pre = 3;
+      //  table->burst_mc_regs.mc_emem_arb_timing_wap2pre = 11;
+      //  table->burst_mc_regs.mc_emem_arb_timing_r2w = (uint)(((double)((uint)tR2W >> 2) - 1.0) + 2.0);
+      //  table->burst_mc_regs.mc_emem_arb_timing_w2r = (uint)(((double)(tW2R >> 2) - 1.0) + 2.0);
+      //
+      //  u32 mc_r2r = table->burst_mc_regs.mc_emem_arb_timing_r2r;
+      //  if (mc_r2r > 1) {
+      //      mc_r2r = (uint)(((double)(long)((double)rext * 0.25) - 1.0) + 2.0);
+      //      table->burst_mc_regs.mc_emem_arb_timing_r2r = mc_r2r;
+      //  }
+      //
+      //  u32 mc_w2w = table->burst_mc_regs.mc_emem_arb_timing_w2w;
+      //  if (mc_w2w > 1) {
+      //      mc_w2w = (uint)(((double)(long)((double)wext / 4.0) - 1.0) + 2.0);
+      //      table->burst_mc_regs.mc_emem_arb_timing_w2w = mc_w2w;
+      //  }
+      //
+      //  table->burst_mc_regs.mc_emem_arb_da_turns = ((mc_tW2R >> 1) << 0x18) | ((mc_tR2W >> 1) << 0x10) | ((mc_r2r >> 1) << 8) | ((mc_w2w >> 1));
+      //  table->burst_mc_regs.mc_emem_arb_da_covers = (((uint)(mc_tRCD + 3 + mc_tRPpb) >> 1 & 0xff) << 8) | (((uint)(mc_tRCD + 11 + mc_tRPpb) >> 1 & 0xff) << 0x10) | ((mc_tRC >> 1) & 0xff);
+      //  table->burst_mc_regs.mc_emem_arb_misc0 = (table->burst_mc_regs.mc_emem_arb_misc0 & 0xffe08000U) | ((mc_tRC + 1) & 0xff);
+      //  table->la_scale_regs.mc_mll_mpcorer_ptsa_rate =         MIN((u32)((C.marikoEmcMaxClock / 1600000) * 0xd0U), (u32)0x115);
+      //  table->la_scale_regs.mc_ftop_ptsa_rate =         MIN((u32)((C.marikoEmcMaxClock / 1600000) * 0x18U), (u32)0x1f);
+      //  table->la_scale_regs.mc_ptsa_grant_decrement =         MIN((u32)((C.marikoEmcMaxClock / 1600000) * 0x1203U), (u32)0x17ff);
+      //
+      //  u32 mc_latency_allowance = 0;
+      //  if (C.marikoEmcMaxClock / 1000 != 0) {
+      //      mc_latency_allowance = 204800 / (C.marikoEmcMaxClock / 1000);
+      //  }
+      //
+      //  const u32 mc_latency_allowance2 = mc_latency_allowance & 0xFF;
+      //  const u32 mc_latency_allowance3 = (mc_latency_allowance & 0xFF) << 0x10;
+      //  table->la_scale_regs.mc_latency_allowance_xusb_0 = (table->la_scale_regs.mc_latency_allowance_xusb_0 & 0xff00ffffU) | mc_latency_allowance3;
+      //  table->la_scale_regs.mc_latency_allowance_sdmmc_0 = (table->la_scale_regs.mc_latency_allowance_sdmmc_0 & 0xff00ffffU) | mc_latency_allowance3;
+      //  table->la_scale_regs.mc_latency_allowance_xusb_1 = (table->la_scale_regs.mc_latency_allowance_xusb_1 & 0xff00ffffU) | mc_latency_allowance3;
+      //  table->la_scale_regs.mc_latency_allowance_tsec_0 = (table->la_scale_regs.mc_latency_allowance_tsec_0 & 0xff00ffffU) | mc_latency_allowance3;
+      //  table->la_scale_regs.mc_latency_allowance_sdmmca_0 = (table->la_scale_regs.mc_latency_allowance_sdmmca_0 & 0xff00ffffU) | mc_latency_allowance3;
+      //  table->la_scale_regs.mc_latency_allowance_sdmmcaa_0 = (table->la_scale_regs.mc_latency_allowance_sdmmcaa_0 & 0xff00ffffU) | mc_latency_allowance3;
+      //  table->la_scale_regs.mc_latency_allowance_sdmmcab_0 = (table->la_scale_regs.mc_latency_allowance_sdmmcab_0 & 0xff00ffffU) | mc_latency_allowance3;
+      //  table->la_scale_regs.mc_latency_allowance_ppcs_1 = (table->la_scale_regs.mc_latency_allowance_ppcs_1 & 0xff00ffffU) | mc_latency_allowance3;
+      //  table->la_scale_regs.mc_latency_allowance_mpcore_0 = (table->la_scale_regs.mc_latency_allowance_mpcore_0 & 0xff00ffffU) | mc_latency_allowance3;
+      //  table->la_scale_regs.mc_latency_allowance_avpc_0 = (table->la_scale_regs.mc_latency_allowance_avpc_0 & 0xff00ffffU) | mc_latency_allowance3;
+      //
+      //  u32 mc_latency_allowance_hc_0 = 0;
+      //  if (C.marikoEmcMaxClock / 1000 != 0) {
+      //      mc_latency_allowance_hc_0 = 35200 / (C.marikoEmcMaxClock / 1000);
+      //  }
+      //
+      //  table->la_scale_regs.mc_latency_allowance_nvdec_0 = (table->la_scale_regs.mc_latency_allowance_nvdec_0 & 0xff00ffffU) | mc_latency_allowance3;
+      //  table->la_scale_regs.mc_latency_allowance_hc_0 = (table->la_scale_regs.mc_latency_allowance_hc_0 & 0xffffff00U) | mc_latency_allowance_hc_0;
+      //
+      //  table->la_scale_regs.mc_latency_allowance_isp2_1 = (table->la_scale_regs.mc_latency_allowance_isp2_1 & 0xff00ff00U) | mc_latency_allowance3 | mc_latency_allowance2;
+      //  table->la_scale_regs.mc_latency_allowance_hc_1 = (table->la_scale_regs.mc_latency_allowance_hc_1 & 0xffffff00U) | mc_latency_allowance2;
+      //
+      //  u32 mc_latency_allowance_gpu_0 = 0;
+      //  if (C.marikoEmcMaxClock / 1000 != 0) {
+      //      mc_latency_allowance_gpu_0 = 40000 / (C.marikoEmcMaxClock / 1000);
+      //  }
+      //
+      //  table->la_scale_regs.mc_latency_allowance_gpu_0 = ((mc_latency_allowance_gpu_0 | table->la_scale_regs.mc_latency_allowance_gpu_0) & 0xff00ff00U) | mc_latency_allowance3;
+      //
+      //  u32 mc_latency_allowance_gpu2_0 = 0;
+      //  if (C.marikoEmcMaxClock / 1000 != 0) {
+      //  mc_latency_allowance_gpu2_0 = 40000 / (C.marikoEmcMaxClock / 1000);
+      //  }
+      //
+      //  table->la_scale_regs.mc_latency_allowance_gpu2_0 = ((mc_latency_allowance_gpu2_0 | table->la_scale_regs.mc_latency_allowance_gpu2_0) & 0xff00ff00U) | mc_latency_allowance3;
+      //
+      //  u32 mc_latency_allowance_nvenc_0 = 0;
+      //  if (C.marikoEmcMaxClock / 1000 != 0) {
+      //      mc_latency_allowance_nvenc_0 = 38400 / (C.marikoEmcMaxClock / 1000);
+      //  }
+      //
+      //  table->la_scale_regs.mc_latency_allowance_nvenc_0 = ((mc_latency_allowance_nvenc_0 | table->la_scale_regs.mc_latency_allowance_nvenc_0) & 0xff00ff00U) | mc_latency_allowance3;
+      //
+      //  u32 mc_latency_allowance_vic_0 = 0;
+      //  if (C.marikoEmcMaxClock / 1000 != 0) {
+      //      mc_latency_allowance_vic_0 = 0xb540 / (C.marikoEmcMaxClock / 1000);
+      //  }
+      //
+      //  table->la_scale_regs.mc_latency_allowance_vic_0 = ((mc_latency_allowance_vic_0 | table->la_scale_regs.mc_latency_allowance_vic_0) & 0xff00ff00U) | mc_latency_allowance3;
+      //  table->la_scale_regs.mc_latency_allowance_vi2_0 = (table->la_scale_regs.mc_latency_allowance_vi2_0 & 0xffffff00U) | mc_latency_allowance2;
+      //
+      //  table->burst_mc_regs.mc_emem_arb_timing_rfcpb = GET_CYCLE(tRFCpb) >> 2;
+      //
+      //  if (C.hpMode) {
+      //      WRITE_PARAM_ALL_REG(table, emc_cfg, 0x13200000);
+      //  }
+      //
+      //  table->dram_timings.t_rp = tRFCpb;
+      //  table->dram_timings.t_rfc = tRFCab;
+      //  table->emc_cfg_2 = 0x11083d;
     }
 
-    /* NOTE: This is reverse engineered eos code, naming may be inaccurate. */
     void MemMtcPllmbDivisor(MarikoMtcTable *table) {
         constexpr u32 PllOscInKHz   = 38400;
         constexpr u32 PllOscHalfKHz = 19200;

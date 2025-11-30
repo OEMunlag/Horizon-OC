@@ -33,25 +33,25 @@ volatile CustomizeTable C = {
 
 .mtcConf = AUTO_ADJ_BL,
 
-.hpMode = DISABLED,
+.hpMode = ENABLED,
 
-.commonCpuBoostClock = 1785000, // Default boost clock
+.commonCpuBoostClock = 2397000, // Default boost clock
 
-.commonEmcMemVolt  = 1175000, // LPDDR4X JEDEC Specification
+.commonEmcMemVolt  = 1250000, // LPDDR4X JEDEC Specification
 
 .eristaCpuMaxVolt  = 1235,
 
 .eristaEmcMaxClock = 1862400, // Maximum HB-MGCH ram rating
 
-.marikoCpuMaxVolt = 1120,
+.marikoCpuMaxVolt = 1185,
 
-.marikoEmcMaxClock = 2700000, // Hynix NME and Samsung AM-MGCJ Rating (others are 4766MT, 2133MHz)
+.marikoEmcMaxClock = 2900000, // Hynix NME and Samsung AM-MGCJ Rating (others are 4766MT, 2133MHz)
 
 .marikoEmcVddqVolt = 640000,
 
 .marikoCpuUV = 0, // No undervolt
 
-.marikoGpuUV = 2,
+.marikoGpuUV = 3,
 
 .eristaCpuUV = 0,
 
@@ -59,26 +59,27 @@ volatile CustomizeTable C = {
 
 .commonGpuVoltOffset = 0,
 
-.EmcDvbShift = 5,
-
-// Defaults - Zeroed
+.EmcDvbShift = 10,
 
 // Primary
-.t1_tRCD = 4,
-.t2_tRP  = 3,
-.t3_tRAS = 8,
+.t1_tRCD = 3,
+.t2_tRP  = 2,
+.t3_tRAS = 4,
 // Secondary
-.t4_tRRD = 2,
-.t5_tRFC = 5,
-.t6_tRTW = 4,
-.t7_tWTR = 4,
-.t8_tREFI= 6,
+.t4_tRRD  = 2,
+.t5_tRFC  = 4,
+.t6_tRTW  = 4,
+.t7_tWTR  = 4,
+.t8_tREFI = 6,
 
-// .mem_burst_latency = 0, // 0 - 1600l, 1 = 1866bl, 2 = 2133bl /* TODO: Remove/fix. */
+/* Set to 4 read and 2 write for 1866bl. */
+/* For 2131bl: 8 read and 4 write. */
+.mem_burst_read_latency = 8,
+.mem_burst_write_latency = 4,
 
-.marikoCpuHighVmin = 800,
+.marikoCpuHighVmin = 750,
 
-.marikoCpuLowVmin = 650,
+.marikoCpuLowVmin = 600,
 
 .eristaGpuVmin = 810,
 
@@ -86,7 +87,7 @@ volatile CustomizeTable C = {
 
 .marikoGpuVmax = 850,
 // NOTE: These tables should NOT BE USED and are only here as placeholders. Always try and find your own optimal tables.
-// Ensure the voltages actually increase or stay the same
+// Ensure the voltages actually increase or stay the sameot
 
 .marikoGpuVoltArray = {
     610  /* 76 */,
@@ -99,18 +100,18 @@ volatile CustomizeTable C = {
     610  /* 614 */,
     610  /* 691 */,
     610  /* 768 */,
-    610  /* 844 */,
-    625  /* 921 */,
-    655  /* 998 */,
-    685  /* 1075 */,
-    725  /* 1152 */,
-    750  /* 1228 */,
-    765    /* 1267  (Disabled by default) */,
-    790    /* 1305  (Disabled by default) */,
-    0    /* 1344  (Disabled by default) */,
-    0    /* 1382  (Disabled by default) */,
-    0    /* 1420  (Disabled by default) */,
-    0    /* 1459  (Disabled by default) */,
+    620  /* 844 */,
+    640  /* 921 */,
+    675  /* 998 */,
+    710  /* 1075 */,
+    735  /* 1152 */,
+    785  /* 1228 */,
+    785    /* 1267  (Disabled by default) */,
+    780    /* 1305  (Disabled by default) */,
+    960    /* 1344  (Disabled by default) */,
+    960    /* 1382  (Disabled by default) */,
+    960    /* 1420  (Disabled by default) */,
+    960    /* 1459  (Disabled by default) */,
     0    /* 1497  (Disabled by default) */,
     0    /* 1536  (Disabled by default) */,
 
@@ -204,30 +205,34 @@ volatile CustomizeTable C = {
 },
 
 .marikoCpuDvfsTableSLT = {
-    {  612000, {  853926,   -20775,      113 }, {} },
-    {  714000, {  889361,   -21625,      113 }, {} },
-    {  816000, {  926862,   -22485,      113 }, {} },
-    {  918000, {  966431,   -23345,      113 }, {} },
-    { 1020000, { 1008066,   -24205,      113 }, { 1120000 } },
-    { 1122000, { 1051768,   -25065,      113 }, { 1120000 } },
-    { 1224000, { 1097537,   -25925,      113 }, { 1120000 } },
-    { 1326000, { 1145373,   -26785,      113 }, { 1120000 } },
-    { 1428000, { 1195276,   -27645,      113 }, { 1120000 } },
-    { 1581000, { 1274006,   -28935,      113 }, { 1120000 } },
-    { 1683000, { 1329076,   -29795,      113 }, { 1120000 } },
-    { 1785000, { 1386213,   -30655,      113 }, { 1120000 } },
-    { 1887000, { 1445416,   -31515,      113 }, { 1120000 } },
-    { 1963500, { 1490873,   -32155,      113 }, { 1120000 } },
-    // Appending table
-    { 2091000, { 1580725,   -33235,      113 }, { 1235000 } },
-    { 2193000, { 1580725,   -33235,      113 }, { 1235000 } },
-    { 2295000, { 1635431,   -34095,      113 }, { 1235000 } },
-    { 2397000, { 1702903,   -34955,      113 }, { 1235000 } },
-    { 2499000, { 1754400,   -35643,      113 }, { 1235000 } },
-    { 2601000, { 1805897,   -36331,      113 }, { 1235000 } },
-	{ 2703000, { 1857394,   -37019,      113 }, { 1235000 } },
-	{ 2805000, { 1908891,   -37707,      113 }, { 1235000 } },
-	{ 2907000, { 1960388,   -38395,      113 }, { 1250000 } },
+    // {   204000, {   732856,  -17335,    113 }, {  } },
+    // {   306000, {   760024,  -18195,    113 }, {  } },
+    // {   408000, {   789258,  -19055,    113 }, {  } },
+    // {   510000, {   789258,  -19915,    113 }, {  } },
+    {   612000, {   789258,  -19055,    113 }, {  } },
+    {   714000, {   820558,  -19915,    113 }, {  } },
+    {   816000, {   853926,  -20775,    113 }, {  } },
+    {   918000, {   889361,  -21625,    113 }, {  } },
+    {  1020000, {   926862,  -22485,    113 }, { 1120000 } },
+    {  1122000, {   926862,  -22485,    113 }, { 1120000 } },
+    {  1224000, {   926862,  -22485,    113 }, { 1120000 } },
+    {  1326000, {   966431,  -23345,    113 }, { 1120000 } },
+    {  1428000, {  1008066,  -24205,    113 }, { 1120000 } },
+    {  1581000, {  1051768,  -25065,    113 }, { 1120000 } },
+    {  1683000, {  1097537,  -25925,    113 }, { 1120000 } },
+    {  1785000, {  1145373,  -26785,    113 }, { 1120000 } },
+    {  1887000, {  1195276,  -27645,    113 }, { 1120000 } },
+    {  1963500, {  1274006,  -29795,    113 }, { 1120000 } },
+    {  2091000, {  1349076,  -33235,    113 }, { CPU_MAX_MAX_VOLT } },
+    {  2193000, {  1386213,  -33235,    113 }, { CPU_MAX_MAX_VOLT } },
+    {  2295000, {  1445416,  -34095,    113 }, { CPU_MAX_MAX_VOLT } },
+    {  2397000, {  1490873,  -34955,    113 }, { CPU_MAX_MAX_VOLT } },
+    {  2499000, {  1580725,  -35815,    113 }, { CPU_MAX_MAX_VOLT } },
+    {  2601000, {  1702903,  -36675,    113 }, { CPU_MAX_MAX_VOLT } },
+    {  2703000, {  1748360,  -37535,    113 }, { CPU_MAX_MAX_VOLT } },
+    {  2805000, {  1793817,  -38395,    113 }, { CPU_MAX_MAX_VOLT } },
+    {  2907000, {  1839274,  -39255,    113 }, { CPU_MAX_MAX_VOLT } },
+    {  3009000, {  1884731,  -40115,    113 }, { CPU_MAX_MAX_VOLT } },
 },
 
 /* - Erista GPU DVFS Table:
@@ -391,9 +396,6 @@ volatile CustomizeTable C = {
     { 1497600, { },  { 1256564,   -12688,     -648,        0,     1077,       40 }, },
     { 1536000, { },  { 1275148,   -12688,     -648,        0,     1077,       40 }, },
 },
-
-//.eristaMtcTable = const_cast<EristaMtcTable *>(&EristaMtcTablePlaceholder),
-//.marikoMtcTable = const_cast<MarikoMtcTable *>(&MarikoMtcTablePlaceholder),
 
 };
 
