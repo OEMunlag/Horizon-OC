@@ -67,10 +67,10 @@ namespace ams::ldr::oc::pcv::mariko {
             // Patch vmin for slt
             if (C.marikoCpuUV) {
                 if (*(ptr - 5) == 620) {
-                    PATCH_OFFSET((ptr - 5), C.marikoCpuHighVmin); // hf vmin
+                    PATCH_OFFSET((ptr - 5), C.marikoCpuLowVmin); // hf vmin
                 }
                 if (*(ptr - 1) == 620) {
-                    PATCH_OFFSET((ptr - 1), C.marikoCpuLowVmin); // lf vmin
+                    PATCH_OFFSET((ptr - 1), C.marikoCpuHighVmin); // lf vmin
                 }
             }
             R_SUCCEED();
@@ -135,6 +135,26 @@ namespace ams::ldr::oc::pcv::mariko {
             PATCH_OFFSET(&(entry->tune0_high), 0x0000FFFF);
             PATCH_OFFSET(&(entry->tune1_low), 0x021107FF);
             PATCH_OFFSET(&(entry->tune1_high), 0x028817FF);
+        case 9:
+            PATCH_OFFSET(&(entry->tune0_low), 0x0000FFFF); // EOS UV6
+            PATCH_OFFSET(&(entry->tune0_high), 0x0000FFFF);
+            PATCH_OFFSET(&(entry->tune1_low), 0x021107FF);
+            PATCH_OFFSET(&(entry->tune1_high), 0x028817FF);
+        case 10:
+            PATCH_OFFSET(&(entry->tune0_low), 0x0000FFFF); // EOS UV6
+            PATCH_OFFSET(&(entry->tune0_high), 0x0000FFFF);
+            PATCH_OFFSET(&(entry->tune1_low), 0x021107FF);
+            PATCH_OFFSET(&(entry->tune1_high), 0x02AA17FF);
+        case 11:
+            PATCH_OFFSET(&(entry->tune0_low), 0x0000FFFF); // EOS UV6
+            PATCH_OFFSET(&(entry->tune0_high), 0x0000FFFF);
+            PATCH_OFFSET(&(entry->tune1_low), 0x021107FF);
+            PATCH_OFFSET(&(entry->tune1_high), 0x02CC17FF);
+        case 12:
+            PATCH_OFFSET(&(entry->tune0_low), 0x0000FFFF); // EOS UV6
+            PATCH_OFFSET(&(entry->tune0_high), 0x0000FFFF);
+            PATCH_OFFSET(&(entry->tune1_low), 0x021107FF);
+            PATCH_OFFSET(&(entry->tune1_high), 0x02FF17FF);
             break;
         default:
             break;
