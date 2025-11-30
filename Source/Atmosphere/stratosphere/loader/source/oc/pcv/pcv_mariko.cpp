@@ -130,12 +130,12 @@ namespace ams::ldr::oc::pcv::mariko {
             PATCH_OFFSET(&(entry->tune1_low), 0x021107FF);
             PATCH_OFFSET(&(entry->tune1_high), 0x026617FF);
             break;
-        // case 8:
-        //     PATCH_OFFSET(&(entry->tune0_low), 0x0000FFFF); // EOS UV6
-        //     PATCH_OFFSET(&(entry->tune0_high), 0x0000FFFF);
-        //     PATCH_OFFSET(&(entry->tune1_low), 0x021107FF);
-        //     PATCH_OFFSET(&(entry->tune1_high), 0x028817FF);
-        //     break;
+        case 8:
+            PATCH_OFFSET(&(entry->tune0_low), 0x0000FFFF); // EOS UV6
+            PATCH_OFFSET(&(entry->tune0_high), 0x0000FFFF);
+            PATCH_OFFSET(&(entry->tune1_low), 0x021107FF);
+            PATCH_OFFSET(&(entry->tune1_high), 0x028817FF);
+            break;
         default:
             break;
         }
