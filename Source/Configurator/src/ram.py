@@ -129,12 +129,21 @@ def populate():
     dpg.add_separator(label="Primary Timings")
 
     dpg.add_combo(
-        items=["0 (1600bl)", "2 (1866bl)", "4 (2133bl)"],
-        default_value="2",
-        label="Base Latency (unused)",
+        items=list(range(0, 12)),
+        default_value="0",
+        label="Burst Latency (read)",
         callback=k.grab_kip_storage_values_no_mult,
-        tag="mem_burst_latency"
+        tag="mem_burst_read_latency"
     )
+
+    dpg.add_combo(
+        items=list(range(0, 12)),
+        default_value="0",
+        label="Burst Latency (write)",
+        callback=k.grab_kip_storage_values_no_mult,
+        tag="mem_burst_write_latency"
+    )
+
     dpg.add_slider_int(label="t1 tRCD", min_value=0, max_value=7, tag="t1_tRCD", callback=k.grab_kip_storage_values_no_mult)
     dpg.add_slider_int(label="t2 tRP", min_value=0, max_value=7, tag="t2_tRP", callback=k.grab_kip_storage_values_no_mult)
     dpg.add_slider_int(label="t3 tRAS", min_value=0, max_value=9, tag="t3_tRAS", callback=k.grab_kip_storage_values_no_mult)

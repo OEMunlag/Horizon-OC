@@ -83,7 +83,8 @@ variables = [
     ("t6_tRTW", "u32"),
     ("t7_tWTR", "u32"),
     ("t8_tREFI", "u32"),
-    ("mem_burst_latency", "u32"),
+    ("mem_burst_read_latency", "u32"),
+    ("mem_burst_write_latency", "u32"),
     ("marikoCpuHighVmin", "u32"),
     ("marikoCpuLowVmin", "u32"),
     ("eristaGpuVmin", "u32"),
@@ -180,7 +181,8 @@ def load_all_vars():
     c.load_entry_object("t6_tRTW", 5)
     c.load_entry_object("t7_tWTR", 5)
     c.load_entry_object("t8_tREFI", 5)
-    c.load_entry_object("mem_burst_latency", 5)
+    c.load_entry_object("mem_burst_read_latency", 5)
+    c.load_entry_object("mem_burst_write_latency", 5)
     c.load_entry_object("marikoCpuHighVmin", 3)
     c.load_entry_object("marikoCpuLowVmin", 3)
     c.load_entry_object("eristaGpuVmin", 3)
