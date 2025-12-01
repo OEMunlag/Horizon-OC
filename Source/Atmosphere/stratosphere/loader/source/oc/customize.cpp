@@ -37,7 +37,7 @@ volatile CustomizeTable C = {
 
 .commonCpuBoostClock = 2397000, // Default boost clock
 
-.commonEmcMemVolt  = 1250000, // LPDDR4X JEDEC Specification
+.commonEmcMemVolt  = 1175000, // LPDDR4X JEDEC Specification
 
 .eristaCpuMaxVolt  = 1235,
 
@@ -45,11 +45,11 @@ volatile CustomizeTable C = {
 
 .marikoCpuMaxVolt = 1185,
 
-.marikoEmcMaxClock = 2900000, // Hynix NME and Samsung AM-MGCJ Rating (others are 4766MT, 2133MHz)
+.marikoEmcMaxClock = 2700000, // Hynix NME and Samsung AM-MGCJ Rating (others are 4766MT, 2133MHz)
 
 .marikoEmcVddqVolt = 640000,
 
-.marikoCpuUV = 5, // No undervolt
+.marikoCpuUV = 0, // No undervolt
 
 .marikoGpuUV = 3,
 
@@ -62,15 +62,15 @@ volatile CustomizeTable C = {
 .EmcDvbShift = 10,
 
 // Primary
-.t1_tRCD = 3,
-.t2_tRP  = 2,
-.t3_tRAS = 4,
+.t1_tRCD = 0,
+.t2_tRP  = 0,
+.t3_tRAS = 0,
 // Secondary
-.t4_tRRD  = 2,
-.t5_tRFC  = 4,
-.t6_tRTW  = 4,
-.t7_tWTR  = 4,
-.t8_tREFI = 6,
+.t4_tRRD  = 0,
+.t5_tRFC  = 0,
+.t6_tRTW  = 0,
+.t7_tWTR  = 0,
+.t8_tREFI = 0,
 
 /* Set to 4 read and 2 write for 1866bl. */
 /* For 2131bl: 8 read and 4 write. */

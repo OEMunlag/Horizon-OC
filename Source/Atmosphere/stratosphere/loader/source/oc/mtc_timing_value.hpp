@@ -128,8 +128,8 @@ namespace ams::ldr::oc {
 
         const u32 tR2P = 12 + (C.mem_burst_read_latency / 2);
         inline u32 tR2W;
-        const u32 tRTM = RL + 9 + (tDQSCK_max / tCK_avg) + FLOOR(tRPST) + CEIL(tR2P / tCK_avg);
-        const u32 tRATM = tRTM + CEIL(tR2P / tCK_avg) - (BL / 2);
+        const u32 tRTM = RL + 9 + (tDQSCK_max / tCK_avg) + FLOOR(tRPST) + CEIL(10 / tCK_avg);
+        const u32 tRATM = tRTM + CEIL(10 / tCK_avg) - 12;
         inline u32 rdv;
         inline u32 einput;
         inline u32 einput_duration;
