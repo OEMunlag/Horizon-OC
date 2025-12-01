@@ -135,21 +135,25 @@ namespace ams::ldr::oc::pcv::mariko {
             PATCH_OFFSET(&(entry->tune0_high), 0x0000FFFF);
             PATCH_OFFSET(&(entry->tune1_low), 0x021107FF);
             PATCH_OFFSET(&(entry->tune1_high), 0x028817FF);
+            break;
         case 9:
             PATCH_OFFSET(&(entry->tune0_low), 0x0000FFFF); // EOS UV6
             PATCH_OFFSET(&(entry->tune0_high), 0x0000FFFF);
             PATCH_OFFSET(&(entry->tune1_low), 0x021107FF);
             PATCH_OFFSET(&(entry->tune1_high), 0x028817FF);
+            break;
         case 10:
             PATCH_OFFSET(&(entry->tune0_low), 0x0000FFFF); // EOS UV6
             PATCH_OFFSET(&(entry->tune0_high), 0x0000FFFF);
             PATCH_OFFSET(&(entry->tune1_low), 0x021107FF);
             PATCH_OFFSET(&(entry->tune1_high), 0x02AA17FF);
+            break;
         case 11:
             PATCH_OFFSET(&(entry->tune0_low), 0x0000FFFF); // EOS UV6
             PATCH_OFFSET(&(entry->tune0_high), 0x0000FFFF);
             PATCH_OFFSET(&(entry->tune1_low), 0x021107FF);
             PATCH_OFFSET(&(entry->tune1_high), 0x02CC17FF);
+            break;
         case 12:
             PATCH_OFFSET(&(entry->tune0_low), 0x0000FFFF); // EOS UV6
             PATCH_OFFSET(&(entry->tune0_high), 0x0000FFFF);
@@ -628,99 +632,57 @@ namespace ams::ldr::oc::pcv::mariko {
         constexpr u32 PllOscInKHz   = 38400;
         constexpr u32 PllOscHalfKHz = 19200;
 
-        u32 target_freq_khz     = C.marikoEmcMaxClock;
-        u32 target_freq_for_div = C.marikoEmcMaxClock;
+        double target_freq_d = static_cast<double>(C.marikoEmcMaxClock);
 
-        u32 divm_candidate = (C.marikoEmcMaxClock / PllOscHalfKHz) & 0xFF;
+        s32 divm_candidate_half = static_cast<u8>(C.marikoEmcMaxClock / PllOscHalfKHz);
 
-        u32 remainder_half = C.marikoEmcMaxClock - (divm_candidate * PllOscHalfKHz);
-        u32 remainder_full = C.marikoEmcMaxClock - (((C.marikoEmcMaxClock / PllOscInKHz) & 0xFF) * PllOscInKHz);
+        bool remainder_check = (C.marikoEmcMaxClock - PllOscInKHz * (C.marikoEmcMaxClock / PllOscInKHz)) > (C.marikoEmcMaxClock - PllOscHalfKHz * divm_candidate_half) && static_cast<int>(((target_freq_d / PllOscHalfKHz - divm_candidate_half - 0.5) * 8192.0)) != 0;
 
-        bool better_with_half   = (remainder_half < remainder_full);
-        bool fractional_nonzero = (static_cast<u32>((((double)target_freq_khz / 19200.0 - (double)divm_candidate) - 0.5) * 8192.0)) != 0;
+        u32 divm_final = remainder_check + 1;
+        table->pllmb_divm = divm_final;
 
-        divm_candidate = (better_with_half && fractional_nonzero) + 1;
+        double div_step_d = static_cast<double>(PllOscInKHz) / divm_final;
+        s32 divn_integer = static_cast<u8>(C.marikoEmcMaxClock / div_step_d);
+        table->pllmb_divn = divn_integer;
 
-        u32 div_step_khz = 0;
-        if (divm_candidate != 0) {
-            div_step_khz = PllOscInKHz / divm_candidate;
-        }
+        u32 divn_fraction = static_cast<s32>((target_freq_d / div_step_d - divn_integer - 0.5) * 8192.0);
 
-        table->pllmb_divm = divm_candidate;
+        u32 actual_freq_khz = static_cast<u32>((divn_integer + 0.5 + divn_fraction * 0.000122070312) * div_step_d);
 
-        double div_step_d = static_cast<double>(div_step_khz);
+        if (C.marikoEmcMaxClock - 2366001 <= 133999) {
+            s32 divn_fraction_ssc = static_cast<s32>((actual_freq_khz * 0.997 / div_step_d - divn_integer - 0.5) * 8192.0);
 
-        u32 divn_integer = 0;
-        if (div_step_khz != 0) {
-            divn_integer = target_freq_for_div / div_step_khz;
-        }
+            double delta_scaled = (0.3 / div_step_d + 0.3 / div_step_d) * (divn_fraction - divn_fraction_ssc);
+            s32 delta_int = static_cast<s32>(delta_scaled);
+            double delta_frac = delta_scaled - delta_int;
 
-        double divn_int_d = static_cast<double>(divn_integer & 0xFF);
-        table->pllmb_divn = divn_integer & 0xFF;
-
-        u32 divn_fraction = static_cast<u32>(((static_cast<double>(target_freq_khz) / div_step_d - divn_int_d) - 0.5) * 8192.0);
-
-        double fma_out = std::fma(static_cast<double>(static_cast<s32>(divn_fraction)), 1.0 / 8192.0, divn_int_d + 0.5);
-
-        u32 actual_freq_khz = static_cast<u32>(fma_out * (38400.0 / static_cast<double>(divm_candidate)));
-
-        constexpr u32 SscTargetCenterKHz    = 2366001;
-        constexpr u32 SscTargetToleranceKHz = 133999;
-
-        u32 diff_from_ssc_center = target_freq_for_div - SscTargetCenterKHz;
-
-        if (diff_from_ssc_center > SscTargetToleranceKHz) {
-            table->pllm_ss_cfg   &= 0xBFFFFFFF;
-            table->pllmb_ss_cfg  &= 0xBFFFFFFF;
-
-            u32 needs_adjustment = (target_freq_for_div < actual_freq_khz) ? 1 : 0;
-            u32 pll_misc         = (table->pllm_ss_ctrl2 & 0xFFFF0000) | (divn_fraction - needs_adjustment);
-
-            table->pllm_ss_ctrl2   = pll_misc;
-            table->pllmb_ss_ctrl2  = pll_misc;
-            return;
-        }
-
-        u32 divn_fraction_ssc = static_cast<u32>(((((double)actual_freq_khz * 0.997) / div_step_d - divn_int_d) - 0.5) * 8192.0);
-
-        double delta_scaled = (0.3 / div_step_d + 0.3 / div_step_d) * static_cast<double>(static_cast<s32>(divn_fraction - divn_fraction_ssc));
-
-        s32 delta_int = static_cast<s32>(delta_scaled);
-        double delta_frac = delta_scaled - static_cast<double>(delta_int);
-
-        u32 setup_value;
-        if (delta_frac <= 0.5) {
-            double round_val = 0.0;
-            if (delta_int + static_cast<s32>(delta_frac + delta_frac) != 0) {
-                round_val = 0.5;
-            }
-
-            if (static_cast<s32>(delta_frac + delta_frac) == 0) {
-                setup_value = static_cast<u32>(round_val);
+            u32 setup_value = 0;
+            if (delta_frac <= 0.5) {
+                double round_val = (delta_int + ROUND(delta_frac + delta_frac)) ? 0.5 : 0.0;
+                setup_value = ROUND(delta_frac + delta_frac) ? static_cast<u32>(round_val + round_val) | 0x1000 : static_cast<u32>(round_val);
             } else {
-                setup_value = static_cast<s32>(round_val + round_val) | 0x1000;
+                s32 frac_doubled = ROUND(delta_frac - 0.5 + delta_frac - 0.5);
+                double round_val = 1.0;
+                setup_value = frac_doubled ? static_cast<u32>(round_val) : static_cast<u32>(round_val + round_val) | 0x1000;
             }
+
+            u32 ctrl1 = static_cast<u16>(divn_fraction_ssc) | (static_cast<u16>(divn_fraction) << 16);
+            u32 ctrl2 = static_cast<u16>(divn_fraction) | (static_cast<u16>(setup_value) << 16);
+
+            table->pllm_ss_ctrl1 = ctrl1;
+            table->pllm_ss_ctrl2 = ctrl2;
+            table->pllmb_ss_ctrl1 = ctrl1;
+            table->pllmb_ss_ctrl2 = ctrl2;
         } else {
-            s32 frac_doubled = static_cast<s32>((delta_frac - 0.5) + (delta_frac - 0.5));
-            double round_val = 0.5;
-            if (delta_int + frac_doubled != 0) {
-                round_val = 1.0;
-            }
+            table->pllm_ss_cfg &= 0xBFFFFFFF;
+            table->pllmb_ss_cfg &= 0xBFFFFFFF;
 
-            if (frac_doubled == 0) {
-                setup_value = static_cast<s32>(round_val + round_val) | 0x1000;
-            } else {
-                setup_value = static_cast<u32>(round_val);
-            }
+            u64 pair = (static_cast<u64>(divn_fraction) << 32) | static_cast<u64>(C.marikoEmcMaxClock);
+            u32 pll_misc = (table->pllm_ss_ctrl2 & 0xFFFF0000) | static_cast<u32>((pair - actual_freq_khz) >> 32);
+
+            table->pllm_ss_ctrl2 = pll_misc;
+            table->pllmb_ss_ctrl2 = pll_misc;
         }
-
-        u32 ctrl1 = (divn_fraction_ssc & 0xFFFF) | (divn_fraction << 16);
-        u32 ctrl2 = (divn_fraction & 0xFFFF) | (setup_value << 16);
-
-        table->pllm_ss_ctrl1   = ctrl1;
-        table->pllm_ss_ctrl2   = ctrl2;
-        table->pllmb_ss_ctrl1  = ctrl1;
-        table->pllmb_ss_ctrl2  = ctrl2;
     }
 
     Result MemFreqMtcTable(u32 *ptr) {
