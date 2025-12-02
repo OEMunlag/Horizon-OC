@@ -204,7 +204,7 @@ namespace ams::ldr::oc::pcv::mariko {
         R_SUCCEED();
     }
 
-    Result GpuFreqPllLimit(u32 *ptr) {
+    Result GpuFreqPllMax(u32 *ptr) {
         clk_pll_param *entry = reinterpret_cast<clk_pll_param *>(ptr);
 
         // All zero except for freq
@@ -218,8 +218,18 @@ namespace ams::ldr::oc::pcv::mariko {
         R_SUCCEED();
     }
 
-    Result GpuFreqMax(u32 *ptr) {
-        PATCH_OFFSET(ptr, 3600000);
+    Result GpuFreqPllLimit(u32 *ptr) {
+        u32 prev_freq = *(ptr - 1);
+
+        if (prev_freq != 128000 && prev_freq != 1300000 && prev_freq != 76800) {
+            R_THROW(ldr::ResultInvalidGpuPllEntry());
+        }
+
+        if (C.marikoGpuFullUnlock) {
+            /* Removes all limits - dangerous. */
+            *ptr = 3600000;
+        }
+
         R_SUCCEED();
     }
 
@@ -840,7 +850,8 @@ namespace ams::ldr::oc::pcv::mariko {
             {"CPU Volt Dfll", &CpuVoltDfll, 1, nullptr, 0x0000FFCF},
             {"GPU Freq Table", GpuFreqCvbTable<true>, 1, nullptr, GpuCvbDefaultMaxFreq},
             {"GPU Freq Asm", &GpuFreqMaxAsm, 2, &GpuMaxClockPatternFn},
-            {"GPU Freq PLL", &GpuFreqPllLimit, 1, nullptr, GpuClkPllLimit},
+            {"GPU PLL Max", &GpuFreqPllMax, 1, nullptr, GpuClkPllMax},
+            {"GPU PLL Limit", &GpuFreqPllLimit, 4, nullptr, GpuClkPllLimit},
             {"MEM Freq Mtc", &MemFreqMtcTable, 0, nullptr, EmcClkOSLimit},
             {"MEM Freq Dvb", &MemFreqDvbTable, 1, nullptr, EmcClkOSLimit},
             {"MEM Freq Max", &MemFreqMax, 0, nullptr, EmcClkOSLimit},

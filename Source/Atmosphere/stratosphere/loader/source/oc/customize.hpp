@@ -85,6 +85,8 @@ typedef struct CustomizeTable {
     u32 marikoGpuVmin;
     u32 marikoGpuVmax;
 
+    u32 marikoGpuFullUnlock;
+
     u32 marikoGpuVoltArray[24];
     u32 eristaGpuVoltArray[27];
 
@@ -96,10 +98,10 @@ typedef struct CustomizeTable {
     CustomizeGpuDvfsTable eristaGpuDvfsTableSLT;
     CustomizeGpuDvfsTable eristaGpuDvfsTableHigh;
 
-
     CustomizeGpuDvfsTable marikoGpuDvfsTable;
     CustomizeGpuDvfsTable marikoGpuDvfsTableSLT;
     CustomizeGpuDvfsTable marikoGpuDvfsTableHiOPT;
+
 } CustomizeTable;
 
 extern volatile CustomizeTable C;

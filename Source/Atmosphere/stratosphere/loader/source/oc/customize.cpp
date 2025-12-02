@@ -45,7 +45,7 @@ volatile CustomizeTable C = {
 
 .marikoCpuMaxVolt = 1185,
 
-.marikoEmcMaxClock = 2700000, // Hynix NME and Samsung AM-MGCJ Rating (others are 4766MT, 2133MHz)
+.marikoEmcMaxClock = 2133000, // Hynix NME and Samsung AM-MGCJ Rating (others are 4766MT, 2133MHz)
 
 .marikoEmcVddqVolt = 640000,
 
@@ -86,6 +86,14 @@ volatile CustomizeTable C = {
 .marikoGpuVmin = 610,
 
 .marikoGpuVmax = 850,
+
+/* >1305 GPU unlock. */
+/* WARNING! This removes ALL gpu frequency limits and risks permanent hardware damage. */
+/* This setting is very dangerous and can damage your pmic, degrade your soc, damage the voltage rails and can cause various other damage. */
+/* Even with all of that said, if you still decide to use this despite all the warnings, use it at your own risk. */
+/* No warranty is provided in any way whatsoever. */
+.marikoGpuFullUnlock = DISABLED,
+
 // NOTE: These tables should NOT BE USED and are only here as placeholders. Always try and find your own optimal tables.
 // Ensure the voltages actually increase or stay the sameot
 
@@ -146,8 +154,6 @@ volatile CustomizeTable C = {
     0    /* 1036 (Disabled by default) */,
     0    /* 1075 (Disabled by default) */,
 },
-
-
 
 /* Advanced Settings:
  * - Erista CPU DVFS Table:
