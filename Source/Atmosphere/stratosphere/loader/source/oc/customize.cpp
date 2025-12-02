@@ -45,7 +45,7 @@ volatile CustomizeTable C = {
 
 .marikoCpuMaxVolt = 1185,
 
-.marikoEmcMaxClock = 2133000, // Hynix NME and Samsung AM-MGCJ Rating (others are 4766MT, 2133MHz)
+.marikoEmcMaxClock = 3000000, // Hynix NME and Samsung AM-MGCJ Rating (others are 4766MT, 2133MHz)
 
 .marikoEmcVddqVolt = 640000,
 
@@ -114,7 +114,7 @@ volatile CustomizeTable C = {
     710  /* 1075 */,
     735  /* 1152 */,
     785  /* 1228 */,
-    785    /* 1267  (Disabled by default) */,
+    800    /* 1267  (Disabled by default) */,
     780    /* 1305  (Disabled by default) */,
     960    /* 1344  (Disabled by default) */,
     960    /* 1382  (Disabled by default) */,

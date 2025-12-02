@@ -145,8 +145,8 @@ namespace ams::ldr::oc {
         inline u32 tW2P;
         inline u32 tWTPDEN;
         inline u32 tW2R;
-        inline u32 tWTM;
-        inline u32 tWATM;
+        const u32 tWTM = WL + (BL / 2) + 1 + CEIL(7.5 / tCK_avg);
+        const u32 tWATM = tWTM + CEIL(tWR / tCK_avg);
 
         const u32 wdv = 0xE + C.mem_burst_write_latency;
         const u32 wsv = 0xC + C.mem_burst_write_latency;

@@ -100,11 +100,6 @@ namespace ams::ldr::oc::pcv::mariko {
         }
     }
 
-    void CalculateTW2RDerivedWriteTimings() {
-        tWTM = WL + (BL / 2) + 1 + CEIL(tW2R / tCK_avg);
-        tWATM = tWTM + CEIL(tWR / tCK_avg);
-    }
-
     void CalculateQuse() {
         quse = ROUND(0.002266 * (C.marikoEmcMaxClock / 1000.0) + 31.88) + C.mem_burst_read_latency;
 
@@ -173,7 +168,6 @@ namespace ams::ldr::oc::pcv::mariko {
         CalculateTWTPDEN();
         CalculateTR2W();
         CalculateTW2R();
-        CalculateTW2RDerivedWriteTimings();
         CalculateQuse();
         CalculateQrst();
         CalculateQsafe();
