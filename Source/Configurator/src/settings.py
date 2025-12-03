@@ -90,6 +90,9 @@ variables = [
     ("eristaGpuVmin", "u32"),
     ("marikoGpuVmin", "u32"),
     ("marikoGpuVmax", "u32"),
+
+    ("marikoGpuFullUnlock", "u32"),
+
     ("g_volt_76800", "u32"),
     ("g_volt_153600", "u32"),
     ("g_volt_230400", "u32"),
@@ -188,6 +191,8 @@ def load_all_vars():
     c.load_entry_object("eristaGpuVmin", 3)
     c.load_entry_object("marikoGpuVmin", 3)
     c.load_entry_object("marikoGpuVmax", 3)
+
+    c.load_entry_object("marikoGpuFullUnlock", 3)
     # GPU voltage arrays
     for freq in [
         "76800", "153600", "230400", "307200", "384000", "460800", "537600",
