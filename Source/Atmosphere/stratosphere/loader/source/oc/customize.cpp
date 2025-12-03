@@ -45,11 +45,11 @@ volatile CustomizeTable C = {
 
 .marikoCpuMaxVolt = 1185,
 
-.marikoEmcMaxClock = 3000000, // Hynix NME and Samsung AM-MGCJ Rating (others are 4766MT, 2133MHz)
+.marikoEmcMaxClock = 2933000, // Hynix NME and Samsung AM-MGCJ Rating (others are 4766MT, 2133MHz)
 
 .marikoEmcVddqVolt = 640000,
 
-.marikoCpuUV = 0, // No undervolt
+.marikoCpuUV = 8, // No undervolt
 
 .marikoGpuUV = 3,
 
@@ -98,31 +98,30 @@ volatile CustomizeTable C = {
 // Ensure the voltages actually increase or stay the sameot
 
 .marikoGpuVoltArray = {
-    610  /* 76 */,
-    610  /* 153 */,
-    610  /* 230 */,
-    610  /* 307 */,
-    610  /* 384 */,
-    610  /* 460 */,
-    610  /* 537 */,
-    610  /* 614 */,
-    610  /* 691 */,
-    610  /* 768 */,
-    620  /* 844 */,
-    640  /* 921 */,
-    675  /* 998 */,
-    710  /* 1075 */,
-    735  /* 1152 */,
-    785  /* 1228 */,
+    800  /* 76 */,
+    800  /* 153 */,
+    800  /* 230 */,
+    800  /* 307 */,
+    800  /* 384 */,
+    800  /* 460 */,
+    800  /* 537 */,
+    800  /* 614 */,
+    800  /* 691 */,
+    800  /* 768 */,
+    800  /* 844 */,
+    800  /* 921 */,
+    800  /* 998 */,
+    800  /* 1075 */,
+    800  /* 1152 */,
+    800  /* 1228 */,
     800    /* 1267  (Disabled by default) */,
-    780    /* 1305  (Disabled by default) */,
+    815    /* 1305  (Disabled by default) */,
     960    /* 1344  (Disabled by default) */,
     960    /* 1382  (Disabled by default) */,
     960    /* 1420  (Disabled by default) */,
     960    /* 1459  (Disabled by default) */,
     0    /* 1497  (Disabled by default) */,
     0    /* 1536  (Disabled by default) */,
-
 },
 
 .eristaGpuVoltArray = {
@@ -235,7 +234,7 @@ volatile CustomizeTable C = {
 	{ 2703000, { 1857394,   -37019,      113 }, { CPU_MAX_MAX_VOLT } },
 	{ 2805000, { 1908891,   -37707,      113 }, { CPU_MAX_MAX_VOLT } },
 	{ 2907000, { 1960388,   -38395,      113 }, { CPU_MAX_MAX_VOLT } },
-    },
+},
 
 /* - Erista GPU DVFS Table:
  */

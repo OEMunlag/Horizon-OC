@@ -42,7 +42,7 @@ namespace ams::ldr::oc::pcv::mariko {
         {2'933'000, 0, 0x2E, 0xC,  0},
         {2'966'000, 1,    0,   0,  0},
         {3'033'000, 0, 0x2F,   0,  0},
-        {3'100'000, 0,    0,   0, -2},
+        {3'100'000, 0,    0,   0,  0},
         {3'133'000, 1, 0x31, 0xD,  0},
     };
 
@@ -133,8 +133,6 @@ namespace ams::ldr::oc::pcv::mariko {
         {2'733'000, -2},
         {2'833'000, -9},
         {2'933'000, -1},
-        {3'100'000, -9},
-        {3'133'000, -9},
     };
 
     const u32 g_ibdly_table_size = sizeof(g_ibdly_patches) / sizeof(g_ibdly_patches[0]);
@@ -164,8 +162,8 @@ namespace ams::ldr::oc::pcv::mariko {
         {3'000'000, -2},
         {3'033'000, -2},
         {3'066'000, -2},
-        {3'100'000, -4},
-        {3'133'000, -4},
+        {3'100'000, -2},
+        {3'133'000, -2},
     };
 
     const u32 g_obdly_table_size = sizeof(g_obdly_patches) / sizeof(g_obdly_patches[0]);

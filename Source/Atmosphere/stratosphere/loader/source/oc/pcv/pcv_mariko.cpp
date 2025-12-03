@@ -89,7 +89,7 @@ namespace ams::ldr::oc::pcv::mariko {
         case 0:
             break;
         case 1:
-            PATCH_OFFSET(&(entry->tune0_low), 0x0000FF90); // process_id 0 // EOS UV1
+            PATCH_OFFSET(&(entry->tune0_low), 0x0000FFA0); // process_id 0 // EOS UV1
             PATCH_OFFSET(&(entry->tune0_high), 0x0000FFFF);
             PATCH_OFFSET(&(entry->tune1_low), 0x021107FF);
             PATCH_OFFSET(&(entry->tune1_high), 0x00000000);
@@ -310,8 +310,8 @@ namespace ams::ldr::oc::pcv::mariko {
         WRITE_PARAM_ALL_REG(table, emc_qrst, qrst);
         WRITE_PARAM_ALL_REG(table, emc_qsafe, qsafe);
         WRITE_PARAM_ALL_REG(table, emc_tr_qpop, qpop);
-        WRITE_PARAM_ALL_REG(table, emc_rdv, rdv);
         WRITE_PARAM_ALL_REG(table, emc_qpop, qpop);
+        WRITE_PARAM_ALL_REG(table, emc_rdv, rdv);
         WRITE_PARAM_ALL_REG(table, emc_tr_rdv_mask, rdv + 2);
         WRITE_PARAM_ALL_REG(table, emc_rdv_early, rdv - 2);
         WRITE_PARAM_ALL_REG(table, emc_rdv_early_mask, rdv);
