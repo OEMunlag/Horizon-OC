@@ -41,6 +41,10 @@ namespace ams::ldr::oc::pcv::mariko {
     extern const u32         g_ibdly_table_size;
     const AdjustPatch       *FindIbdlyPatch();
 
+    extern const AdjustPatch g_obdly_patches[];
+    extern const u32         g_obdly_table_size;
+    const AdjustPatch       *FindObdlyPatch();
+
     extern const AdjustPatch g_tr2w_patches[];
     extern const u32         g_tr2w_table_size;
     const AdjustPatch       *FindTR2WPatch();

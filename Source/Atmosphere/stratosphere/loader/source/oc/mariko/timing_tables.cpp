@@ -146,6 +146,37 @@ namespace ams::ldr::oc::pcv::mariko {
         return nullptr;
     }
 
+    const AdjustPatch g_obdly_patches[] = {
+        {2'533'000, -2},
+        {2'566'000, -2},
+        {2'600'000, -2},
+        {2'633'000, -2},
+        {2'666'000, -2},
+        {2'700'000, -2},
+        {2'733'000, -2},
+        {2'766'000, -2},
+        {2'800'000, -2},
+        {2'833'000, -4},
+        {2'866'000, -2},
+        {2'900'000, -4},
+        {2'933'000, -2},
+        {2'966'000, -2},
+        {3'000'000, -2},
+        {3'033'000, -2},
+        {3'066'000, -2},
+        {3'100'000, -4},
+        {3'133'000, -4},
+    };
+
+    const u32 g_obdly_table_size = sizeof(g_obdly_patches) / sizeof(g_obdly_patches[0]);
+
+    const AdjustPatch *FindObdlyPatch() {
+        for (u32 i = 0; i < g_obdly_table_size; i++)
+            if (g_obdly_patches[i].freq == C.marikoEmcMaxClock)
+                return &g_obdly_patches[i];
+        return nullptr;
+    }
+
     const AdjustPatch g_tr2w_patches[] = {
         {2'500'000,  1},
         {2'533'000,  1},

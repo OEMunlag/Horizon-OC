@@ -38,7 +38,6 @@ namespace ams::ldr::oc::pcv::mariko {
     void CalculateMiscTimings() {
         tW2P            = 0x2d;
         rdv             = 0x39       + C.mem_burst_read_latency;
-        obdly           = 0x10000002 + C.mem_burst_write_latency;
         einput_duration = 0x1C;
         quse_width      = 0x8;
 
@@ -48,7 +47,6 @@ namespace ams::ldr::oc::pcv::mariko {
                 rdv += e.rdv_inc;
                 if (e.einput) einput_duration = e.einput;
                 if (e.quse_width) quse_width = e.quse_width;
-                obdly += e.obdly_delta;
             }
         }
 
@@ -66,6 +64,14 @@ namespace ams::ldr::oc::pcv::mariko {
 
         if (auto patch = FindIbdlyPatch()) {
             ibdly += patch->adjust;
+        }
+    }
+
+    void CalculateObdly() {
+        obdly = 0x10000002 + C.mem_burst_write_latency;
+
+        if (auto patch = FindObdlyPatch()) {
+            obdly += patch->adjust;
         }
     }
 
@@ -165,6 +171,7 @@ namespace ams::ldr::oc::pcv::mariko {
     void CalculateTimings() {
         CalculateMiscTimings();
         CalculateIbdly();
+        CalculateObdly();
         CalculateTWTPDEN();
         CalculateTR2W();
         CalculateTW2R();
