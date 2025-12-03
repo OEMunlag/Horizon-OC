@@ -32,7 +32,7 @@
 #include "clock_manager.h"
 
 #define SYSCLK_IPC_API_VERSION 4
-#define SYSCLK_IPC_SERVICE_NAME "hoc:sys"
+#define SYSCLK_IPC_SERVICE_NAME "sys:clk"
 
 enum SysClkIpcCmd
 {
@@ -49,7 +49,6 @@ enum SysClkIpcCmd
     SysClkIpcCmd_SetConfigValues = 10,
     SysClkIpcCmd_GetFreqList = 11,
     SysClkIpcCmd_SetReverseNXRTMode = 12,
-    HocClkIpcCmd_UpdateEMCRegs = 13,
 };
 
 

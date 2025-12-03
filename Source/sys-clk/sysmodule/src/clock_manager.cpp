@@ -24,7 +24,6 @@
  * --------------------------------------------------------------------------
  */
 
-#include "notification.h"
 
 #include "clock_manager.h"
 #include <cstring>
@@ -35,10 +34,6 @@
 #include "ipc_service.h"
 
 #define HOSPPC_HAS_BOOST (hosversionAtLeast(7,0,0))
-
-bool HAS_TDP_BEEN_FIRED = false;
-bool HAS_EBL_BEEN_FIRED = false;
-bool HAS_TT_BEEN_FIRED = false;
 
 ClockManager *ClockManager::instance = NULL;
 
@@ -233,92 +228,41 @@ void ClockManager::RefreshFreqTableRow(SysClkModule module)
 
 void ClockManager::Tick()
 {
-    
-    std::uint32_t mode = 0;
-    AppletOperationMode opMode = appletGetOperationMode();
-    Result rc = apmExtGetCurrentPerformanceConfiguration(&mode);
-    ASSERT_RESULT_OK(rc, "apmExtGetCurrentPerformanceConfiguration");
-
-
-    if(this->config->GetConfigValue(HocClkConfigValue_EMCDVFS)) { 
-
-        #define DEFAULT_FREQ_MHZ 1600
-        #define DEFAULT_FREQ_MHZ_M 1862
-
-        int ram_mhz = Board::GetHz((SysClkModule)SysClkModule_MEM) / 1000000;
-
-        if (Board::GetSocType() == SysClkSocType_Mariko) {
-            if(ram_mhz > DEFAULT_FREQ_MHZ_M)
-                set_sd1_voltage(this->config->GetConfigValue(HocClkConfigValue_EMCVdd2VoltageUV));
-            else
-                set_sd1_voltage(this->config->GetConfigValue(HocClkConfigValue_EMCVdd2VoltageUVStockMariko));
-        } else {
-            if(ram_mhz > DEFAULT_FREQ_MHZ)
-                set_sd1_voltage(this->config->GetConfigValue(HocClkConfigValue_EMCVdd2VoltageUV));
-            else
-                set_sd1_voltage(this->config->GetConfigValue(HocClkConfigValue_EMCVdd2VoltageUVStockErista));
-        }
-    }
-
-    if(this->config->GetConfigValue(HocClkConfigValue_HandheldTDP) && opMode == AppletOperationMode_Handheld) {
-            if(Board::GetSocType() == SysClkSocType_MarikoLite) {
-                if(Board::GetPowerMw(SysClkPowerSensor_Avg) < -(int)this->config->GetConfigValue(HocClkConfigValue_LiteTDPLimit)) {
-                    if(!HAS_TDP_BEEN_FIRED)
-                        writeNotification("Horizon OC\nTDP has been activated");
-                    HAS_TDP_BEEN_FIRED = true;
-                    ResetToStockClocks();
-                    return;
-                } else {
-                    HAS_TDP_BEEN_FIRED = false;
-                }
-            } else {
-                if(Board::GetPowerMw(SysClkPowerSensor_Avg) < -(int)this->config->GetConfigValue(HocClkConfigValue_HandheldTDPLimit)) {
-                    if(!HAS_TDP_BEEN_FIRED)
-                        writeNotification("Horizon OC\nTDP has been activated");
-                    HAS_TDP_BEEN_FIRED = true;
-                    ResetToStockClocks();
-                    return;
-                } else {
-                    HAS_TDP_BEEN_FIRED = false;
-                }
-            }
-    } else if(opMode == AppletOperationMode_Console && this->config->GetConfigValue(HocClkConfigValue_EnforceBoardLimit)) {
-        if(Board::GetPowerMw(SysClkPowerSensor_Avg) < 0) {
-            if(!HAS_EBL_BEEN_FIRED)
-                writeNotification("Horizon OC\nBoard Limit has been exeeded");
-            HAS_EBL_BEEN_FIRED = true;
-            ResetToStockClocks();
-            return;
-        } else {
-            HAS_EBL_BEEN_FIRED = false;
-        }
-    }
-
-    if(this->config->GetConfigValue(HocClkConfigValue_ThermalThrottle)) {
-        if(tmp451TempSoc() / 1000 > (int)this->config->GetConfigValue(HocClkConfigValue_ThermalThrottleThreshold)) {
-            if(!HAS_TT_BEEN_FIRED)
-                writeNotification("Horizon OC\nThermal Throttle has started");
-            HAS_TT_BEEN_FIRED = true;
-            ResetToStockClocks();
-            return;
-        } else {
-            HAS_TT_BEEN_FIRED = false;
-        }
-    }
-
     std::scoped_lock lock{this->contextMutex};
     if (this->RefreshContext() || this->config->Refresh())
     {
         std::uint32_t targetHz = 0;
         std::uint32_t maxHz = 0;
         std::uint32_t nearestHz = 0;
+        std::uint32_t mode = 0;
+        
+        AppletOperationMode opMode = appletGetOperationMode();
+        Result rc = apmExtGetCurrentPerformanceConfiguration(&mode);
+        ASSERT_RESULT_OK(rc, "apmExtGetCurrentPerformanceConfiguration");
+
+        if(this->config->GetConfigValue(HocClkConfigValue_HandheldTDP) && opMode == AppletOperationMode_Handheld) {
+                if(Board::GetSocType() == SysClkSocType_MarikoLite) {
+                    if(Board::GetPowerMw(SysClkPowerSensor_Now) < -(int)this->config->GetConfigValue(HocClkConfigValue_LiteTDPLimit)) {
+                        ResetToStockClocks();
+                        return;
+                    }
+                } else {
+                    if(Board::GetPowerMw(SysClkPowerSensor_Now) < -(int)this->config->GetConfigValue(HocClkConfigValue_HandheldTDPLimit)) {
+                        ResetToStockClocks();
+                        return;
+                    }
+                }
+            }
 
         if(apmExtIsBoostMode(mode) && !this->config->GetConfigValue(HocClkConfigValue_OverwriteBoostMode)) {
             ResetToStockClocks();
             return;
         }
 
-
+        if(((tmp451TempSoc() / 1000) > (int)this->config->GetConfigValue(HocClkConfigValue_ThermalThrottleThreshold)) && this->config->GetConfigValue(HocClkConfigValue_ThermalThrottle)) {
+            ResetToStockClocks();
+            return;
+        }
         if(this->config->GetConfigValue(HocClkConfigValue_HandheldGovernor) && opMode == AppletOperationMode_Handheld) {
             
         }
@@ -482,9 +426,9 @@ bool ClockManager::RefreshContext()
     }
 
     // ram load do not and should not force a refresh, hasChanged untouched
-    for (unsigned int loadSource = 0; loadSource < SysClkPartLoad_EnumMax; loadSource++)
+    for (unsigned int loadSource = 0; loadSource < SysClkRamLoad_EnumMax; loadSource++)
     {
-        this->context->partLoad[loadSource] = Board::GetPartLoad((SysClkPartLoad)loadSource);
+        this->context->ramLoad[loadSource] = Board::GetRamLoad((SysClkRamLoad)loadSource);
     }
 
     if (this->ConfigIntervalTimeout(SysClkConfigValue_CsvWriteIntervalMs, ns, &this->lastCsvWriteNs))
@@ -498,50 +442,4 @@ bool ClockManager::RefreshContext()
 void ClockManager::SetRNXRTMode(ReverseNXMode mode)
 {
     this->rnxSync->SetRTMode(mode);
-}
-
-void ClockManager::set_sd1_voltage(uint32_t voltage_uv)
-{
-	// SD1 parameters
-	const u32 uv_step = 12500;
-	const u32 uv_min = 600000;
-	const u32 uv_max = 1237500;
-	const u8 volt_addr = 0x17;      // MAX77620_REG_SD1
-	const u8 volt_mask = 0x7F;      // MAX77620_SD1_VOLT_MASK
-
-	if (voltage_uv < uv_min || voltage_uv > uv_max)
-		return;
-
-	u32 mult = (voltage_uv + uv_step - 1 - uv_min) / uv_step;
-	mult = mult & volt_mask;
-
-	I2cSession session;
-	Result res = i2cOpenSession(&session, I2cDevice_Max77620Pmic);
-	if (R_FAILED(res)) {
-		return;
-	}
-
-	u8 current_val = 0;
-	res = i2csessionSendAuto(&session, &volt_addr, 1, I2cTransactionOption_Start);
-	if (R_FAILED(res)) {
-        writeNotification("I2C write failed. This may be a hardware issue");
-		i2csessionClose(&session);
-		return;
-	}
-
-	res = i2csessionReceiveAuto(&session, &current_val, 1, I2cTransactionOption_Stop);
-	if (R_FAILED(res)) {
-        writeNotification("I2C write failed. This may be a hardware issue");
-		i2csessionClose(&session);
-		return;
-	}
-
-	// Mask in the new voltage bits, preserving other bits
-	u8 new_val = (current_val & ~volt_mask) | mult;
-
-	// Write back register with START and STOP conditions
-	u8 write_buf[2] = {volt_addr, new_val};
-	res = i2csessionSendAuto(&session, write_buf, sizeof(write_buf), I2cTransactionOption_All);
-
-	i2csessionClose(&session);
 }

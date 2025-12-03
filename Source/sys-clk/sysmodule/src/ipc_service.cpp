@@ -31,8 +31,6 @@
 #include "file_utils.h"
 #include "errors.h"
 #include "clock_manager.h"
-#include "emc_patcher.h"
-
 IpcService::IpcService(ClockManager* clockMgr)
 {
     std::int32_t priority;
@@ -191,9 +189,6 @@ Result IpcService::ServiceHandlerFunc(void* arg, const IpcServerRequest* r, u8* 
                 return ipcSrv->SetReverseNXRTMode(mode);
             }
             break;
-        case HocClkIpcCmd_UpdateEMCRegs: // Trigger, not data
-            return ipcSrv->PatchEmcRegs();
-            break;
     }
 
     return SYSCLK_ERROR(Generic);
@@ -229,7 +224,6 @@ Result IpcService::Exit()
 
     return 0;
 }
-
 
 Result IpcService::GetProfileCount(std::uint64_t* tid, std::uint8_t* out_count)
 {
@@ -269,7 +263,7 @@ Result IpcService::SetProfiles(SysClkIpc_SetProfiles_Args* args)
 
     if(!config->SetProfiles(args->tid, &profiles, true))
     {
-        return SYSCLK_ERROR(ConfigSaveFailed); // 0x584
+        return SYSCLK_ERROR(ConfigSaveFailed);
     }
 
     return 0;
@@ -349,11 +343,5 @@ Result IpcService::GetFreqList(SysClkIpc_GetFreqList_Args* args, std::uint32_t* 
 
 Result IpcService::SetReverseNXRTMode(ReverseNXMode mode) {
     ClockManager::GetInstance()->SetRNXRTMode(mode);
-    return 0;
-}
-
-
-Result IpcService::PatchEmcRegs() {
-    EMCpatcher::GetInstance()->Run();
     return 0;
 }

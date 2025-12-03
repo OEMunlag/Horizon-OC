@@ -29,7 +29,6 @@
 
 #include <list>
 #include <functional>
-#include <map>
 #include "base_menu_gui.h"
 
 using FreqChoiceListener = std::function<bool(std::uint32_t hz)>;
@@ -43,24 +42,19 @@ protected:
     std::uint32_t selectedHz;
     std::uint32_t* hzList;
     std::uint32_t hzCount;
-    SysClkModule module;
+    SysClkModule module;           // added module
     FreqChoiceListener listener;
-    bool checkMax;
-
-    // NEW: Optional annotation labels
-    std::map<uint32_t, std::string> labels;
-
+    bool checkMax;            // new member
     tsl::elm::ListItem* createFreqListItem(std::uint32_t hz, bool selected, int safety);
 
 public:
+    // Updated constructor with checkMaxValue
     FreqChoiceGui(std::uint32_t selectedHz,
                   std::uint32_t* hzList,
                   std::uint32_t hzCount,
                   SysClkModule module,
                   FreqChoiceListener listener,
-                  bool checkMax = true,
-                  std::map<uint32_t, std::string> labels = {});   // NEW ARG
-
+                  bool checkMax = true);
     ~FreqChoiceGui();
 
     void listUI() override;
