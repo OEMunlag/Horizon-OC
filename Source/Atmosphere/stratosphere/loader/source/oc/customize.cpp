@@ -59,7 +59,7 @@ volatile CustomizeTable C = {
 
 .commonGpuVoltOffset = 0,
 
-.EmcDvbShift = 10,
+.emcDvbShift = 10,
 
 // Primary
 .t1_tRCD = 0,

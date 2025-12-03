@@ -63,7 +63,7 @@ typedef struct CustomizeTable {
 
     u32 commonGpuVoltOffset;
 
-    u32 EmcDvbShift;
+    u32 emcDvbShift;
 
     // advanced config
     u32 t1_tRCD;

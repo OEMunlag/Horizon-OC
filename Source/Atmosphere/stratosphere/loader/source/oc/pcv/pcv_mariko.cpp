@@ -740,7 +740,7 @@ namespace ams::ldr::oc::pcv::mariko {
         if (C.marikoEmcMaxClock <= EmcClkOSLimit)
             R_SKIP();
 
-        int32_t voltAdd = 25 * C.EmcDvbShift;
+        int32_t voltAdd = 25 * C.emcDvbShift;
 
 #define DVB_VOLT(zero, one, two) std::min(zero + voltAdd, 1050), std::min(one + voltAdd, 1025), std::min(two + voltAdd, 1000),
 
