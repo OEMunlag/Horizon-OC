@@ -96,6 +96,8 @@ namespace ams::ldr::oc::pcv
 
         constexpr u32 GpuClkPllLimit = 1300'000'000;
 
+        constexpr u32 CpuVminOfficial = 620;
+
         /* GPU Max Clock asm Pattern:
          *
          * MOV W11, #0x1000 MOV (wide immediate)                0x1000                              0xB (11)

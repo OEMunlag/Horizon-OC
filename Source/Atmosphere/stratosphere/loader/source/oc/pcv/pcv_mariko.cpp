@@ -55,27 +55,20 @@ namespace ams::ldr::oc::pcv::mariko {
     }
 
     Result CpuVoltRange(u32 *ptr) {
-        u32 min_volt_got = *(ptr - 1);
-        for (const auto &mv : CpuMinVolts) {
-            if (min_volt_got != mv)
-                continue;
+        if(!C.marikoCpuHighVmin && !C.marikoCpuLowVmin)
+            R_SKIP();
+        PATCH_OFFSET((ptr - 5), C.marikoCpuHighVmin); // hf vmin
+        PATCH_OFFSET((ptr - 1), C.marikoCpuLowVmin); // lf vmin
+        R_SUCCEED();
+    }
 
-            if (!C.marikoCpuMaxVolt)
-                R_SKIP();
+    Result CpuVmax(u32 *ptr) {
+        if (!C.marikoCpuMaxVolt)
+            R_SKIP();
 
-            PATCH_OFFSET(ptr, C.marikoCpuMaxVolt);
-            // Patch vmin for slt
-            if (C.marikoCpuUV) {
-                if (*(ptr - 5) == 620) {
-                    PATCH_OFFSET((ptr - 5), C.marikoCpuLowVmin); // hf vmin
-                }
-                if (*(ptr - 1) == 620) {
-                    PATCH_OFFSET((ptr - 1), C.marikoCpuHighVmin); // lf vmin
-                }
-            }
-            R_SUCCEED();
-        }
-        R_THROW(ldr::ResultInvalidCpuMinVolt());
+        PATCH_OFFSET(ptr, C.marikoCpuMaxVolt);
+
+        R_SUCCEED();
     }
 
     Result CpuVoltDfll(u32 *ptr) {
@@ -874,7 +867,8 @@ namespace ams::ldr::oc::pcv::mariko {
         PatcherEntry<u32> patches[] = {
             {"CPU Freq Vdd", &CpuFreqVdd, 1, nullptr, CpuClkOSLimit},
             {"CPU Freq Table", CpuFreqCvbTable<true>, 1, nullptr, CpuCvbDefaultMaxFreq},
-            {"CPU Volt Limit", &CpuVoltRange, 13, nullptr, CpuVoltOfficial},
+            {"CPU Volt Range", &CpuVoltRange, 1, nullptr, CpuVminOfficial},
+            {"CPU Volt Limit", &CpuVmax, 13, nullptr, CpuVoltOfficial},
             {"CPU Volt Dfll", &CpuVoltDfll, 1, nullptr, 0x0000FFCF},
             {"GPU Freq Table", GpuFreqCvbTable<true>, 1, nullptr, GpuCvbDefaultMaxFreq},
             {"GPU Freq Asm", &GpuFreqMaxAsm, 2, &GpuMaxClockPatternFn},
