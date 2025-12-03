@@ -153,6 +153,15 @@ def populate():
         tag="commonGpuVoltOffset"
     )
 
+    dpg.add_combo(
+        items=["Disabled (0)", "Enabled (1)"],
+        default_value="Disabled",
+        label="Mariko GPU PLL Unlock",
+        callback=k.grab_kip_storage_values_no_mult,
+        tag="marikoGpuFullUnlock"
+    )
+
+
     dpg.add_separator(label="Custom Table (Mariko)")
 
     for freq in s.freqs_khz:
