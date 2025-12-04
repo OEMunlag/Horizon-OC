@@ -28,12 +28,38 @@
 #include <nxExt.h>
 #include "board.h"
 #include "errors.h"
+#include "rgltr.h"
+#include "file_utils.h"
+#include <algorithm> // for std::clamp
+#include <math.h>
+#include <numeric>
 
 #define HOSSVC_HAS_CLKRST (hosversionAtLeast(8,0,0))
 #define HOSSVC_HAS_TC (hosversionAtLeast(5,0,0))
+#define NVGPU_GPU_IOCTL_PMU_GET_GPU_LOAD 0x80044715
+
+#define systemtickfrequency 19200000
+#define systemtickfrequencyF 19200000.0f
+#define CPU_TICK_WAIT (1000'000ULL)
+
+Result nvCheck = 1;
+
+Thread gpuLThread;
+Thread cpuCore0Thread;
+Thread cpuCore1Thread;
+Thread cpuCore2Thread;
+Thread cpuCore3Thread;
+
+uint32_t GPU_Load_u = 0, fd = 0;
 
 static SysClkSocType g_socType = SysClkSocType_Erista;
 static HorizonOCConsoleType g_consoleType = HorizonOCConsoleType_Unknown;
+
+uint64_t idletick0 = systemtickfrequency;
+uint64_t idletick1 = systemtickfrequency;
+uint64_t idletick2 = systemtickfrequency;
+uint64_t idletick3 = systemtickfrequency;
+u32 cpu0, cpu1, cpu2, cpu3, cpuAvg;
 
 const char* Board::GetModuleName(SysClkModule module, bool pretty)
 {
@@ -85,6 +111,65 @@ PcvModuleId Board::GetPcvModuleId(SysClkModule sysclkModule)
     return pcvModuleId;
 }
 
+void CheckCore0(void*) {
+	while(true) {
+		uint64_t idletick_a0 = 0;
+		uint64_t idletick_b0 = 0;
+		svcGetInfo(&idletick_b0, InfoType_IdleTickCount, INVALID_HANDLE, 0);
+        svcSleepThread(CPU_TICK_WAIT);
+		svcGetInfo(&idletick_a0, InfoType_IdleTickCount, INVALID_HANDLE, 0);
+		idletick0 = idletick_a0 - idletick_b0;
+	}
+}
+
+void CheckCore1(void*) {
+	while(true) {
+		uint64_t idletick_a1 = 0;
+		uint64_t idletick_b1 = 0;
+		svcGetInfo(&idletick_b1, InfoType_IdleTickCount, INVALID_HANDLE, 1);
+        svcSleepThread(CPU_TICK_WAIT);
+        svcGetInfo(&idletick_a1, InfoType_IdleTickCount, INVALID_HANDLE, 1);
+		idletick1 = idletick_a1 - idletick_b1;
+	}
+}
+
+void CheckCore2(void*) {
+	while(true) {
+		uint64_t idletick_a2 = 0;
+		uint64_t idletick_b2 = 0;
+		svcGetInfo(&idletick_b2, InfoType_IdleTickCount, INVALID_HANDLE, 2);
+		svcSleepThread(CPU_TICK_WAIT);
+		svcGetInfo(&idletick_a2, InfoType_IdleTickCount, INVALID_HANDLE, 2);
+		idletick2 = idletick_a2 - idletick_b2;
+	}
+}
+
+void CheckCore3(void*) {
+	while(true) {
+		uint64_t idletick_a3 = 0;
+		uint64_t idletick_b3 = 0;
+		svcGetInfo(&idletick_b3, InfoType_IdleTickCount, INVALID_HANDLE, 3);
+		svcSleepThread(CPU_TICK_WAIT);
+		svcGetInfo(&idletick_a3, InfoType_IdleTickCount, INVALID_HANDLE, 3);
+		idletick3 = idletick_a3 - idletick_b3;
+	}
+}
+
+void gpuLoadThread(void*) {
+    #define gpu_samples_average 8
+    uint32_t gpu_load_array[gpu_samples_average] = {0};
+    size_t i = 0;
+    if (R_SUCCEEDED(nvCheck)) do {
+        u32 temp;
+        if (R_SUCCEEDED(nvIoctl(fd, NVGPU_GPU_IOCTL_PMU_GET_GPU_LOAD, &temp))) {
+            gpu_load_array[i++ % gpu_samples_average] = temp;
+            GPU_Load_u = std::accumulate(&gpu_load_array[0], &gpu_load_array[gpu_samples_average], 0) / gpu_samples_average;
+        }
+        svcSleepThread(16'666'000); // wait a bit (this is the perfect amount of time to keep the reading accurate)
+    } while(true);
+}
+
+
 void Board::Initialize()
 {
     Result rc = 0;
@@ -118,6 +203,24 @@ void Board::Initialize()
     rc = tmp451Initialize();
     ASSERT_RESULT_OK(rc, "tmp451Initialize");
 
+    if (R_SUCCEEDED(nvInitialize())) nvCheck = nvOpen(&fd, "/dev/nvhost-ctrl-gpu");
+
+    threadCreate(&gpuLThread, gpuLoadThread, NULL, NULL, 0x1000, 0x3F, -2);
+	threadStart(&gpuLThread);
+
+    threadCreate(&cpuCore0Thread, CheckCore0, NULL, NULL, 0x1000, 0x10, 0);
+	threadStart(&cpuCore0Thread);
+
+	threadCreate(&cpuCore1Thread, CheckCore1, NULL, NULL, 0x1000, 0x10, 1);
+	threadStart(&cpuCore1Thread);
+
+	threadCreate(&cpuCore2Thread, CheckCore2, NULL, NULL, 0x1000, 0x10, 2);
+	threadStart(&cpuCore2Thread);
+
+	threadCreate(&cpuCore3Thread, CheckCore3, NULL, NULL, 0x1000, 0x10, 3);
+	threadStart(&cpuCore3Thread);
+
+
     FetchHardwareInfos();
 }
 
@@ -142,6 +245,13 @@ void Board::Exit()
 
     max17050Exit();
     tmp451Exit();
+
+    threadClose(&gpuLThread);
+    threadClose(&cpuCore0Thread);
+    threadClose(&cpuCore1Thread);
+    threadClose(&cpuCore2Thread);
+    threadClose(&cpuCore3Thread);
+
 }
 
 SysClkProfile Board::GetProfile()
@@ -464,20 +574,25 @@ std::int32_t Board::GetPowerMw(SysClkPowerSensor sensor)
     return 0;
 }
 
-std::uint32_t Board::GetRamLoad(SysClkRamLoad loadSource)
-{
+std::uint32_t Board::GetPartLoad(SysClkPartLoad loadSource)
+{		
     switch(loadSource)
     {
-        case SysClkRamLoad_All:
+        case SysClkPartLoad_EMC:
             return t210EmcLoadAll();
-        case SysClkRamLoad_Cpu:
+        case SysClkPartLoad_EMCCpu:
             return t210EmcLoadCpu();
+        case HocClkPartLoad_GPU:
+            return GPU_Load_u;
+        case HocClkPartLoad_CPUAvg:
+            return (idletick0 + idletick1 + idletick2 + idletick3) / 4;
         default:
-            ASSERT_ENUM_VALID(SysClkRamLoad, loadSource);
+            ASSERT_ENUM_VALID(SysClkPartLoad, loadSource);
     }
 
     return 0;
 }
+
 
 SysClkSocType Board::GetSocType() {
     return g_socType;
@@ -500,12 +615,108 @@ void Board::FetchHardwareInfos()
 
     switch(sku)
     {
-        case 2 .. 5:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
             g_socType = SysClkSocType_Mariko;
             break;
         default:
             g_socType = SysClkSocType_Erista;
     }
 
-    g_consoleType = sku;
+    g_consoleType = (HorizonOCConsoleType)sku;
+}
+
+/*
+* Switch Power domains (max77620):
+* Name  | Usage         | uV step | uV min | uV default | uV max  | Init
+*-------+---------------+---------+--------+------------+---------+------------------
+*  sd0  | SoC           | 12500   | 600000 |  625000    | 1400000 | 1.125V (pkg1.1)
+*  sd1  | SDRAM         | 12500   | 600000 | 1125000    | 1125000 | 1.1V   (pkg1.1)
+*  sd2  | ldo{0-1, 7-8} | 12500   | 600000 | 1325000    | 1350000 | 1.325V (pcv)
+*  sd3  | 1.8V general  | 12500   | 600000 | 1800000    | 1800000 |
+*  ldo0 | Display Panel | 25000   | 800000 | 1200000    | 1200000 | 1.2V   (pkg1.1)
+*  ldo1 | XUSB, PCIE    | 25000   | 800000 | 1050000    | 1050000 | 1.05V  (pcv)
+*  ldo2 | SDMMC1        | 50000   | 800000 | 1800000    | 3300000 |
+*  ldo3 | GC ASIC       | 50000   | 800000 | 3100000    | 3100000 | 3.1V   (pcv)
+*  ldo4 | RTC           | 12500   | 800000 |  850000    |  850000 | 0.85V  (AO, pcv)
+*  ldo5 | GC Card       | 50000   | 800000 | 1800000    | 1800000 | 1.8V   (pcv)
+*  ldo6 | Touch, ALS    | 50000   | 800000 | 2900000    | 2900000 | 2.9V   (pcv)
+*  ldo7 | XUSB          | 50000   | 800000 | 1050000    | 1050000 | 1.05V  (pcv)
+*  ldo8 | XUSB, DP, MCU | 50000   | 800000 | 1050000    | 2800000 | 1.05V/2.8V (pcv)
+
+typedef enum {
+    PcvPowerDomainId_Max77620_Sd0  = 0x3A000080,
+    PcvPowerDomainId_Max77620_Sd1  = 0x3A000081, // vdd2
+    PcvPowerDomainId_Max77620_Sd2  = 0x3A000082,
+    PcvPowerDomainId_Max77620_Sd3  = 0x3A000083,
+    PcvPowerDomainId_Max77620_Ldo0 = 0x3A0000A0,
+    PcvPowerDomainId_Max77620_Ldo1 = 0x3A0000A1,
+    PcvPowerDomainId_Max77620_Ldo2 = 0x3A0000A2,
+    PcvPowerDomainId_Max77620_Ldo3 = 0x3A0000A3,
+    PcvPowerDomainId_Max77620_Ldo4 = 0x3A0000A4,
+    PcvPowerDomainId_Max77620_Ldo5 = 0x3A0000A5,
+    PcvPowerDomainId_Max77620_Ldo6 = 0x3A0000A6,
+    PcvPowerDomainId_Max77620_Ldo7 = 0x3A0000A7,
+    PcvPowerDomainId_Max77620_Ldo8 = 0x3A0000A8,
+    PcvPowerDomainId_Max77621_Cpu  = 0x3A000003,
+    PcvPowerDomainId_Max77621_Gpu  = 0x3A000004,
+    PcvPowerDomainId_Max77812_Cpu  = 0x3A000003,
+    PcvPowerDomainId_Max77812_Gpu  = 0x3A000004,
+    PcvPowerDomainId_Max77812_Dram = 0x3A000005, // vddq
+} PowerDomainId;
+
+*/
+
+std::uint32_t Board::GetVoltage(HocClkVoltage voltage)
+{
+    RgltrSession session;
+    Result rc = 0;
+    u32 out;
+    switch(voltage)
+    {
+        case HocClkVoltage_SOC:
+            rc = rgltrOpenSession(&session, PcvPowerDomainId_Max77620_Sd0);
+            ASSERT_RESULT_OK(rc, "rgltrOpenSession")
+            rgltrGetVoltage(&session, &out);
+            rgltrCloseSession(&session);
+            break;
+        case HocClkVoltage_EMCVDD2:
+            rc = rgltrOpenSession(&session, PcvPowerDomainId_Max77620_Sd1);
+            ASSERT_RESULT_OK(rc, "rgltrOpenSession")
+            rgltrGetVoltage(&session, &out);
+            rgltrCloseSession(&session);
+            break;
+        case HocClkVoltage_CPU:
+            rc = rgltrOpenSession(&session, PcvPowerDomainId_Max77621_Cpu);
+            ASSERT_RESULT_OK(rc, "rgltrOpenSession")
+            rgltrGetVoltage(&session, &out);
+            rgltrCloseSession(&session);
+            break;
+        case HocClkVoltage_GPU:
+            rc = rgltrOpenSession(&session, PcvPowerDomainId_Max77621_Gpu);
+            ASSERT_RESULT_OK(rc, "rgltrOpenSession")
+            rgltrGetVoltage(&session, &out);
+            rgltrCloseSession(&session);
+            break;
+        case HocClkVoltage_EMCVDDQ_MarikoOnly:
+            if(Board::GetSocType() == SysClkSocType_Mariko) {
+                rc = rgltrOpenSession(&session, PcvPowerDomainId_Max77812_Dram);
+                ASSERT_RESULT_OK(rc, "rgltrOpenSession")
+                rgltrGetVoltage(&session, &out);
+                rgltrCloseSession(&session);
+            }
+            break;
+        case HocClkVoltage_Display:
+            rc = rgltrOpenSession(&session, PcvPowerDomainId_Max77620_Ldo0);
+            ASSERT_RESULT_OK(rc, "rgltrOpenSession")
+            rgltrGetVoltage(&session, &out);
+            rgltrCloseSession(&session);
+            break;
+        default:
+            ASSERT_ENUM_VALID(HocClkVoltage, voltage);
+    }
+
+    return out > 0 ? out : 0;
 }

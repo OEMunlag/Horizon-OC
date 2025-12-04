@@ -120,9 +120,6 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
         case HocClkConfigValue_LiteTDPLimit:
             return pretty ? "Lite TDP Limit" : "tdp_limit_l";
 
-        case HocClkConfigValue_TDPCycleLimit:
-            return pretty ? "TDP Cycle Limit" : "tdp_limit_c";
-
         default:
             return pretty ? "Null" : "null";
     }
@@ -166,8 +163,6 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
             return 8600ULL;
         case HocClkConfigValue_LiteTDPLimit:
             return 6400ULL;
-        case HocClkConfigValue_TDPCycleLimit:
-            return 10ULL;
         default:
             return 0ULL;
     }
@@ -192,8 +187,6 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case SysClkConfigValue_FreqLogIntervalMs:
         case SysClkConfigValue_PowerLogIntervalMs:
         case SysClkConfigValue_CsvWriteIntervalMs:
-        case HocClkConfigValue_TDPCycleLimit:
-            return input >= 0;
         case HocClkConfigValue_UncappedClocks:
         case HocClkConfigValue_OverwriteBoostMode:
         case HocClkConfigValue_ThermalThrottle:

@@ -47,8 +47,18 @@ typedef enum
     HorizonOCConsoleType_Lite,
     HorizonOCConsoleType_UnreleasedMariko,
     HorizonOCConsoleType_OLED,
-    SysClkSocType_EnumMax
+    HorizonOCConsoleType_EnumMax,
 } HorizonOCConsoleType;
+
+typedef enum {
+    HocClkVoltage_SOC = 0,
+    HocClkVoltage_EMCVDD2,
+    HocClkVoltage_CPU,
+    HocClkVoltage_GPU,
+    HocClkVoltage_EMCVDDQ_MarikoOnly,
+    HocClkVoltage_Display,
+    HocClkVoltage_EnumMax,
+} HocClkVoltage;
 
 typedef enum
 {
@@ -85,10 +95,13 @@ typedef enum
 
 typedef enum
 {
-    SysClkRamLoad_All = 0,
-    SysClkRamLoad_Cpu,
-    SysClkRamLoad_EnumMax
-} SysClkRamLoad;
+    SysClkPartLoad_EMC = 0,
+    SysClkPartLoad_EMCCpu,
+    HocClkPartLoad_GPU,
+    HocClkPartLoad_CPUAvg,
+    SysClkPartLoad_EnumMax
+} SysClkPartLoad;
+
 
 typedef enum
 {
@@ -158,6 +171,28 @@ static inline const char* sysclkFormatProfile(SysClkProfile profile, bool pretty
             return pretty ? "USB Charger" : "handheld_charging_usb";
         case SysClkProfile_HandheldChargingOfficial:
             return pretty ? "PD Charger" : "handheld_charging_official";
+        default:
+            return NULL;
+    }
+}
+
+
+static inline const char* hocClkFormatVoltage(HocClkVoltage voltage, bool pretty)
+{
+    switch(voltage)
+    {
+        case HocClkVoltage_CPU:
+            return pretty ? "CPU" : "cpu";
+        case HocClkVoltage_GPU:
+            return pretty ? "GPU" : "gpu";
+        case HocClkVoltage_EMCVDD2:
+            return pretty ? "VDD2" : "emcvdd2";
+        case HocClkVoltage_EMCVDDQ_MarikoOnly:
+            return pretty ? "VDDQ" : "vddq";
+        case HocClkVoltage_SOC:
+            return pretty ? "SOC" : "soc";
+        case HocClkVoltage_Display:
+            return pretty ? "SOC" : "soc";
         default:
             return NULL;
     }

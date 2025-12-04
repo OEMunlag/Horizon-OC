@@ -47,9 +47,11 @@ extern "C"
     std::uint32_t __nx_applet_type = AppletType_None;
     TimeServiceType __nx_time_service_type = TimeServiceType_System;
     std::uint32_t __nx_fs_num_sessions = 1;
-
+    u32 __nx_nv_transfermem_size = 0x8000;
     size_t nx_inner_heap_size = INNER_HEAP_SIZE;
     char nx_inner_heap[INNER_HEAP_SIZE];
+    NvServiceType __nx_nv_service_type = NvServiceType_Factory;
+
 
     void __libnx_initheap(void)
     {

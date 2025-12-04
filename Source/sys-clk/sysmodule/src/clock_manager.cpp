@@ -227,6 +227,8 @@ void ClockManager::RefreshFreqTableRow(SysClkModule module)
 void ClockManager::Tick()
 {
     std::scoped_lock lock{this->contextMutex};
+    AppletOperationMode opMode = appletGetOperationMode();
+
     if(this->config->GetConfigValue(HocClkConfigValue_HandheldTDP) && opMode == AppletOperationMode_Handheld) {
         if(Board::GetConsoleType() == HorizonOCConsoleType_Lite) {
             if(Board::GetPowerMw(SysClkPowerSensor_Now) < -(int)this->config->GetConfigValue(HocClkConfigValue_LiteTDPLimit)) {
@@ -254,7 +256,6 @@ void ClockManager::Tick()
         std::uint32_t nearestHz = 0;
         std::uint32_t mode = 0;
         
-        AppletOperationMode opMode = appletGetOperationMode();
         Result rc = apmExtGetCurrentPerformanceConfiguration(&mode);
         ASSERT_RESULT_OK(rc, "apmExtGetCurrentPerformanceConfiguration");
 
@@ -427,9 +428,14 @@ bool ClockManager::RefreshContext()
     }
 
     // ram load do not and should not force a refresh, hasChanged untouched
-    for (unsigned int loadSource = 0; loadSource < SysClkRamLoad_EnumMax; loadSource++)
+    for (unsigned int loadSource = 0; loadSource < SysClkPartLoad_EnumMax; loadSource++)
     {
-        this->context->ramLoad[loadSource] = Board::GetRamLoad((SysClkRamLoad)loadSource);
+        this->context->PartLoad[loadSource] = Board::GetPartLoad((SysClkPartLoad)loadSource);
+    }
+
+    for (unsigned int voltageSource = 0; voltageSource < HocClkVoltage_EnumMax; voltageSource++)
+    {
+        this->context->voltages[voltageSource] = Board::GetVoltage((HocClkVoltage)voltageSource);
     }
 
     if (this->ConfigIntervalTimeout(SysClkConfigValue_CsvWriteIntervalMs, ns, &this->lastCsvWriteNs))

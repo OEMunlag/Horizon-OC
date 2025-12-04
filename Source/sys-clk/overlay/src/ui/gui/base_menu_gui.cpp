@@ -37,8 +37,6 @@ BaseMenuGui::BaseMenuGui() : tempColors{tsl::Color(0), tsl::Color(0), tsl::Color
     this->lastContextUpdate = 0;
     this->listElement = nullptr;
     
-    // Initialize all voltages to zero once
-    memset(&cpuVoltageUv, 0, sizeof(u32) * 5); // Zero all 5 voltage values at once
     
     // Pre-cache hardware model during initialization
     IsMariko();
@@ -104,9 +102,12 @@ void BaseMenuGui::preDraw(tsl::gfx::Renderer* renderer) {
     renderer->drawString(displayStrings[2], false, dataPositions[0], y, SMALL_TEXT_SIZE, tsl::infoTextColor);  // CPU
     renderer->drawString(displayStrings[3], false, dataPositions[1], y, SMALL_TEXT_SIZE, tsl::infoTextColor);  // GPU
     renderer->drawString(displayStrings[4], false, dataPositions[2], y, SMALL_TEXT_SIZE, tsl::infoTextColor);  // MEM
-    
+
     y = 149; // Direct assignment (129 + 20)
-    
+
+    renderer->drawString(displayStrings[17], false, positions[3], y, SMALL_TEXT_SIZE, tsl::infoTextColor);  // GPU Usage
+    renderer->drawString(displayStrings[18], false, positions[4], y, SMALL_TEXT_SIZE, tsl::infoTextColor);  // RAM Usage
+
     // === REAL FREQUENCIES ===
     renderer->drawString(displayStrings[5], false, dataPositions[0], y, SMALL_TEXT_SIZE, tsl::infoTextColor);  // CPU real
     renderer->drawString(displayStrings[6], false, dataPositions[1], y, SMALL_TEXT_SIZE, tsl::infoTextColor);  // GPU real
@@ -117,15 +118,8 @@ void BaseMenuGui::preDraw(tsl::gfx::Renderer* renderer) {
     // === VOLTAGES ===
     renderer->drawString(displayStrings[8], false, dataPositions[0], y, SMALL_TEXT_SIZE, tsl::infoTextColor);   // CPU voltage
     renderer->drawString(displayStrings[9], false, dataPositions[1], y, SMALL_TEXT_SIZE, tsl::infoTextColor);   // GPU voltage
-    
-    // Memory voltage - check if VDD is present
-    if (emcVoltageUv && vddVoltageUv) {
-        renderer->drawStringWithColoredSections(displayStrings[10], false, {""}, dataPositions[5]-16, y, SMALL_TEXT_SIZE, tsl::infoTextColor, tsl::separatorColor);
-    } else if (vddVoltageUv) {
-        renderer->drawString(displayStrings[10], false, dataPositions[2], y, SMALL_TEXT_SIZE, tsl::infoTextColor);
-    } else if (emcVoltageUv) {
-        renderer->drawString(displayStrings[10], false, dataPositions[2], y, SMALL_TEXT_SIZE, tsl::infoTextColor);
-    }
+
+    renderer->drawStringWithColoredSections(displayStrings[10], false, {""}, dataPositions[5]-16, y, SMALL_TEXT_SIZE, tsl::infoTextColor, tsl::separatorColor);
     
     y = 191; // Direct assignment (169 + 22)
     
@@ -142,11 +136,7 @@ void BaseMenuGui::preDraw(tsl::gfx::Renderer* renderer) {
     
     y = 211; // Direct assignment (191 + 20)
     
-    // === SOC VOLTAGE & POWER ===
-    // SOC voltage (if available)
-    if (socVoltageUv) [[likely]] {
-        renderer->drawString(displayStrings[14], false, dataPositions[0], y, SMALL_TEXT_SIZE, tsl::infoTextColor);
-    }
+    renderer->drawString(displayStrings[14], false, dataPositions[0], y, SMALL_TEXT_SIZE, tsl::infoTextColor);
     
     // Power labels and values
     renderer->drawString(labels[8], false, positions[8]-1, y, SMALL_TEXT_SIZE, tsl::sectionTextColor);
@@ -172,59 +162,6 @@ void BaseMenuGui::refresh()
         this->context = new SysClkContext;
     }
 
-    // === ULTRA-FAST VOLTAGE READING ===
-    // Pre-computed domain configuration based on hardware
-    static const PowerDomainId domains[] = {
-        PcvPowerDomainId_Max77621_Cpu,    // [0] CPU
-        PcvPowerDomainId_Max77621_Gpu,    // [1] GPU  
-        PcvPowerDomainId_Max77812_Dram,   // [2] EMC/DRAM - Mariko only
-        PcvPowerDomainId_Max77620_Sd0,    // [3] SOC - EOS only
-        PcvPowerDomainId_Max77620_Sd1     // [4] VDD2 - EOS only
-    };
-    
-    // Voltage array for direct indexing
-    u32* voltages[] = {&cpuVoltageUv, &gpuVoltageUv, &emcVoltageUv, &socVoltageUv, &vddVoltageUv};
-    
-    // Single regulator init/exit cycle
-    if (R_SUCCEEDED(rgltrInitialize())) [[likely]] {
-        if (IsMariko()) {
-            // Mariko with EOS: all 5 domains
-            for (int i = 0; i < 5; ++i) {
-                RgltrSession session;
-                if (R_SUCCEEDED(rgltrOpenSession(&session, domains[i]))) [[likely]] {
-                    if (R_FAILED(rgltrGetVoltage(&session, voltages[i]))) {
-                        *voltages[i] = 0;
-                    }
-                    rgltrCloseSession(&session);
-                } else {
-                    *voltages[i] = 0;
-                }
-            }
-        } else {
-            // Erista
-                // Erista with EOS: CPU, GPU, SOC, VDD (no DRAM)
-            for (int i = 0; i < 5; ++i) {
-                if (i == 2) continue; // Skip DRAM domain
-                
-                RgltrSession session;
-                if (R_SUCCEEDED(rgltrOpenSession(&session, domains[i]))) [[likely]] {
-                    if (R_FAILED(rgltrGetVoltage(&session, voltages[i]))) {
-                        *voltages[i] = 0;
-                    }
-                    rgltrCloseSession(&session);
-                } else {
-                    *voltages[i] = 0;
-                }
-            emcVoltageUv = 0; // Erista never supports DRAM
-            }
-        }
-        
-        rgltrExit();
-    } else {
-        // Zero all voltages on regulator failure
-        memset(&cpuVoltageUv, 0, sizeof(u32) * 5);
-    }
-
     // === SYSCLK CONTEXT UPDATE ===
     const Result rc = sysclkIpcGetCurrentContext(this->context);
     if (R_FAILED(rc)) [[unlikely]] {
@@ -240,39 +177,37 @@ void BaseMenuGui::refresh()
     strcpy(displayStrings[1], sysclkFormatProfile(context->profile, true));
     
     // Current frequencies
-    u32 hz = context->freqs[0]; // CPU
+    u32 hz = context->freqs[SysClkModule_CPU]; // CPU
     sprintf(displayStrings[2], "%u.%u MHz", hz / 1000000U, (hz / 100000U) % 10U);
     
-    hz = context->freqs[1]; // GPU
+    hz = context->freqs[SysClkModule_GPU]; // GPU
     sprintf(displayStrings[3], "%u.%u MHz", hz / 1000000U, (hz / 100000U) % 10U);
-    
-    hz = context->freqs[2]; // MEM
+
+    hz = context->freqs[SysClkModule_MEM]; // MEM
     sprintf(displayStrings[4], "%u.%u MHz", hz / 1000000U, (hz / 100000U) % 10U);
     
     // Real frequencies
-    hz = context->realFreqs[0]; // CPU
+    hz = context->realFreqs[SysClkModule_CPU]; // CPU
     sprintf(displayStrings[5], "%u.%u MHz", hz / 1000000U, (hz / 100000U) % 10U);
     
-    hz = context->realFreqs[1]; // GPU
+    hz = context->realFreqs[SysClkModule_GPU]; // GPU
     sprintf(displayStrings[6], "%u.%u MHz", hz / 1000000U, (hz / 100000U) % 10U);
     
-    hz = context->realFreqs[2]; // MEM
+    hz = context->realFreqs[SysClkModule_MEM]; // MEM
     sprintf(displayStrings[7], "%u.%u MHz", hz / 1000000U, (hz / 100000U) % 10U);
     
     // Voltages
-    sprintf(displayStrings[8], "%.1f mV", cpuVoltageUv / 1000.0);
-    sprintf(displayStrings[9], "%.1f mV", gpuVoltageUv / 1000.0);
+    sprintf(displayStrings[8], "%.1f mV", context->voltages[HocClkVoltage_CPU] / 1000.0);
+    sprintf(displayStrings[9], "%.1f mV", context->voltages[HocClkVoltage_GPU] / 1000.0);
 
     // Memory voltage (handle VDD case)
-    if (emcVoltageUv && vddVoltageUv) {
+    if (IsMariko()) {
         //sprintf(displayStrings[10], "%u%u mV", vddVoltageUv / 1000U, emcVoltageUv / 1000U);
         //sprintf(displayStrings[10], "%u%.1f mV", vddVoltageUv / 1000U, emcVoltageUv / 1000.0f);
-        sprintf(displayStrings[10], "%u.%u%u mV", vddVoltageUv / 1000U, (vddVoltageUv % 1000U) / 100U, emcVoltageUv / 1000U);
-    } else if (vddVoltageUv) {
+        sprintf(displayStrings[10], "%u.%u%u mV", context->voltages[HocClkVoltage_EMCVDD2] / 1000U, (context->voltages[HocClkVoltage_EMCVDD2] % 1000U) / 100U, context->voltages[HocClkVoltage_EMCVDDQ_MarikoOnly] / 1000U);
+    } else {
         //sprintf(displayStrings[10], "%u mV", vddVoltageUv / 1000U);
-        sprintf(displayStrings[10], "%u.%u mV", vddVoltageUv / 1000U, (vddVoltageUv % 1000U) / 100U);
-    } else if (emcVoltageUv) {
-        sprintf(displayStrings[10], "%u mV", emcVoltageUv / 1000U);
+        sprintf(displayStrings[10], "%u.%u%u mV", context->voltages[HocClkVoltage_EMCVDD2] / 1000U, (context->voltages[HocClkVoltage_EMCVDD2] % 1000U) / 100U, context->voltages[HocClkVoltage_EMCVDD2] / 1000U);
     }
     
     // Temperatures and pre-compute colors
@@ -289,13 +224,16 @@ void BaseMenuGui::refresh()
     tempColors[2] = tsl::GradientColor(millis * 0.001f);
     
     // SOC voltage (if available)
-    if (socVoltageUv) {
-        sprintf(displayStrings[14], "%u mV", socVoltageUv / 1000U);
-    }
+    sprintf(displayStrings[14], "%u mV", context->voltages[HocClkVoltage_SOC] / 1000U);
     
     // Power
     sprintf(displayStrings[15], "%d mW", context->power[0]); // Now
     sprintf(displayStrings[16], "%d mW", context->power[1]); // Avg
+
+
+    sprintf(displayStrings[17], "%u%%", context->PartLoad[HocClkPartLoad_GPU] / 10);
+    sprintf(displayStrings[18], "%u%%", context->PartLoad[SysClkPartLoad_EMC] / 10);
+
 }
 
 tsl::elm::Element* BaseMenuGui::baseUI()

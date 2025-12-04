@@ -36,11 +36,6 @@ class BaseMenuGui : public BaseGui
     protected:
         SysClkContext* context;
         std::uint64_t lastContextUpdate;
-        std::uint32_t cpuVoltageUv;
-        std::uint32_t gpuVoltageUv;
-        std::uint32_t emcVoltageUv;
-		std::uint32_t socVoltageUv; //add soc voltage
-		std::uint32_t vddVoltageUv;//add vdd2 voltage
 
     public:
         bool g_hardwareModelCached = false;
@@ -71,6 +66,6 @@ class BaseMenuGui : public BaseGui
         virtual void listUI() = 0;
 
     private:
-        char displayStrings[17][32];  // Pre-formatted display strings
+        char displayStrings[32][32];  // Pre-formatted display strings
         tsl::Color tempColors[3];     // Pre-computed temperature colors
 };
