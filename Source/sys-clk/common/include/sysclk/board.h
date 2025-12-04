@@ -35,9 +35,20 @@ typedef enum
 {
     SysClkSocType_Erista = 0,
     SysClkSocType_Mariko,
-    SysClkSocType_MarikoLite,
     SysClkSocType_EnumMax
 } SysClkSocType;
+
+typedef enum
+{
+    HorizonOCConsoleType_Unknown = 0,
+    HorizonOCConsoleType_V1,
+    HorizonOCConsoleType_UnreleasedErista,
+    HorizonOCConsoleType_V2,
+    HorizonOCConsoleType_Lite,
+    HorizonOCConsoleType_UnreleasedMariko,
+    HorizonOCConsoleType_OLED,
+    SysClkSocType_EnumMax
+} HorizonOCConsoleType;
 
 typedef enum
 {

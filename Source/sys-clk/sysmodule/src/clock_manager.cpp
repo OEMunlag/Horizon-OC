@@ -145,8 +145,6 @@ std::uint32_t ClockManager::GetMaxAllowedHz(SysClkModule module, SysClkProfile p
                         return 460800000;
                     case SysClkSocType_Mariko:
                         return 614400000;
-                    case SysClkSocType_MarikoLite:
-                        return 537600000;
                     default:
                         return 4294967294;
                 }
@@ -230,7 +228,7 @@ void ClockManager::Tick()
 {
     std::scoped_lock lock{this->contextMutex};
     if(this->config->GetConfigValue(HocClkConfigValue_HandheldTDP) && opMode == AppletOperationMode_Handheld) {
-        if(Board::GetSocType() == SysClkSocType_MarikoLite) {
+        if(Board::GetConsoleType() == HorizonOCConsoleType_Lite) {
             if(Board::GetPowerMw(SysClkPowerSensor_Now) < -(int)this->config->GetConfigValue(HocClkConfigValue_LiteTDPLimit)) {
                 ResetToStockClocks();
                 return;

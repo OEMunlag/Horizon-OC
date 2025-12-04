@@ -33,6 +33,7 @@
 #define HOSSVC_HAS_TC (hosversionAtLeast(5,0,0))
 
 static SysClkSocType g_socType = SysClkSocType_Erista;
+static HorizonOCConsoleType g_consoleType = HorizonOCConsoleType_Unknown;
 
 const char* Board::GetModuleName(SysClkModule module, bool pretty)
 {
@@ -482,6 +483,9 @@ SysClkSocType Board::GetSocType() {
     return g_socType;
 }
 
+HorizonOCConsoleType Board::GetConsoleType() {
+    return g_consoleType;
+}
 
 void Board::FetchHardwareInfos()
 {
@@ -496,15 +500,12 @@ void Board::FetchHardwareInfos()
 
     switch(sku)
     {
-        case 2:
-        case 3:
-        case 5:
+        case 2 .. 5:
             g_socType = SysClkSocType_Mariko;
-            break;
-        case 4:
-            g_socType = SysClkSocType_MarikoLite;
             break;
         default:
             g_socType = SysClkSocType_Erista;
     }
+
+    g_consoleType = sku;
 }

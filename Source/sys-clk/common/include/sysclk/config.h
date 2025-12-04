@@ -55,8 +55,8 @@ typedef enum {
 
     HocClkConfigValue_HandheldTDP,
     HocClkConfigValue_HandheldTDPLimit,
+
     HocClkConfigValue_LiteTDPLimit,
-    HocClkConfigValue_TDPCycleLimit,
 
     HocClkConfigValue_EnforceBoardLimit,
 

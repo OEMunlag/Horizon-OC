@@ -53,6 +53,7 @@ class Board
     static std::int32_t GetPowerMw(SysClkPowerSensor sensor);
     static std::uint32_t GetRamLoad(SysClkRamLoad load);
     static SysClkSocType GetSocType();
+    static HorizonOCConsoleType GetConsoleType();
 
   protected:
     static void FetchHardwareInfos();
