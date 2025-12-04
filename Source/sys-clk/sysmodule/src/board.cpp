@@ -220,6 +220,9 @@ void Board::Initialize()
 	threadCreate(&cpuCore3Thread, CheckCore3, NULL, NULL, 0x1000, 0x10, 3);
 	threadStart(&cpuCore3Thread);
 
+    rc = rgltrInitialize();
+    ASSERT_RESULT_OK(rc, "rgltrInitialize");
+
 
     FetchHardwareInfos();
 }
@@ -251,7 +254,7 @@ void Board::Exit()
     threadClose(&cpuCore1Thread);
     threadClose(&cpuCore2Thread);
     threadClose(&cpuCore3Thread);
-
+    rgltrExit();
 }
 
 SysClkProfile Board::GetProfile()
