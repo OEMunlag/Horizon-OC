@@ -20,16 +20,9 @@ make -j$CORES
 popd > /dev/null
 
 mkdir -p "$DIST_DIR/atmosphere/contents/$TITLE_ID/flags"
-cp -vf "$ROOT_DIR/sysmodule/out/sys-clk.nsp" "$DIST_DIR/atmosphere/contents/$TITLE_ID/exefs.nsp"
+cp -vf "$ROOT_DIR/sysmodule/out/horizon-oc.nsp" "$DIST_DIR/atmosphere/contents/$TITLE_ID/exefs.nsp"
 >"$DIST_DIR/atmosphere/contents/$TITLE_ID/flags/boot2.flag"
 cp -vf "$ROOT_DIR/sysmodule/toolbox.json" "$DIST_DIR/atmosphere/contents/$TITLE_ID/toolbox.json"
-echo "*** manager ***"
-pushd "$ROOT_DIR/manager"
-make -j$CORES
-popd > /dev/null
-
-mkdir -p "$DIST_DIR/switch"
-cp -vf "$ROOT_DIR/manager/horizon-oc-manager.nro" "$DIST_DIR/switch/horizon-oc-manager.nro"
 
 echo "*** overlay ***"
 pushd "$ROOT_DIR/overlay"
