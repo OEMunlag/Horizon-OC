@@ -51,12 +51,12 @@ namespace ams::ldr::oc::pcv
         };
 
         constexpr int gpuVmax = 750;
-
         constexpr int gpuVmin = 610;
 
-        constexpr u16 CpuMinVolts[] = {800, 637, 620, 610};
+        constexpr u32 CpuVminPatchValues[]  = { 850, 38, 1120, 1000, 100, 1000, 0 };
+        constexpr s32 CpuVminPatchOffsets[] = {  -2, -1,    5,     6,  7,    8, 9 };
 
-        constexpr u32 CpuClkOfficial = 1963'500;
+        constexpr u32 CpuClkOfficial  = 1963'500;
         constexpr u32 CpuVoltOfficial = 1120;
 
 

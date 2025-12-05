@@ -55,27 +55,25 @@ namespace ams::ldr::oc::pcv::mariko {
     }
 
     Result CpuVoltRange(u32 *ptr) {
-        u32 min_volt_got = *(ptr - 1);
-        for (const auto &mv : CpuMinVolts) {
-            if (min_volt_got != mv)
-                continue;
-
-            if (!C.marikoCpuMaxVolt)
-                R_SKIP();
-
-            PATCH_OFFSET(ptr, C.marikoCpuMaxVolt);
-            // Patch vmin for slt
-            if (C.marikoCpuUV) {
-                if (*(ptr - 5) == 620) {
-                    PATCH_OFFSET((ptr - 5), C.marikoCpuLowVmin); // hf vmin
-                }
-                if (*(ptr - 1) == 620) {
-                    PATCH_OFFSET((ptr - 1), C.marikoCpuHighVmin); // lf vmin
-                }
+        for (size_t i = 0; i < std::size(CpuVminPatchOffsets); ++i) {
+            if (*(ptr + CpuVminPatchOffsets[i]) != CpuVminPatchValues[i]) {
+                R_THROW(ldr::ResultInvalidCpuMinVolt());
             }
-            R_SUCCEED();
         }
-        R_THROW(ldr::ResultInvalidCpuMinVolt());
+
+        if (C.marikoCpuLowVmin) {
+            PATCH_OFFSET(ptr, C.marikoCpuLowVmin);
+        }
+
+        if (C.marikoCpuHighVmin) {
+            PATCH_OFFSET((ptr - 2), C.marikoCpuHighVmin);
+        }
+
+        if (C.marikoCpuMaxVolt) {
+            PATCH_OFFSET((ptr + 5), C.marikoCpuMaxVolt);
+        }
+
+        R_SUCCEED();
     }
 
     Result CpuVoltDfll(u32 *ptr) {
@@ -494,7 +492,7 @@ namespace ams::ldr::oc::pcv::mariko {
       //  WRITE_PARAM_ALL_REG(table, emc_rfcpb,   GET_CYCLE(tRFCpb));
       //  WRITE_PARAM_ALL_REG(table, emc_r2w,     tR2W);
       //  WRITE_PARAM_ALL_REG(table, emc_w2r,     tW2R);
-      WRITE_PARAM_ALL_REG(table, emc_r2p,   (u32)  0xC);
+      // WRITE_PARAM_ALL_REG(table, emc_r2p,   (u32)  0xC);
       //  WRITE_PARAM_ALL_REG(table, emc_w2p,     (u32) 0x2D);
       //
       //  WRITE_PARAM_ALL_REG(table, emc_rext, rext);
@@ -636,6 +634,8 @@ namespace ams::ldr::oc::pcv::mariko {
       //  table->dram_timings.t_rp = tRFCpb;
       //  table->dram_timings.t_rfc = tRFCab;
       //  table->emc_cfg_2 = 0x11083d;
+
+        (void) table;
     }
 
     void MemMtcPllmbDivisor(MarikoMtcTable *table) {
@@ -846,7 +846,7 @@ namespace ams::ldr::oc::pcv::mariko {
         PatcherEntry<u32> patches[] = {
             {"CPU Freq Vdd", &CpuFreqVdd, 1, nullptr, CpuClkOSLimit},
             {"CPU Freq Table", CpuFreqCvbTable<true>, 1, nullptr, CpuCvbDefaultMaxFreq},
-            {"CPU Volt Range", &CpuVoltRange, 13, nullptr, CpuVminOfficial},
+            {"CPU Volt Range", &CpuVoltRange, 1, nullptr, CpuVminOfficial},
             {"CPU Volt Dfll", &CpuVoltDfll, 1, nullptr, 0x0000FFCF},
             {"GPU Freq Table", GpuFreqCvbTable<true>, 1, nullptr, GpuCvbDefaultMaxFreq},
             {"GPU Freq Asm", &GpuFreqMaxAsm, 2, &GpuMaxClockPatternFn},
