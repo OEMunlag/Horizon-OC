@@ -42,7 +42,6 @@ namespace ams::ldr::oc::pcv::mariko {
         {2'933'000, 0, 0x2E, 0xC,  0},
         {2'966'000, 1,    0,   0,  0},
         {3'033'000, 0, 0x2F,   0,  0},
-        {3'100'000, 0,    0,   0,  0},
         {3'133'000, 1, 0x31, 0xD,  0},
     };
 
@@ -59,7 +58,7 @@ namespace ams::ldr::oc::pcv::mariko {
         {2'833'000, 0x12}, {2'866'000, 0x12}, {2'900'000, 0x12},
         {2'933'000, 0x10}, {2'966'000, 0x11}, {3'000'000, 0x11},
         {3'033'000, 0x10}, {3'066'000, 0x10}, {3'100'000, 0x10},
-        {3'133'000, 0x0F},
+        {3'133'000, 0x0F}
     };
 
     const u32 g_einput_patches_size = sizeof(g_einput_patches) / sizeof(g_einput_patches[0]);
@@ -242,8 +241,9 @@ namespace ams::ldr::oc::pcv::mariko {
         {2'900'000,  1},
         {2'933'000, -1},
         {2'966'000,  1},
-        {3'000'000,  1},
         {3'100'000,  1},
+        {3'166'000,  1},
+        {3'200'000,  1},
     };
 
     const u32 g_qrst_table_size = sizeof(g_qrst_patches) / sizeof(g_qrst_patches[0]);
@@ -273,6 +273,8 @@ namespace ams::ldr::oc::pcv::mariko {
         {3'033'000, -1},
         {3'066'000, -2},
         {3'100'000, -2},
+        {3'166'000, -1},
+        {3'200'000, -1},
     };
 
     const u32 g_qsafe_table_size = sizeof(g_qsafe_patches) / sizeof(g_qsafe_patches[0]);

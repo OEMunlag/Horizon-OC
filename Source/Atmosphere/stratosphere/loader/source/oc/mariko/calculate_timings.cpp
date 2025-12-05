@@ -141,6 +141,8 @@ namespace ams::ldr::oc::pcv::mariko {
 
     void CalculateQpop() {
         qpop = FLOOR(((C.marikoEmcMaxClock / 1000.0) - 2133 + 167) / 200.0) + 0x2D + C.mem_burst_read_latency;
+
+        if (C.marikoEmcMaxClock >= 3'133'000) qpop++;
     }
 
     void CalculatePdex2rw() {
