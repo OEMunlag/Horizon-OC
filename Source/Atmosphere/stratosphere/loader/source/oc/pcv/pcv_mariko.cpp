@@ -61,16 +61,18 @@ namespace ams::ldr::oc::pcv::mariko {
             }
         }
 
-        if (C.marikoCpuLowVmin) {
-            PATCH_OFFSET(ptr, C.marikoCpuLowVmin);
-        }
+        if (C.marikoCpuUV) {
+            if (C.marikoCpuLowVmin) {
+                PATCH_OFFSET(ptr, C.marikoCpuLowVmin);
+            }
 
-        if (C.marikoCpuHighVmin) {
-            PATCH_OFFSET((ptr - 2), C.marikoCpuHighVmin);
-        }
+            if (C.marikoCpuHighVmin) {
+                PATCH_OFFSET((ptr - 2), C.marikoCpuHighVmin);
+            }
 
-        if (C.marikoCpuMaxVolt) {
-            PATCH_OFFSET((ptr + 5), C.marikoCpuMaxVolt);
+            if (C.marikoCpuMaxVolt) {
+                PATCH_OFFSET((ptr + 5), C.marikoCpuMaxVolt);
+            }
         }
 
         R_SUCCEED();
