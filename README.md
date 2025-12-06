@@ -107,6 +107,7 @@ python -m PyInstaller --onefile --add-data "assets;assets" --icon=assets/icon.ic
 
 * **Lightos** & **Dominatorul** – RAM timings
 * **KazushiMe** & **meha** – Switch-OC-Suite
+* **B3711** - UV Tables
 * **sys-clk team** – sys-clk
 * **b0rd2death** – Ultrahand sys-clk fork
 * **MasaGratoR** - General help

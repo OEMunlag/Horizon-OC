@@ -692,13 +692,19 @@ std::uint32_t Board::GetVoltage(HocClkVoltage voltage)
             rgltrCloseSession(&session);
             break;
         case HocClkVoltage_CPU:
-            rc = rgltrOpenSession(&session, PcvPowerDomainId_Max77621_Cpu);
+            if(Board::GetSocType() == SysClkSocType_Mariko)
+                rc = rgltrOpenSession(&session, PcvPowerDomainId_Max77621_Cpu);
+            else
+                rc = rgltrOpenSession(&session, PcvPowerDomainId_Max77812_Cpu);
             ASSERT_RESULT_OK(rc, "rgltrOpenSession")
             rgltrGetVoltage(&session, &out);
             rgltrCloseSession(&session);
             break;
         case HocClkVoltage_GPU:
-            rc = rgltrOpenSession(&session, PcvPowerDomainId_Max77621_Gpu);
+            if(Board::GetSocType() == SysClkSocType_Mariko)
+                rc = rgltrOpenSession(&session, PcvPowerDomainId_Max77621_Gpu);
+            else
+                rc = rgltrOpenSession(&session, PcvPowerDomainId_Max77812_Gpu);
             ASSERT_RESULT_OK(rc, "rgltrOpenSession")
             rgltrGetVoltage(&session, &out);
             rgltrCloseSession(&session);
