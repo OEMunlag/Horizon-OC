@@ -225,10 +225,31 @@ void ClockManager::RefreshFreqTableRow(SysClkModule module)
     FileUtils::LogLine("[mgr] count = %u", this->freqTable[module].count);
 }
 
+u32 findIndex(u32 arr[], u32 size, u32 value) {
+    for (u32 i = 0; i < size; i++) {
+        if (arr[i] == value) {
+            return i;
+        }
+    }
+    return 0;
+}
+
+u32 findIndexMHz(u32 arr[], u32 size, u32 value) {
+    for (u32 i = 0; i < size; i++) {
+        if (arr[i] / 1000000 == value) {
+            return i;
+        }
+    }
+    return 0;
+}
+
 void ClockManager::Tick()
 {
     std::scoped_lock lock{this->contextMutex};
+    std::uint32_t mode = 0;
     AppletOperationMode opMode = appletGetOperationMode();
+    Result rc = apmExtGetCurrentPerformanceConfiguration(&mode);
+    ASSERT_RESULT_OK(rc, "apmExtGetCurrentPerformanceConfiguration");
 
     if(this->config->GetConfigValue(HocClkConfigValue_HandheldTDP) && opMode == AppletOperationMode_Handheld) {
         if(Board::GetConsoleType() == HorizonOCConsoleType_Lite) {
@@ -250,55 +271,99 @@ void ClockManager::Tick()
         return;
     }
 
+    u64 currentFreqIndex = findIndex(freqTable[SysClkModule_GPU].list, SYSCLK_FREQ_LIST_MAX, Board::GetHz(SysClkModule_GPU));
+    if(this->config->GetConfigValue(HocClkConfigValue_HandheldGovernor)) {
+        u64 targetHz = this->context->overrideFreqs[SysClkModule_GPU];
+            if (!targetHz)
+            {
+                targetHz = this->config->GetAutoClockHz(this->context->applicationId, SysClkModule_GPU, this->context->profile);
+                if(!targetHz)
+                    targetHz = this->config->GetAutoClockHz(GLOBAL_PROFILE_ID, SysClkModule_GPU, this->context->profile);
+            }
+        if(Board::GetPartLoad(HocClkPartLoad_GPU) < 600) {
+            currentFreqIndex--;
+            if(currentFreqIndex < 0) {
+                currentFreqIndex = 0;
+            }
+            Board::SetHz(SysClkModule_GPU, freqTable[SysClkModule_GPU].list[currentFreqIndex]);
+        }
+        if(Board::GetPartLoad(HocClkPartLoad_GPU) > 800) {
+            currentFreqIndex++;
+
+            if(!targetHz) {
+                if(IsAssignableHz(SysClkModule_GPU, freqTable[SysClkModule_GPU].list[currentFreqIndex])) {
+                    if(Board::GetSocType() == SysClkSocType_Mariko) {
+                        if(freqTable[SysClkModule_GPU].list[currentFreqIndex] / 1000000 < this->config->GetConfigValue(HocClkConfigValue_MarikoMaxGpuClock))
+                            currentFreqIndex++; // TODO: make this properly go back to target freq if the old target freq is more than one index away
+                        else                    // probably needs the max clocks to be stored in hz instead of mhz to compare easily
+                            currentFreqIndex--;
+                    } else {
+                        if(freqTable[SysClkModule_GPU].list[currentFreqIndex] / 1000000 < this->config->GetConfigValue(HocClkConfigValue_EristaMaxGpuClock))
+                            currentFreqIndex++;
+                        else
+                            currentFreqIndex--;
+                    }
+                } else {
+                    currentFreqIndex--;
+                }
+            } else {
+                if(currentFreqIndex > findIndex(freqTable[SysClkModule_GPU].list, SYSCLK_FREQ_LIST_MAX, targetHz))
+                    currentFreqIndex--;
+            }
+            Board::SetHz(SysClkModule_GPU, freqTable[SysClkModule_GPU].list[currentFreqIndex]);
+
+        }
+    }
+
+    bool noGPU = false;
+
     if (this->RefreshContext() || this->config->Refresh())
     {
         std::uint32_t targetHz = 0;
         std::uint32_t maxHz = 0;
         std::uint32_t nearestHz = 0;
-        std::uint32_t mode = 0;
-        
-        Result rc = apmExtGetCurrentPerformanceConfiguration(&mode);
-        ASSERT_RESULT_OK(rc, "apmExtGetCurrentPerformanceConfiguration");
 
+            if(apmExtIsBoostMode(mode) && !this->config->GetConfigValue(HocClkConfigValue_OverwriteBoostMode)) {
+                ResetToStockClocks();
+                return;
+            }
+            for (unsigned int module = 0; module < SysClkModule_EnumMax; module++)
+            {
+                    if(this->config->GetConfigValue(HocClkConfigValue_HandheldGovernor)) {
+                        noGPU = true;
+                    } else {
+                        noGPU = false;
+                    }
+                    if(noGPU && module == SysClkModule_GPU)
+                        continue;
+                    targetHz = this->context->overrideFreqs[module];
+                    if (!targetHz)
+                    {
+                        targetHz = this->config->GetAutoClockHz(this->context->applicationId, (SysClkModule)module, this->context->profile);
+                        if(!targetHz)
+                            targetHz = this->config->GetAutoClockHz(GLOBAL_PROFILE_ID, (SysClkModule)module, this->context->profile);
+                    }
 
-        if(apmExtIsBoostMode(mode) && !this->config->GetConfigValue(HocClkConfigValue_OverwriteBoostMode)) {
-            ResetToStockClocks();
-            return;
+                    if (targetHz)
+                    {
+
+                        maxHz = this->GetMaxAllowedHz((SysClkModule)module, this->context->profile);
+                        nearestHz = this->GetNearestHz((SysClkModule)module, targetHz, maxHz);
+                        if (nearestHz != this->context->freqs[module] && this->context->enabled) {
+                            FileUtils::LogLine(
+                                "[mgr] %s clock set : %u.%u MHz (target = %u.%u MHz)",
+                                Board::GetModuleName((SysClkModule)module, true),
+                                nearestHz / 1000000, nearestHz / 100000 - nearestHz / 1000000 * 10,
+                                targetHz / 1000000, targetHz / 100000 - targetHz / 1000000 * 10);
+
+                            Board::SetHz((SysClkModule)module, nearestHz);
+                            this->context->freqs[module] = nearestHz;
+                    }
+                    }
+
+            }
         }
-
-        if(this->config->GetConfigValue(HocClkConfigValue_HandheldGovernor) && opMode == AppletOperationMode_Handheld) {
-            
-        }
-        if(this->config->GetConfigValue(HocClkConfigValue_DockedGovernor) && opMode == AppletOperationMode_Console) {
-            
-        }
-        for (unsigned int module = 0; module < SysClkModule_EnumMax; module++)
-        {
-                targetHz = this->context->overrideFreqs[module];
-
-                if (!targetHz)
-                {
-                    targetHz = this->config->GetAutoClockHz(this->context->applicationId, (SysClkModule)module, this->context->profile);
-                }
-
-                if (targetHz)
-                {
-                    maxHz = this->GetMaxAllowedHz((SysClkModule)module, this->context->profile);
-                    nearestHz = this->GetNearestHz((SysClkModule)module, targetHz, maxHz);
-                    if (nearestHz != this->context->freqs[module] && this->context->enabled) {
-                        FileUtils::LogLine(
-                            "[mgr] %s clock set : %u.%u MHz (target = %u.%u MHz)",
-                            Board::GetModuleName((SysClkModule)module, true),
-                            nearestHz / 1000000, nearestHz / 100000 - nearestHz / 1000000 * 10,
-                            targetHz / 1000000, targetHz / 100000 - targetHz / 1000000 * 10);
-
-                        Board::SetHz((SysClkModule)module, nearestHz);
-                        this->context->freqs[module] = nearestHz;
-                }
-                }
-
-        }
-    }
+    
 }
 
 void ClockManager::ResetToStockClocks() {

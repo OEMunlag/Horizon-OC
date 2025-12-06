@@ -199,7 +199,7 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
         case HocClkConfigValue_DockedGovernor:
             return pretty ? "Docked Governor" : "governor_docked";
         case HocClkConfigValue_HandheldGovernor:
-            return pretty ? "Handheld Governor" : "governor_handheld";
+            return pretty ? "Governor" : "governor";
 
         case HocClkConfigValue_HandheldTDP:
             return pretty ? "Handheld TDP" : "handheld_tdp";
@@ -337,7 +337,7 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
     switch(val)
     {
         case SysClkConfigValue_PollingIntervalMs:
-            return 300ULL;
+            return 50ULL;
         case SysClkConfigValue_TempLogIntervalMs:
         case SysClkConfigValue_FreqLogIntervalMs:
         case SysClkConfigValue_PowerLogIntervalMs:
