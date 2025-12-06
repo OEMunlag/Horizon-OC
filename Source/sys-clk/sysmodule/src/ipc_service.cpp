@@ -364,8 +364,15 @@ Result IpcService::SetReverseNXRTMode(ReverseNXMode mode) {
 }
 
 Result IpcService::SetKipData() {
-    // ClockManager::GetInstance()->SetRNXRTMode(mode);
+    ClockManager::GetInstance()->SetKipData();
     
     return 0;
 }
+
+Result IpcService::GetKipData() {
+    ClockManager::GetInstance()->GetKipConfigValues(mode);
+    
+    return 0;
+}
+
 

@@ -212,7 +212,7 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
 
         // KIP config values
         case KipConfigValue_MTCConf:
-            return pretty ? "KIP MTC Config" : "kip_mtc_conf";
+            return pretty ? "MTC Config" : "kip_mtc_conf";
         case KipConfigValue_commonCpuBoostClock:
             return pretty ? "Common CPU Boost Clock" : "common_cpu_boost_clock";
         case KipConfigValue_commonEmcMemVolt:
@@ -273,59 +273,59 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
             return pretty ? "Mariko GPU Full Unlock" : "mariko_gpu_full_unlock";
 
         // Mariko GPU voltages
-        case KipConfigValue_g_volt_76800: return pretty ? "Mariko GPU Volt 76.8k" : "g_volt_76800";
-        case KipConfigValue_g_volt_153600: return pretty ? "Mariko GPU Volt 153.6k" : "g_volt_153600";
-        case KipConfigValue_g_volt_230400: return pretty ? "Mariko GPU Volt 230.4k" : "g_volt_230400";
-        case KipConfigValue_g_volt_307200: return pretty ? "Mariko GPU Volt 307.2k" : "g_volt_307200";
-        case KipConfigValue_g_volt_384000: return pretty ? "Mariko GPU Volt 384.0k" : "g_volt_384000";
-        case KipConfigValue_g_volt_460800: return pretty ? "Mariko GPU Volt 460.8k" : "g_volt_460800";
-        case KipConfigValue_g_volt_537600: return pretty ? "Mariko GPU Volt 537.6k" : "g_volt_537600";
-        case KipConfigValue_g_volt_614400: return pretty ? "Mariko GPU Volt 614.4k" : "g_volt_614400";
-        case KipConfigValue_g_volt_691200: return pretty ? "Mariko GPU Volt 691.2k" : "g_volt_691200";
-        case KipConfigValue_g_volt_768000: return pretty ? "Mariko GPU Volt 768.0k" : "g_volt_768000";
-        case KipConfigValue_g_volt_844800: return pretty ? "Mariko GPU Volt 844.8k" : "g_volt_844800";
-        case KipConfigValue_g_volt_921600: return pretty ? "Mariko GPU Volt 921.6k" : "g_volt_921600";
-        case KipConfigValue_g_volt_998400: return pretty ? "Mariko GPU Volt 998.4k" : "g_volt_998400";
-        case KipConfigValue_g_volt_1075200: return pretty ? "Mariko GPU Volt 1075.2k" : "g_volt_1075200";
-        case KipConfigValue_g_volt_1152000: return pretty ? "Mariko GPU Volt 1152.0k" : "g_volt_1152000";
-        case KipConfigValue_g_volt_1228800: return pretty ? "Mariko GPU Volt 1228.8k" : "g_volt_1228800";
-        case KipConfigValue_g_volt_1267200: return pretty ? "Mariko GPU Volt 1267.2k" : "g_volt_1267200";
-        case KipConfigValue_g_volt_1305600: return pretty ? "Mariko GPU Volt 1305.6k" : "g_volt_1305600";
-        case KipConfigValue_g_volt_1344000: return pretty ? "Mariko GPU Volt 1344.0k" : "g_volt_1344000";
-        case KipConfigValue_g_volt_1382400: return pretty ? "Mariko GPU Volt 1382.4k" : "g_volt_1382400";
-        case KipConfigValue_g_volt_1420800: return pretty ? "Mariko GPU Volt 1420.8k" : "g_volt_1420800";
-        case KipConfigValue_g_volt_1459200: return pretty ? "Mariko GPU Volt 1459.2k" : "g_volt_1459200";
-        case KipConfigValue_g_volt_1497600: return pretty ? "Mariko GPU Volt 1497.6k" : "g_volt_1497600";
-        case KipConfigValue_g_volt_1536000: return pretty ? "Mariko GPU Volt 1536.0k" : "g_volt_1536000";
+        case KipConfigValue_g_volt_76800: return pretty ? "Mariko GPU Volt 76 MHz" : "g_volt_76800";
+        case KipConfigValue_g_volt_153600: return pretty ? "Mariko GPU Volt 153 MHz" : "g_volt_153600";
+        case KipConfigValue_g_volt_230400: return pretty ? "Mariko GPU Volt 230 MHz" : "g_volt_230400";
+        case KipConfigValue_g_volt_307200: return pretty ? "Mariko GPU Volt 307 MHz" : "g_volt_307200";
+        case KipConfigValue_g_volt_384000: return pretty ? "Mariko GPU Volt 384 MHz" : "g_volt_384000";
+        case KipConfigValue_g_volt_460800: return pretty ? "Mariko GPU Volt 460 MHz" : "g_volt_460800";
+        case KipConfigValue_g_volt_537600: return pretty ? "Mariko GPU Volt 537 MHz" : "g_volt_537600";
+        case KipConfigValue_g_volt_614400: return pretty ? "Mariko GPU Volt 614 MHz" : "g_volt_614400";
+        case KipConfigValue_g_volt_691200: return pretty ? "Mariko GPU Volt 691 MHz" : "g_volt_691200";
+        case KipConfigValue_g_volt_768000: return pretty ? "Mariko GPU Volt 768 MHz" : "g_volt_768000";
+        case KipConfigValue_g_volt_844800: return pretty ? "Mariko GPU Volt 844 MHz" : "g_volt_844800";
+        case KipConfigValue_g_volt_921600: return pretty ? "Mariko GPU Volt 921 MHz" : "g_volt_921600";
+        case KipConfigValue_g_volt_998400: return pretty ? "Mariko GPU Volt 998 MHz" : "g_volt_998400";
+        case KipConfigValue_g_volt_1075200: return pretty ? "Mariko GPU Volt 1075 MHz" : "g_volt_1075200";
+        case KipConfigValue_g_volt_1152000: return pretty ? "Mariko GPU Volt 1152 MHz" : "g_volt_1152000";
+        case KipConfigValue_g_volt_1228800: return pretty ? "Mariko GPU Volt 1228 MHz" : "g_volt_1228800";
+        case KipConfigValue_g_volt_1267200: return pretty ? "Mariko GPU Volt 1267 MHz" : "g_volt_1267200";
+        case KipConfigValue_g_volt_1305600: return pretty ? "Mariko GPU Volt 1305 MHz" : "g_volt_1305600";
+        case KipConfigValue_g_volt_1344000: return pretty ? "Mariko GPU Volt 1344 MHz" : "g_volt_1344000";
+        case KipConfigValue_g_volt_1382400: return pretty ? "Mariko GPU Volt 1382 MHz" : "g_volt_1382400";
+        case KipConfigValue_g_volt_1420800: return pretty ? "Mariko GPU Volt 1420 MHz" : "g_volt_1420800";
+        case KipConfigValue_g_volt_1459200: return pretty ? "Mariko GPU Volt 1459 MHz" : "g_volt_1459200";
+        case KipConfigValue_g_volt_1497600: return pretty ? "Mariko GPU Volt 1497 MHz" : "g_volt_1497600";
+        case KipConfigValue_g_volt_1536000: return pretty ? "Mariko GPU Volt 1536 MHz" : "g_volt_1536000";
 
         // Erista GPU voltages
-        case KipConfigValue_g_volt_e_76800: return pretty ? "Erista GPU Volt 76.8k" : "g_volt_e_76800";
-        case KipConfigValue_g_volt_e_115200: return pretty ? "Erista GPU Volt 115.2k" : "g_volt_e_115200";
-        case KipConfigValue_g_volt_e_153600: return pretty ? "Erista GPU Volt 153.6k" : "g_volt_e_153600";
-        case KipConfigValue_g_volt_e_192000: return pretty ? "Erista GPU Volt 192.0k" : "g_volt_e_192000";
-        case KipConfigValue_g_volt_e_230400: return pretty ? "Erista GPU Volt 230.4k" : "g_volt_e_230400";
-        case KipConfigValue_g_volt_e_268800: return pretty ? "Erista GPU Volt 268.8k" : "g_volt_e_268800";
-        case KipConfigValue_g_volt_e_307200: return pretty ? "Erista GPU Volt 307.2k" : "g_volt_e_307200";
-        case KipConfigValue_g_volt_e_345600: return pretty ? "Erista GPU Volt 345.6k" : "g_volt_e_345600";
-        case KipConfigValue_g_volt_e_384000: return pretty ? "Erista GPU Volt 384.0k" : "g_volt_e_384000";
-        case KipConfigValue_g_volt_e_422400: return pretty ? "Erista GPU Volt 422.4k" : "g_volt_e_422400";
-        case KipConfigValue_g_volt_e_460800: return pretty ? "Erista GPU Volt 460.8k" : "g_volt_e_460800";
-        case KipConfigValue_g_volt_e_499200: return pretty ? "Erista GPU Volt 499.2k" : "g_volt_e_499200";
-        case KipConfigValue_g_volt_e_537600: return pretty ? "Erista GPU Volt 537.6k" : "g_volt_e_537600";
-        case KipConfigValue_g_volt_e_576000: return pretty ? "Erista GPU Volt 576.0k" : "g_volt_e_576000";
-        case KipConfigValue_g_volt_e_614400: return pretty ? "Erista GPU Volt 614.4k" : "g_volt_e_614400";
-        case KipConfigValue_g_volt_e_652800: return pretty ? "Erista GPU Volt 652.8k" : "g_volt_e_652800";
-        case KipConfigValue_g_volt_e_691200: return pretty ? "Erista GPU Volt 691.2k" : "g_volt_e_691200";
-        case KipConfigValue_g_volt_e_729600: return pretty ? "Erista GPU Volt 729.6k" : "g_volt_e_729600";
-        case KipConfigValue_g_volt_e_768000: return pretty ? "Erista GPU Volt 768.0k" : "g_volt_e_768000";
-        case KipConfigValue_g_volt_e_806400: return pretty ? "Erista GPU Volt 806.4k" : "g_volt_e_806400";
-        case KipConfigValue_g_volt_e_844800: return pretty ? "Erista GPU Volt 844.8k" : "g_volt_e_844800";
-        case KipConfigValue_g_volt_e_883200: return pretty ? "Erista GPU Volt 883.2k" : "g_volt_e_883200";
-        case KipConfigValue_g_volt_e_921600: return pretty ? "Erista GPU Volt 921.6k" : "g_volt_e_921600";
-        case KipConfigValue_g_volt_e_960000: return pretty ? "Erista GPU Volt 960.0k" : "g_volt_e_960000";
-        case KipConfigValue_g_volt_e_998400: return pretty ? "Erista GPU Volt 998.4k" : "g_volt_e_998400";
-        case KipConfigValue_g_volt_e_1036800: return pretty ? "Erista GPU Volt 1036.8k" : "g_volt_e_1036800";
-        case KipConfigValue_g_volt_e_1075200: return pretty ? "Erista GPU Volt 1075.2k" : "g_volt_e_1075200";
+        case KipConfigValue_g_volt_e_76800: return pretty ? "Erista GPU Volt 76 MHz" : "g_volt_e_76800";
+        case KipConfigValue_g_volt_e_115200: return pretty ? "Erista GPU Volt 115 MHz" : "g_volt_e_115200";
+        case KipConfigValue_g_volt_e_153600: return pretty ? "Erista GPU Volt 153 MHz" : "g_volt_e_153600";
+        case KipConfigValue_g_volt_e_192000: return pretty ? "Erista GPU Volt 192 MHz" : "g_volt_e_192000";
+        case KipConfigValue_g_volt_e_230400: return pretty ? "Erista GPU Volt 230 MHz" : "g_volt_e_230400";
+        case KipConfigValue_g_volt_e_268800: return pretty ? "Erista GPU Volt 268 MHz" : "g_volt_e_268800";
+        case KipConfigValue_g_volt_e_307200: return pretty ? "Erista GPU Volt 307 MHz" : "g_volt_e_307200";
+        case KipConfigValue_g_volt_e_345600: return pretty ? "Erista GPU Volt 345 MHz" : "g_volt_e_345600";
+        case KipConfigValue_g_volt_e_384000: return pretty ? "Erista GPU Volt 384 MHz" : "g_volt_e_384000";
+        case KipConfigValue_g_volt_e_422400: return pretty ? "Erista GPU Volt 422 MHz" : "g_volt_e_422400";
+        case KipConfigValue_g_volt_e_460800: return pretty ? "Erista GPU Volt 460 MHz" : "g_volt_e_460800";
+        case KipConfigValue_g_volt_e_499200: return pretty ? "Erista GPU Volt 499 MHz" : "g_volt_e_499200";
+        case KipConfigValue_g_volt_e_537600: return pretty ? "Erista GPU Volt 537 MHz" : "g_volt_e_537600";
+        case KipConfigValue_g_volt_e_576000: return pretty ? "Erista GPU Volt 576 MHz" : "g_volt_e_576000";
+        case KipConfigValue_g_volt_e_614400: return pretty ? "Erista GPU Volt 614 MHz" : "g_volt_e_614400";
+        case KipConfigValue_g_volt_e_652800: return pretty ? "Erista GPU Volt 652 MHz" : "g_volt_e_652800";
+        case KipConfigValue_g_volt_e_691200: return pretty ? "Erista GPU Volt 691 MHz" : "g_volt_e_691200";
+        case KipConfigValue_g_volt_e_729600: return pretty ? "Erista GPU Volt 729 MHz" : "g_volt_e_729600";
+        case KipConfigValue_g_volt_e_768000: return pretty ? "Erista GPU Volt 768 MHz" : "g_volt_e_768000";
+        case KipConfigValue_g_volt_e_806400: return pretty ? "Erista GPU Volt 806 MHz" : "g_volt_e_806400";
+        case KipConfigValue_g_volt_e_844800: return pretty ? "Erista GPU Volt 844 MHz" : "g_volt_e_844800";
+        case KipConfigValue_g_volt_e_883200: return pretty ? "Erista GPU Volt 883 MHz" : "g_volt_e_883200";
+        case KipConfigValue_g_volt_e_921600: return pretty ? "Erista GPU Volt 921 MHz" : "g_volt_e_921600";
+        case KipConfigValue_g_volt_e_960000: return pretty ? "Erista GPU Volt 960 MHz" : "g_volt_e_960000";
+        case KipConfigValue_g_volt_e_998400: return pretty ? "Erista GPU Volt 998 MHz" : "g_volt_e_998400";
+        case KipConfigValue_g_volt_e_1036800: return pretty ? "Erista GPU Volt 1036 MHz" : "g_volt_e_1036800";
+        case KipConfigValue_g_volt_e_1075200: return pretty ? "Erista GPU Volt 1075 MHz" : "g_volt_e_1075200";
 
         default:
             return pretty ? "Null" : "null";

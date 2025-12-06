@@ -164,3 +164,9 @@ Result hocClkIpcSetKipData()
     u32 temp;
     return serviceDispatchIn(&g_sysclkSrv, HocClkIpcCmd_SetKipData, temp);
 }
+
+Result hocClkIpcGetKipData()
+{
+    u32 temp;
+    return serviceDispatchIn(&g_sysclkSrv, HocClkIpcCmd_GetKipData, temp);
+}
