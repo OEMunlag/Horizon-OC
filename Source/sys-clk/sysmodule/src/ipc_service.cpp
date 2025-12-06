@@ -134,10 +134,13 @@ Result IpcService::ServiceHandlerFunc(void* arg, const IpcServerRequest* r, u8* 
             break;
 
         case SysClkIpcCmd_GetProfiles:
-            if(r->data.size >= sizeof(std::uint64_t))
+            if(r->data.size >= sizeof(std::uint64_t) && r->hipc.meta.num_recv_buffers >= 1)
             {
-                *out_dataSize = sizeof(SysClkTitleProfileList);
-                return ipcSrv->GetProfiles((std::uint64_t*)r->data.ptr, (SysClkTitleProfileList*)out_data);
+                size_t bufSize = hipcGetBufferSize(r->hipc.data.recv_buffers);
+                if(bufSize >= sizeof(SysClkTitleProfileList))
+                {
+                    return ipcSrv->GetProfiles((std::uint64_t*)r->data.ptr, (SysClkTitleProfileList*)hipcGetBufferAddress(r->hipc.data.recv_buffers));
+                }
             }
             break;
 
@@ -163,13 +166,24 @@ Result IpcService::ServiceHandlerFunc(void* arg, const IpcServerRequest* r, u8* 
             break;
 
         case SysClkIpcCmd_GetConfigValues:
-            *out_dataSize = sizeof(SysClkConfigValueList); // bug in stock sys-clk. really stupid bug :skull:
-            return ipcSrv->GetConfigValues((SysClkConfigValueList*)out_data);
+            if(r->hipc.meta.num_recv_buffers >= 1)
+            {
+                size_t bufSize = hipcGetBufferSize(r->hipc.data.recv_buffers);
+                if(bufSize >= sizeof(SysClkConfigValueList))
+                {
+                    return ipcSrv->GetConfigValues((SysClkConfigValueList*)hipcGetBufferAddress(r->hipc.data.recv_buffers));
+                }
+            }
+            break;
 
         case SysClkIpcCmd_SetConfigValues:
-            if(r->data.size >= sizeof(SysClkConfigValueList))
+            if(r->hipc.meta.num_send_buffers >= 1)
             {
-                return ipcSrv->SetConfigValues((SysClkConfigValueList*)r->data.ptr);
+                size_t bufSize = hipcGetBufferSize(r->hipc.data.send_buffers);
+                if(bufSize >= sizeof(SysClkConfigValueList))
+                {
+                    return ipcSrv->SetConfigValues((SysClkConfigValueList*)hipcGetBufferAddress(r->hipc.data.send_buffers));
+                }
             }
             break;
         case SysClkIpcCmd_GetFreqList:

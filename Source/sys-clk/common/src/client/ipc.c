@@ -111,7 +111,10 @@ Result sysclkIpcSetOverride(SysClkModule module, u32 hz)
 
 Result sysclkIpcGetProfiles(u64 tid, SysClkTitleProfileList* out_profiles)
 {
-    return serviceDispatchInOut(&g_sysclkSrv, SysClkIpcCmd_GetProfiles, tid, *out_profiles);
+    return serviceDispatchIn(&g_sysclkSrv, SysClkIpcCmd_GetProfiles, tid,
+        .buffer_attrs = { SfBufferAttr_HipcMapAlias | SfBufferAttr_Out },
+        .buffers = {{out_profiles, sizeof(SysClkTitleProfileList)}},
+    );
 }
 
 Result sysclkIpcSetProfiles(u64 tid, SysClkTitleProfileList* profiles)
@@ -124,12 +127,18 @@ Result sysclkIpcSetProfiles(u64 tid, SysClkTitleProfileList* profiles)
 
 Result sysclkIpcGetConfigValues(SysClkConfigValueList* out_configValues)
 {
-    return serviceDispatchOut(&g_sysclkSrv, SysClkIpcCmd_GetConfigValues, *out_configValues);
+    return serviceDispatch(&g_sysclkSrv, SysClkIpcCmd_GetConfigValues,
+        .buffer_attrs = { SfBufferAttr_HipcMapAlias | SfBufferAttr_Out },
+        .buffers = {{out_configValues, sizeof(SysClkConfigValueList)}},
+    );
 }
 
 Result sysclkIpcSetConfigValues(SysClkConfigValueList* configValues)
 {
-    return serviceDispatchIn(&g_sysclkSrv, SysClkIpcCmd_SetConfigValues, *configValues);
+    return serviceDispatch(&g_sysclkSrv, SysClkIpcCmd_SetConfigValues,
+        .buffer_attrs = { SfBufferAttr_HipcMapAlias | SfBufferAttr_In },
+        .buffers = {{configValues, sizeof(SysClkConfigValueList)}},
+    );
 }
 
 Result sysclkIpcGetFreqList(SysClkModule module, u32* list, u32 maxCount, u32* outCount)

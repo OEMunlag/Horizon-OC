@@ -196,6 +196,7 @@ bool KipHandler::writeKip() {
     
     writeU32(data.custRev);
     writeU32(data.mtcConf);
+    writeU32(data.hpMode);
     writeU32(data.commonCpuBoostClock);
     writeU32(data.commonEmcMemVolt);
     writeU32(data.eristaCpuMaxVolt);
@@ -229,6 +230,8 @@ bool KipHandler::writeKip() {
     writeU32(data.eristaGpuVmin);
     writeU32(data.marikoGpuVmin);
     writeU32(data.marikoGpuVmax);
+    
+    writeU32(data.marikoGpuFullUnlock);
     
     // GPU voltages Mariko
     writeU32(data.g_volt_76800);
