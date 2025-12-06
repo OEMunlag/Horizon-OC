@@ -43,6 +43,7 @@ IpcService::IpcService(ClockManager* clockMgr)
 
     this->running = false;
     this->clockMgr = clockMgr;
+    
 }
 
 void IpcService::SetRunning(bool running)
@@ -189,6 +190,8 @@ Result IpcService::ServiceHandlerFunc(void* arg, const IpcServerRequest* r, u8* 
                 return ipcSrv->SetReverseNXRTMode(mode);
             }
             break;
+        case HocClkIpcCmd_SetKipData:
+            return ipcSrv->SetKipData();
     }
 
     return SYSCLK_ERROR(Generic);
@@ -345,3 +348,10 @@ Result IpcService::SetReverseNXRTMode(ReverseNXMode mode) {
     ClockManager::GetInstance()->SetRNXRTMode(mode);
     return 0;
 }
+
+Result IpcService::SetKipData() {
+    // ClockManager::GetInstance()->SetRNXRTMode(mode);
+    
+    return 0;
+}
+

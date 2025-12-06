@@ -62,6 +62,7 @@ class Config
     std::uint32_t GetOverrideHz(SysClkModule module);
 
     std::uint64_t GetConfigValue(SysClkConfigValue val);
+    void SetConfigValue(SysClkConfigValue val, std::uint64_t value);
     const char* GetConfigValueName(SysClkConfigValue val, bool pretty);
     void GetConfigValues(SysClkConfigValueList* out_configValues);
     bool SetConfigValues(SysClkConfigValueList* configValues, bool immediate);

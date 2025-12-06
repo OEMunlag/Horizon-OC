@@ -405,6 +405,22 @@ std::uint64_t Config::GetConfigValue(SysClkConfigValue kval)
     return this->configValues[kval];
 }
 
+void Config::SetConfigValue(SysClkConfigValue kval, std::uint64_t value)
+{
+    ASSERT_ENUM_VALID(SysClkConfigValue, kval);
+
+    std::scoped_lock lock{this->configMutex};
+
+    if(sysclkValidConfigValue(kval, value))
+    {
+        this->configValues[kval] = value;
+    }
+    else
+    {
+        this->configValues[kval] = sysclkDefaultConfigValue(kval);
+    }
+}
+
 const char* Config::GetConfigValueName(SysClkConfigValue kval, bool pretty)
 {
     ASSERT_ENUM_VALID(SysClkConfigValue, kval);

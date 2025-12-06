@@ -31,10 +31,12 @@
 #include <nxExt.h>
 #include <sysclk.h>
 #include "clock_manager.h"
+#include "kip_handler.hpp"
 
 class IpcService
 {
   public:
+
     IpcService(ClockManager* clockMgr);
     virtual ~IpcService();
     void SetRunning(bool running);
@@ -54,11 +56,12 @@ class IpcService
     Result SetConfigValues(SysClkConfigValueList* configValues);
     Result GetFreqList(SysClkIpc_GetFreqList_Args* args, std::uint32_t* out_list, std::size_t size, std::uint32_t* out_count);
     Result SetReverseNXRTMode(ReverseNXMode mode);
-
+    Result SetKipData();
     bool running;
     Thread thread;
     LockableMutex threadMutex;
     IpcServer server;
     ClockManager* clockMgr;
-    protected:
+  protected:
+
 };
