@@ -210,6 +210,123 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
         case HocClkConfigValue_LiteTDPLimit:
             return pretty ? "Lite TDP Limit" : "tdp_limit_l";
 
+        // KIP config values
+        case KipConfigValue_MTCConf:
+            return pretty ? "KIP MTC Config" : "kip_mtc_conf";
+        case KipConfigValue_commonCpuBoostClock:
+            return pretty ? "Common CPU Boost Clock" : "common_cpu_boost_clock";
+        case KipConfigValue_commonEmcMemVolt:
+            return pretty ? "Common EMC/MEM Voltage" : "common_emc_mem_volt";
+        case KipConfigValue_eristaCpuMaxVolt:
+            return pretty ? "Erista CPU Max Voltage" : "erista_cpu_max_volt";
+        case KipConfigValue_eristaEmcMaxClock:
+            return pretty ? "Erista EMC Max Clock" : "erista_emc_max_clock";
+        case KipConfigValue_marikoCpuMaxVolt:
+            return pretty ? "Mariko CPU Max Voltage" : "mariko_cpu_max_volt";
+        case KipConfigValue_marikoEmcMaxClock:
+            return pretty ? "Mariko EMC Max Clock" : "mariko_emc_max_clock";
+        case KipConfigValue_marikoEmcVddqVolt:
+            return pretty ? "Mariko EMC VDDQ Voltage" : "mariko_emc_vddq_volt";
+        case KipConfigValue_marikoCpuUV:
+            return pretty ? "Mariko CPU Undervolt" : "mariko_cpu_uv";
+        case KipConfigValue_marikoGpuUV:
+            return pretty ? "Mariko GPU Undervolt" : "mariko_gpu_uv";
+        case KipConfigValue_eristaCpuUV:
+            return pretty ? "Erista CPU Undervolt" : "erista_cpu_uv";
+        case KipConfigValue_eristaGpuUV:
+            return pretty ? "Erista GPU Undervolt" : "erista_gpu_uv";
+        case KipConfigValue_commonGpuVoltOffset:
+            return pretty ? "Common GPU Voltage Offset" : "common_gpu_volt_offset";
+        case KipConfigValue_marikoEmcDvbShift:
+            return pretty ? "Mariko EMC DVB Shift" : "mariko_emc_dvb_shift";
+        case KipConfigValue_t1_tRCD:
+            return pretty ? "t1 - tRCD" : "t1_trcd";
+        case KipConfigValue_t2_tRP:
+            return pretty ? "t2 - tRP" : "t2_trp";
+        case KipConfigValue_t3_tRAS:
+            return pretty ? "t3 - tRAS" : "t3_tras";
+        case KipConfigValue_t4_tRRD:
+            return pretty ? "t4 - tRRD" : "t4_trrd";
+        case KipConfigValue_t5_tRFC:
+            return pretty ? "t5 - tRFC" : "t5_trfc";
+        case KipConfigValue_t6_tRTW:
+            return pretty ? "t6 - tRTW" : "t6_trtw";
+        case KipConfigValue_t7_tWTR:
+            return pretty ? "t7 - tWTR" : "t7_twtr";
+        case KipConfigValue_t8_tREFI:
+            return pretty ? "t8 - tREFI" : "t8_trefi";
+        case KipConfigValue_mem_burst_read_latency:
+            return pretty ? "Memory Burst Read Latency" : "mem_burst_read_latency";
+        case KipConfigValue_mem_burst_write_latency:
+            return pretty ? "Memory Burst Write Latency" : "mem_burst_write_latency";
+        case KipConfigValue_marikoCpuHighVmin:
+            return pretty ? "Mariko CPU High Vmin" : "mariko_cpu_high_vmin";
+        case KipConfigValue_marikoCpuLowVmin:
+            return pretty ? "Mariko CPU Low Vmin" : "mariko_cpu_low_vmin";
+        case KipConfigValue_eristaGpuVmin:
+            return pretty ? "Erista GPU Vmin" : "erista_gpu_vmin";
+        case KipConfigValue_marikoGpuVmin:
+            return pretty ? "Mariko GPU Vmin" : "mariko_gpu_vmin";
+        case KipConfigValue_marikoGpuVmax:
+            return pretty ? "Mariko GPU Vmax" : "mariko_gpu_vmax";
+        case KipConfigValue_marikoGpuFullUnlock:
+            return pretty ? "Mariko GPU Full Unlock" : "mariko_gpu_full_unlock";
+
+        // Mariko GPU voltages
+        case KipConfigValue_g_volt_76800: return pretty ? "Mariko GPU Volt 76.8k" : "g_volt_76800";
+        case KipConfigValue_g_volt_153600: return pretty ? "Mariko GPU Volt 153.6k" : "g_volt_153600";
+        case KipConfigValue_g_volt_230400: return pretty ? "Mariko GPU Volt 230.4k" : "g_volt_230400";
+        case KipConfigValue_g_volt_307200: return pretty ? "Mariko GPU Volt 307.2k" : "g_volt_307200";
+        case KipConfigValue_g_volt_384000: return pretty ? "Mariko GPU Volt 384.0k" : "g_volt_384000";
+        case KipConfigValue_g_volt_460800: return pretty ? "Mariko GPU Volt 460.8k" : "g_volt_460800";
+        case KipConfigValue_g_volt_537600: return pretty ? "Mariko GPU Volt 537.6k" : "g_volt_537600";
+        case KipConfigValue_g_volt_614400: return pretty ? "Mariko GPU Volt 614.4k" : "g_volt_614400";
+        case KipConfigValue_g_volt_691200: return pretty ? "Mariko GPU Volt 691.2k" : "g_volt_691200";
+        case KipConfigValue_g_volt_768000: return pretty ? "Mariko GPU Volt 768.0k" : "g_volt_768000";
+        case KipConfigValue_g_volt_844800: return pretty ? "Mariko GPU Volt 844.8k" : "g_volt_844800";
+        case KipConfigValue_g_volt_921600: return pretty ? "Mariko GPU Volt 921.6k" : "g_volt_921600";
+        case KipConfigValue_g_volt_998400: return pretty ? "Mariko GPU Volt 998.4k" : "g_volt_998400";
+        case KipConfigValue_g_volt_1075200: return pretty ? "Mariko GPU Volt 1075.2k" : "g_volt_1075200";
+        case KipConfigValue_g_volt_1152000: return pretty ? "Mariko GPU Volt 1152.0k" : "g_volt_1152000";
+        case KipConfigValue_g_volt_1228800: return pretty ? "Mariko GPU Volt 1228.8k" : "g_volt_1228800";
+        case KipConfigValue_g_volt_1267200: return pretty ? "Mariko GPU Volt 1267.2k" : "g_volt_1267200";
+        case KipConfigValue_g_volt_1305600: return pretty ? "Mariko GPU Volt 1305.6k" : "g_volt_1305600";
+        case KipConfigValue_g_volt_1344000: return pretty ? "Mariko GPU Volt 1344.0k" : "g_volt_1344000";
+        case KipConfigValue_g_volt_1382400: return pretty ? "Mariko GPU Volt 1382.4k" : "g_volt_1382400";
+        case KipConfigValue_g_volt_1420800: return pretty ? "Mariko GPU Volt 1420.8k" : "g_volt_1420800";
+        case KipConfigValue_g_volt_1459200: return pretty ? "Mariko GPU Volt 1459.2k" : "g_volt_1459200";
+        case KipConfigValue_g_volt_1497600: return pretty ? "Mariko GPU Volt 1497.6k" : "g_volt_1497600";
+        case KipConfigValue_g_volt_1536000: return pretty ? "Mariko GPU Volt 1536.0k" : "g_volt_1536000";
+
+        // Erista GPU voltages
+        case KipConfigValue_g_volt_e_76800: return pretty ? "Erista GPU Volt 76.8k" : "g_volt_e_76800";
+        case KipConfigValue_g_volt_e_115200: return pretty ? "Erista GPU Volt 115.2k" : "g_volt_e_115200";
+        case KipConfigValue_g_volt_e_153600: return pretty ? "Erista GPU Volt 153.6k" : "g_volt_e_153600";
+        case KipConfigValue_g_volt_e_192000: return pretty ? "Erista GPU Volt 192.0k" : "g_volt_e_192000";
+        case KipConfigValue_g_volt_e_230400: return pretty ? "Erista GPU Volt 230.4k" : "g_volt_e_230400";
+        case KipConfigValue_g_volt_e_268800: return pretty ? "Erista GPU Volt 268.8k" : "g_volt_e_268800";
+        case KipConfigValue_g_volt_e_307200: return pretty ? "Erista GPU Volt 307.2k" : "g_volt_e_307200";
+        case KipConfigValue_g_volt_e_345600: return pretty ? "Erista GPU Volt 345.6k" : "g_volt_e_345600";
+        case KipConfigValue_g_volt_e_384000: return pretty ? "Erista GPU Volt 384.0k" : "g_volt_e_384000";
+        case KipConfigValue_g_volt_e_422400: return pretty ? "Erista GPU Volt 422.4k" : "g_volt_e_422400";
+        case KipConfigValue_g_volt_e_460800: return pretty ? "Erista GPU Volt 460.8k" : "g_volt_e_460800";
+        case KipConfigValue_g_volt_e_499200: return pretty ? "Erista GPU Volt 499.2k" : "g_volt_e_499200";
+        case KipConfigValue_g_volt_e_537600: return pretty ? "Erista GPU Volt 537.6k" : "g_volt_e_537600";
+        case KipConfigValue_g_volt_e_576000: return pretty ? "Erista GPU Volt 576.0k" : "g_volt_e_576000";
+        case KipConfigValue_g_volt_e_614400: return pretty ? "Erista GPU Volt 614.4k" : "g_volt_e_614400";
+        case KipConfigValue_g_volt_e_652800: return pretty ? "Erista GPU Volt 652.8k" : "g_volt_e_652800";
+        case KipConfigValue_g_volt_e_691200: return pretty ? "Erista GPU Volt 691.2k" : "g_volt_e_691200";
+        case KipConfigValue_g_volt_e_729600: return pretty ? "Erista GPU Volt 729.6k" : "g_volt_e_729600";
+        case KipConfigValue_g_volt_e_768000: return pretty ? "Erista GPU Volt 768.0k" : "g_volt_e_768000";
+        case KipConfigValue_g_volt_e_806400: return pretty ? "Erista GPU Volt 806.4k" : "g_volt_e_806400";
+        case KipConfigValue_g_volt_e_844800: return pretty ? "Erista GPU Volt 844.8k" : "g_volt_e_844800";
+        case KipConfigValue_g_volt_e_883200: return pretty ? "Erista GPU Volt 883.2k" : "g_volt_e_883200";
+        case KipConfigValue_g_volt_e_921600: return pretty ? "Erista GPU Volt 921.6k" : "g_volt_e_921600";
+        case KipConfigValue_g_volt_e_960000: return pretty ? "Erista GPU Volt 960.0k" : "g_volt_e_960000";
+        case KipConfigValue_g_volt_e_998400: return pretty ? "Erista GPU Volt 998.4k" : "g_volt_e_998400";
+        case KipConfigValue_g_volt_e_1036800: return pretty ? "Erista GPU Volt 1036.8k" : "g_volt_e_1036800";
+        case KipConfigValue_g_volt_e_1075200: return pretty ? "Erista GPU Volt 1075.2k" : "g_volt_e_1075200";
+
         default:
             return pretty ? "Null" : "null";
     }
@@ -284,6 +401,89 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case HocClkConfigValue_HandheldGovernor:
         case HocClkConfigValue_HandheldTDP:
             return (input & 0x1) == input;
+        
+        case KipConfigValue_MTCConf:
+        case KipConfigValue_commonCpuBoostClock:
+        case KipConfigValue_commonEmcMemVolt:
+        case KipConfigValue_eristaCpuMaxVolt:
+        case KipConfigValue_eristaEmcMaxClock:
+        case KipConfigValue_marikoCpuMaxVolt:
+        case KipConfigValue_marikoEmcMaxClock:
+        case KipConfigValue_marikoEmcVddqVolt:
+        case KipConfigValue_marikoCpuUV:
+        case KipConfigValue_marikoGpuUV:
+        case KipConfigValue_eristaCpuUV:
+        case KipConfigValue_eristaGpuUV:
+        case KipConfigValue_commonGpuVoltOffset:
+        case KipConfigValue_marikoEmcDvbShift:
+        case KipConfigValue_t1_tRCD:
+        case KipConfigValue_t2_tRP:
+        case KipConfigValue_t3_tRAS:
+        case KipConfigValue_t4_tRRD:
+        case KipConfigValue_t5_tRFC:
+        case KipConfigValue_t6_tRTW:
+        case KipConfigValue_t7_tWTR:
+        case KipConfigValue_t8_tREFI:
+        case KipConfigValue_mem_burst_read_latency:
+        case KipConfigValue_mem_burst_write_latency:
+        case KipConfigValue_marikoCpuHighVmin:
+        case KipConfigValue_marikoCpuLowVmin:
+        case KipConfigValue_eristaGpuVmin:
+        case KipConfigValue_marikoGpuVmin:
+        case KipConfigValue_marikoGpuVmax:
+        case KipConfigValue_marikoGpuFullUnlock:
+        case KipConfigValue_g_volt_76800:
+        case KipConfigValue_g_volt_153600:
+        case KipConfigValue_g_volt_230400:
+        case KipConfigValue_g_volt_307200:
+        case KipConfigValue_g_volt_384000:
+        case KipConfigValue_g_volt_460800:
+        case KipConfigValue_g_volt_537600:
+        case KipConfigValue_g_volt_614400:
+        case KipConfigValue_g_volt_691200:
+        case KipConfigValue_g_volt_768000:
+        case KipConfigValue_g_volt_844800:
+        case KipConfigValue_g_volt_921600:
+        case KipConfigValue_g_volt_998400:
+        case KipConfigValue_g_volt_1075200:
+        case KipConfigValue_g_volt_1152000:
+        case KipConfigValue_g_volt_1228800:
+        case KipConfigValue_g_volt_1267200:
+        case KipConfigValue_g_volt_1305600:
+        case KipConfigValue_g_volt_1344000:
+        case KipConfigValue_g_volt_1382400:
+        case KipConfigValue_g_volt_1420800:
+        case KipConfigValue_g_volt_1459200:
+        case KipConfigValue_g_volt_1497600:
+        case KipConfigValue_g_volt_1536000:
+        case KipConfigValue_g_volt_e_76800:
+        case KipConfigValue_g_volt_e_115200:
+        case KipConfigValue_g_volt_e_153600:
+        case KipConfigValue_g_volt_e_192000:
+        case KipConfigValue_g_volt_e_230400:
+        case KipConfigValue_g_volt_e_268800:
+        case KipConfigValue_g_volt_e_307200:
+        case KipConfigValue_g_volt_e_345600:
+        case KipConfigValue_g_volt_e_384000:
+        case KipConfigValue_g_volt_e_422400:
+        case KipConfigValue_g_volt_e_460800:
+        case KipConfigValue_g_volt_e_499200:
+        case KipConfigValue_g_volt_e_537600:
+        case KipConfigValue_g_volt_e_576000:
+        case KipConfigValue_g_volt_e_614400:
+        case KipConfigValue_g_volt_e_652800:
+        case KipConfigValue_g_volt_e_691200:
+        case KipConfigValue_g_volt_e_729600:
+        case KipConfigValue_g_volt_e_768000:
+        case KipConfigValue_g_volt_e_806400:
+        case KipConfigValue_g_volt_e_844800:
+        case KipConfigValue_g_volt_e_883200:
+        case KipConfigValue_g_volt_e_921600:
+        case KipConfigValue_g_volt_e_960000:
+        case KipConfigValue_g_volt_e_998400:
+        case KipConfigValue_g_volt_e_1036800:
+        case KipConfigValue_g_volt_e_1075200:
+            return input >= 0;
         default:
             return false;
     }

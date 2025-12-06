@@ -148,3 +148,10 @@ Result sysclkIpcSetReverseNXRTMode(ReverseNXMode mode)
 {
     return serviceDispatchIn(&g_sysclkSrv, SysClkIpcCmd_SetReverseNXRTMode, mode);
 }
+
+
+Result hocClkIpcSetKipData()
+{
+    u32 temp;
+    return serviceDispatchIn(&g_sysclkSrv, HocClkIpcCmd_SetKipData, temp);
+}
