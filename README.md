@@ -109,5 +109,5 @@ python -m PyInstaller --onefile --add-data "assets;assets" --icon=assets/icon.ic
 * **KazushiMe** & **meha** – Switch-OC-Suite
 * **sys-clk team** – sys-clk
 * **b0rd2death** – Ultrahand sys-clk fork
-* **Lightos** & **Sammybigio2011** – Early testing
-
+* **MasaGratiR** - General help
+* **Lightos, Samybigio, Dom, Arcdelta, Miki, Algie, Happy, Flopsider, Winnderboi, Blaise** - Testing
