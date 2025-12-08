@@ -31,7 +31,6 @@
 #include <nxExt.h>
 #include <sysclk.h>
 #include "clock_manager.h"
-#include "kip_handler.hpp"
 
 class IpcService
 {

@@ -370,7 +370,7 @@ Result IpcService::SetKipData() {
 }
 
 Result IpcService::GetKipData() {
-    ClockManager::GetInstance()->GetKipConfigValues();
+    ClockManager::GetInstance()->GetKipData();
     
     return 0;
 }

@@ -35,7 +35,7 @@
 #include "board.h"
 #include <nxExt/cpp/lockable_mutex.h>
 #include "integrations.h"
-#include "kip_handler.hpp"
+#include "kip_handler.h"
 
 class ReverseNXSync;
 
@@ -60,14 +60,12 @@ class ClockManager
     void WaitForNextTick();
     void SetRNXRTMode(ReverseNXMode mode);
     void SetKipData();
-    void GetKipConfigValues();
+    void GetKipData();
     struct {
       std::uint32_t count;
       std::uint32_t list[SYSCLK_FREQ_LIST_MAX];
     } freqTable[SysClkModule_EnumMax];
   protected:
-    KipHandler* kip = new KipHandler("sdmc:/atmosphere/kips/hoc.kip");
-
     bool IsAssignableHz(SysClkModule module, std::uint32_t hz);
     std::uint32_t GetMaxAllowedHz(SysClkModule module, SysClkProfile profile);
     std::uint32_t GetNearestHz(SysClkModule module, std::uint32_t inHz, std::uint32_t maxHz);

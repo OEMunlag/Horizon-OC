@@ -59,9 +59,10 @@ typedef enum {
     HocClkConfigValue_LiteTDPLimit,
 
     HocClkConfigValue_EnforceBoardLimit,
-
+    
     KipConfigValue_MTCConf,
     KipConfigValue_commonCpuBoostClock,
+    KipConfigValue_hpMode,
     KipConfigValue_commonEmcMemVolt,
     KipConfigValue_eristaCpuMaxVolt,
     KipConfigValue_eristaEmcMaxClock,
@@ -210,9 +211,13 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
         case HocClkConfigValue_LiteTDPLimit:
             return pretty ? "Lite TDP Limit" : "tdp_limit_l";
 
+        // KIP raw values not normally user-facing
+
         // KIP config values
         case KipConfigValue_MTCConf:
             return pretty ? "MTC Config" : "kip_mtc_conf";
+        case KipConfigValue_hpMode:
+            return pretty ? "KIP HP Mode" : "kip_hp_mode";
         case KipConfigValue_commonCpuBoostClock:
             return pretty ? "Common CPU Boost Clock" : "common_cpu_boost_clock";
         case KipConfigValue_commonEmcMemVolt:
