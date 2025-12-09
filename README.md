@@ -1,7 +1,7 @@
 
 <div align="center">
 
-<img src="assets/logo.png" alt="logo" width="160"/>
+<img src="assets/logo.png" alt="logo" width="350"/>
 
 ---
 
