@@ -68,27 +68,32 @@ namespace ams::ldr::oc::pcv::mariko {
             if (C.marikoCpuLowVmin) {
                 PATCH_OFFSET(ptr, C.marikoCpuLowVmin);
             }
+
             if (C.marikoCpuHighVmin) {
                 PATCH_OFFSET(ptr - 2, C.marikoCpuHighVmin);
             }
+
             if (C.marikoCpuMaxVolt) {
                 PATCH_OFFSET(ptr + 5, C.marikoCpuMaxVolt);
             }
+
             R_SUCCEED();
         }
 
         /* Check alternative pattern. */
         if (MatchesPattern(ptr, CpuVoltageSecondaryPatchOffsets, CpuVoltageSecondaryPatchValues)) {
             if (C.marikoCpuLowVmin) {
-                PATCH_OFFSET(ptr, C.marikoCpuLowVmin);
-                PATCH_OFFSET(ptr + 3,C.marikoCpuLowVmin);
+                PATCH_OFFSET(ptr,     C.marikoCpuLowVmin);
+                PATCH_OFFSET(ptr + 3, C.marikoCpuLowVmin);
             }
+
             if (C.marikoCpuMaxVolt) {
                 PATCH_OFFSET(ptr - 2, C.marikoCpuMaxVolt);
                 PATCH_OFFSET(ptr + 1, C.marikoCpuMaxVolt);
                 PATCH_OFFSET(ptr + 4, C.marikoCpuMaxVolt);
                 PATCH_OFFSET(ptr - 5, C.marikoCpuMaxVolt);
             }
+
             R_SUCCEED();
         }
 
