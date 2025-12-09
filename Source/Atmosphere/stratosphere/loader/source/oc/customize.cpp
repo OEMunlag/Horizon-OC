@@ -32,25 +32,25 @@ namespace ams::ldr::oc {
 volatile CustomizeTable C = {
 
 .mtcConf = AUTO_ADJ_BL,
-.hpMode = ENABLED,
+.hpMode = DISABLED,
 
 .commonEmcMemVolt  = 1175000, // LPDDR4X JEDEC Specification
-.eristaEmcMaxClock = 1862400, // Maximum HB-MGCH ram rating
+.eristaEmcMaxClock = 1600000, // Maximum HB-MGCH ram rating
 
-.marikoEmcMaxClock = 2933000, // Hynix NME and Samsung AM-MGCJ Rating (others are 4766MT, 2133MHz)
-.marikoEmcVddqVolt = 640000,
-.emcDvbShift = 10,
+.marikoEmcMaxClock = 2133000, // Hynix NME and Samsung AM-MGCJ Rating (others are 4766MT, 2133MHz)
+.marikoEmcVddqVolt = 600000,
+.emcDvbShift = 0,
 
 // Primary
-.t1_tRCD = 4,
-.t2_tRP  = 4,
-.t3_tRAS = 8,
+.t1_tRCD = 0,
+.t2_tRP  = 0,
+.t3_tRAS = 0,
 // Secondary
-.t4_tRRD  = 5,
-.t5_tRFC  = 5,
-.t6_tRTW  = 7,
-.t7_tWTR  = 8,
-.t8_tREFI = 6,
+.t4_tRRD  = 0,
+.t5_tRFC  = 0,
+.t6_tRTW  = 0,
+.t7_tWTR  = 0,
+.t8_tREFI = 0,
 
 /* Set to 4 read and 2 write for 1866bl. */
 /* For 2131bl: 8 read and 4 write. */
@@ -60,21 +60,22 @@ volatile CustomizeTable C = {
 .eristaCpuUV = 0,
 .eristaCpuMaxVolt = 1235,
 
-.marikoCpuUVLow = 8, // No undervolt
-.marikoCpuUVHigh = 1, // No undervolt
-.tableConf = TBREAK_1683, /* TODO: Add AUTO */
-.marikoCpuLowVmin = 590,
-.marikoCpuHighVmin = 735,
-.marikoCpuMaxVolt = 1180,
+.marikoCpuUVLow = 0, // No undervolt
+.marikoCpuUVHigh = 0, // No undervolt
+.tableConf = DEFAULT_TABLE, /* TODO: Add AUTO */
+.marikoCpuLowVmin = 610,
+.marikoCpuHighVmin = 750,
+.marikoCpuMaxVolt = 1120,
 
-.commonCpuBoostClock = 2397000, // Default boost clock
+.marikoCpuBoostClock = 1963000, // Default boost clock
+.eristaCpuBoostClock = 1785000, // Default boost clock
 
-.eristaGpuUV = 3,
+.eristaGpuUV = 0,
 .eristaGpuVmin = 810,
 
-.marikoGpuUV = 3,
+.marikoGpuUV = 0,
 .marikoGpuVmin = 610,
-.marikoGpuVmax = 850,
+.marikoGpuVmax = 800,
 
 .commonGpuVoltOffset = 0,
 
@@ -118,28 +119,28 @@ volatile CustomizeTable C = {
 },
 
 .marikoGpuVoltArray = {
-    785  /* 76 */,
-    785  /* 153 */,
-    785  /* 230 */,
-    785  /* 307 */,
-    785  /* 384 */,
-    785  /* 460 */,
-    785  /* 537 */,
-    785  /* 614 */,
-    785  /* 691 */,
-    785  /* 768 */,
-    785  /* 844 */,
-    785  /* 921 */,
-    785  /* 998 */,
-    785  /* 1075 */,
-    785  /* 1152 */,
-    785  /* 1228 */,
-    800    /* 1267  (Disabled by default) */,
-    810    /* 1305  (Disabled by default) */,
-    960    /* 1344  (Disabled by default) */,
-    960    /* 1382  (Disabled by default) */,
-    960    /* 1420  (Disabled by default) */,
-    960    /* 1459  (Disabled by default) */,
+    610  /* 76 */,
+    610  /* 153 */,
+    610  /* 230 */,
+    610  /* 307 */,
+    610  /* 384 */,
+    610  /* 460 */,
+    610  /* 537 */,
+    610  /* 614 */,
+    615  /* 691 */,
+    625  /* 768 */,
+    635  /* 844 */,
+    655  /* 921 */,
+    690  /* 998 */,
+    725  /* 1075 */,
+    750  /* 1152 */,
+    800  /* 1228 */,
+    0    /* 1267  (Disabled by default) */,
+    0    /* 1305  (Disabled by default) */,
+    0    /* 1344  (Disabled by default) */,
+    0    /* 1382  (Disabled by default) */,
+    0    /* 1420  (Disabled by default) */,
+    0    /* 1459  (Disabled by default) */,
     0    /* 1497  (Disabled by default) */,
     0    /* 1536  (Disabled by default) */,
 },

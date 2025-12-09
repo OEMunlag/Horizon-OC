@@ -21,10 +21,17 @@
 namespace ams::ldr::oc::ptm {
 
 Result CpuPtmBoost(perf_conf_entry* entry) {
-    if (!C.commonCpuBoostClock)
+
+    #ifdef ATMOSPHERE_IS_STRATOSPHERE
+    bool isMariko = (spl::GetSocType() == spl::SocType_Mariko);
+    #else
+    bool isMariko = true;
+    #endif
+
+    if (!C.eristaCpuBoostClock || !C.marikoCpuBoostClock)
         R_SUCCEED();
 
-    u32 cpuPtmBoostNew = C.commonCpuBoostClock * 1000;
+    u32 cpuPtmBoostNew = isMariko ? C.marikoCpuBoostClock * 1000 : C.eristaCpuBoostClock * 1000;
 
     PATCH_OFFSET(&(entry->cpu_freq_1), cpuPtmBoostNew);
     PATCH_OFFSET(&(entry->cpu_freq_2), cpuPtmBoostNew);
