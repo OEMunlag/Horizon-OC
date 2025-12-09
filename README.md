@@ -19,8 +19,8 @@
 ## ⚠️ Disclaimer
 
 > **THIS TOOL CAN BE DANGEROUS IF MISUSED. PROCEED WITH CAUTION.**
-> Due to the design of Horizon OS, **overclocking RAM can cause NAND DAMAGE.**
-> Ensure you have a **full NAND backup** before proceeding.
+> Due to the design of Horizon OS, **overclocking RAM can cause NAND OR SD CORRUPTION.**
+> Ensure you have a **full NAND, PROINFO, EMUMMC and SD backup** before proceeding.
 
 ---
 
@@ -31,21 +31,21 @@ It enables advanced CPU, GPU, and RAM tuning with user-friendly configuration to
 
 ---
 
-## 🚀 Features
+## Features
 
-* **CPU:** Up to `2397MHz` (Mariko) / `2091MHz` (Erista)
-* **GPU:** Up to `1305MHz` (Mariko) / `998MHz` (Erista)
-* **RAM:** Up to `3200MHz` (Mariko) / `2360MHz` (Erista)
+* **CPU:** Up to 1963MHz (Mariko) / 1785MHz (Erista)
+* **GPU:** Up to 1075MHz (Mariko) / 998MHz (Erista)
+* **RAM:** Up to 1866MHz (Mariko) / 1600MHz (Erista)
 * Over/undervolting support
 * Built-in configurator
 * Compatible with most homebrew
 
-> *Higher (potentially dangerous) frequencies are unlockable.*
-> *Exact maximum values vary per console.*
+> *Higher (potentially dangerous) frequencies are unlockable via configuration.*
+> *The exact maximum overclock possible varies per console, although most consoles should be able to do this safely.*
 
 ---
 
-## 🧩 Installation
+## Installation
 
 1. Ensure you have the latest versions of
 
@@ -55,7 +55,7 @@ It enables advanced CPU, GPU, and RAM tuning with user-friendly configuration to
 3. If using **Hekate**, edit `hekate_ipl.ini` to include:
 
    ```
-   kip1=atmosphere/kips/*
+   kip1=atmosphere/kips/hoc.kip
    ```
 
    *(No changes needed if using fusee.)*
@@ -64,7 +64,7 @@ It enables advanced CPU, GPU, and RAM tuning with user-friendly configuration to
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 1. Download the latest **Configurator** on your computer.
 2. Run the executable.
@@ -74,41 +74,19 @@ It enables advanced CPU, GPU, and RAM tuning with user-friendly configuration to
 
 ---
 
-## 🧱 Building from Source
+## Building from Source
 
-1. Set up a development environment for compiling **Atmosphere**.
-2. Clone Atmosphere:
-
-   ```bash
-   git clone https://github.com/Atmosphere-NX/Atmosphere.git
-   ```
-3. Move the cloned folder into `build/`.
-4. Insert your `Source/stratosphere` folder into `build/`.
-5. Run: (On Windows you need to use "make -j %NUMBER_OF_PROCESSORS%")
-
-   ```bash
-   ./build.sh
-   ```
-
-
-
-To build the Configurator:
-
-```bash
-cd Source/Configurator
-build.bat
-# or
-python -m PyInstaller --onefile --add-data "assets;assets" --icon=assets/icon.ico --noconsole src/main.py
-```
+Refer to COMPILATION.md
 
 ---
 
-## 💎 Credits
+## Credits
 
-* **Lightos** & **Dominatorul** – RAM timings
-* **KazushiMe** & **meha** – Switch-OC-Suite
+* **Lightos** – RAM timings
+* **ScriesM** - Atmosphere CFW
+* **KazushiMe** – Switch OC Suite
 * **B3711** - UV Tables
 * **sys-clk team** – sys-clk
 * **b0rd2death** – Ultrahand sys-clk fork
-* **MasaGratoR** - General help
-* **Lightos, Samybigio, Dom, Arcdelta, Miki, Algie, Happy, Flopsider, Winnerboi, Blaise** - Testing
+* **MasaGratoR and ZachyCatGames** - General help
+* **Lightos, Dom, Samybigio, Dom, Arcdelta, Miki, Algie, Happy, Flopsider, Winnerboi77, Blaise, Alvise, TRRR and Xenshen** - Testing
