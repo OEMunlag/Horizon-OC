@@ -34,6 +34,14 @@ enum MtcConfig: u32 {
     AUTO_ADJ_BL = 1,
 };
 
+enum TableConfig: u32 {
+    AUTO = 0,
+    DEFAULT_TABLE = 1,
+    TBREAK_1581 = 2,
+    TBREAK_1683 = 3,
+    HELIOS_TABLE = 4,
+};
+
 using CustomizeCpuDvfsTable = pcv::cvb_entry_t[pcv::DvfsTableEntryLimit];
 using CustomizeGpuDvfsTable = pcv::cvb_entry_t[pcv::DvfsTableEntryLimit];
 static_assert(sizeof(CustomizeCpuDvfsTable) == sizeof(CustomizeGpuDvfsTable));
@@ -45,24 +53,15 @@ constexpr uint32_t MARIKO_MTC_MAGIC = 0x43544D4D; // MMTC
 typedef struct CustomizeTable {
     u8  cust[4] = {'C', 'U', 'S', 'T'};
     u32 custRev = CUST_REV;
-    u32 mtcConf = AUTO_ADJ;
+
+    u32 mtcConf;
     u32 hpMode;
-    u32 commonCpuBoostClock;
+
     u32 commonEmcMemVolt;
-    u32 eristaCpuMaxVolt;
     u32 eristaEmcMaxClock;
-    u32 marikoCpuMaxVolt;
+
     u32 marikoEmcMaxClock;
     u32 marikoEmcVddqVolt;
-    u32 marikoCpuUV;
-    u32 marikoGpuUV;
-
-    u32 eristaCpuUV;
-    u32 eristaGpuUV;
-
-
-    u32 commonGpuVoltOffset;
-
     u32 emcDvbShift;
 
     // advanced config
@@ -78,21 +77,39 @@ typedef struct CustomizeTable {
     u32 mem_burst_read_latency;
     u32 mem_burst_write_latency;
 
-    u32 marikoCpuHighVmin;
-    u32 marikoCpuLowVmin;
+    u32 eristaCpuUV;
+    u32 eristaCpuMaxVolt;
 
+    u32 marikoCpuUVLow;
+    u32 marikoCpuUVHigh;
+    u32 tableConf;
+    u32 marikoCpuLowVmin;
+    u32 marikoCpuHighVmin;
+    u32 marikoCpuMaxVolt;
+
+    u32 commonCpuBoostClock;
+
+    u32 eristaGpuUV;
     u32 eristaGpuVmin;
+
+    u32 marikoGpuUV;
     u32 marikoGpuVmin;
     u32 marikoGpuVmax;
 
+    u32 commonGpuVoltOffset;
+
     u32 marikoGpuFullUnlock;
 
-    u32 marikoGpuVoltArray[24];
     u32 eristaGpuVoltArray[27];
+    u32 marikoGpuVoltArray[24];
 
     CustomizeCpuDvfsTable eristaCpuDvfsTable;
+
     CustomizeCpuDvfsTable marikoCpuDvfsTable;
     CustomizeCpuDvfsTable marikoCpuDvfsTableSLT;
+    CustomizeCpuDvfsTable marikoCpuDvfsTable1581Tbreak;
+    CustomizeCpuDvfsTable marikoCpuDvfsTable1683Tbreak;
+    CustomizeCpuDvfsTable marikoCpuDvfsTableHelios;
 
     CustomizeGpuDvfsTable eristaGpuDvfsTable;
     CustomizeGpuDvfsTable eristaGpuDvfsTableSLT;

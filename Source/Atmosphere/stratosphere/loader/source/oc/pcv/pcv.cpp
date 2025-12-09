@@ -96,7 +96,7 @@ void SafetyCheck() {
     };
     u32 eristaCpuDvfsMaxFreq = static_cast<u32>(GetDvfsTableLastEntry(C.eristaCpuDvfsTable)->freq);
     u32 marikoCpuDvfsMaxFreq;
-        if (C.marikoCpuUV) {
+        if (C.marikoCpuUVHigh) {
             marikoCpuDvfsMaxFreq = static_cast<u32>(
                 GetDvfsTableLastEntry(C.marikoCpuDvfsTableSLT)->freq
             );
