@@ -62,7 +62,7 @@ volatile CustomizeTable C = {
 
 .marikoCpuUVLow = 8, // No undervolt
 .marikoCpuUVHigh = 1, // No undervolt
-.tableConf = AUTO,
+.tableConf = TBREAK_1683, /* TODO: Add AUTO */
 .marikoCpuLowVmin = 590,
 .marikoCpuHighVmin = 735,
 .marikoCpuMaxVolt = 1180,

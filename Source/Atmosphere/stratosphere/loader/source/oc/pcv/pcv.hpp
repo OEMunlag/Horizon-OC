@@ -236,7 +236,30 @@ namespace ams::ldr::oc::pcv {
     template <bool isMariko>
     Result CpuFreqCvbTable(u32 *ptr) {
         cvb_entry_t *default_table = isMariko ? (cvb_entry_t *)(&mariko::CpuCvbTableDefault) : (cvb_entry_t *)(&erista::CpuCvbTableDefault);
-        cvb_entry_t* customize_table = const_cast<cvb_entry_t *>(C.marikoCpuDvfsTableHelios);
+        cvb_entry_t *customize_table = const_cast<cvb_entry_t *>(C.marikoCpuDvfsTableHelios);
+
+        if (isMariko) {
+            switch (C.tableConf) {
+                case AUTO:
+                case TBREAK_1683: {
+                    customize_table = const_cast<cvb_entry_t *>(C.marikoCpuDvfsTable1683Tbreak);
+                    break;
+                }
+                case TBREAK_1581: {
+                    customize_table = const_cast<cvb_entry_t *>(C.marikoCpuDvfsTable1581Tbreak);
+                    break;
+                }
+                case HELIOS_TABLE: {
+                    customize_table = const_cast<cvb_entry_t *>(C.marikoCpuDvfsTableHelios);
+                    break;
+                }
+                case DEFAULT_TABLE:
+                default: {
+                    customize_table = default_table;
+                    break;
+                }
+            }
+        }
 
         u32 cpu_max_volt = isMariko ? C.marikoCpuMaxVolt : C.eristaCpuMaxVolt;
         u32 cpu_freq_threshold = 1020'000;
