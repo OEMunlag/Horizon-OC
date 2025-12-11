@@ -54,10 +54,18 @@ def populate():
 
     dpg.add_combo(
         items=freqs_mhz_cpu_label,
-        default_value="1785.0MHz",
-        label="CPU Boost Frequency",
+        default_value="1963.0MHz",
+        label="Mariko CPU Boost Frequency",
         callback=k.grab_kip_storage_values,
-        tag="commonCpuBoostClock"
+        tag="marikoCpuBoostClock"
+    )
+
+    dpg.add_combo(
+        items=freqs_mhz_cpu_label,
+        default_value="1785.0MHz",
+        label="Erista CPU Boost Frequency",
+        callback=k.grab_kip_storage_values,
+        tag="eristaCpuBoostClock"
     )
 
     dpg.add_separator(label="Voltages")
@@ -100,7 +108,7 @@ def populate():
         callback=k.grab_kip_storage_values_no_mult
     )
 
-    dpg.add_separator(label="Undervolt (Mariko ONLY)")
+    dpg.add_separator(label="Undervolt")
 
     dpg.add_button(
         label="What is this?",
@@ -114,10 +122,27 @@ def populate():
     dpg.add_combo(
         items=list(range(0, 8 + 1, 1)),
         default_value="Default Table",
-        label="Mariko CPU Undervolt",
-        tag="marikoCpuUV",
+        label="Mariko CPU Low Undervolt",
+        tag="marikoCpuUVLow",
         callback=k.grab_kip_storage_values_no_mult
     )
+
+    dpg.add_combo(
+        items=list(range(0, 12 + 1, 1)),
+        default_value="Default Table",
+        label="Mariko CPU High Undervolt",
+        tag="marikoCpuUVHigh",
+        callback=k.grab_kip_storage_values_no_mult
+    )
+
+    dpg.add_combo(
+        items=["Auto (Unimplemented) (0)", "Default (1)", "Tbreak Fifteen Eighty One (2)", "Tbreak Sixteen Eighty Three (3)", "HELIOS (4)"],
+        default_value="Default Table",
+        label="Table Configuration",
+        tag="tableConf",
+        callback=k.grab_kip_storage_values_no_mult
+    )
+
     dpg.add_combo(
         items=list(range(0, 5 + 1, 1)),
         default_value="Default Table",
