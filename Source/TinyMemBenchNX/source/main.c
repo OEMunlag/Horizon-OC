@@ -1,6 +1,8 @@
 /*
  * Copyright © 2011 Siarhei Siamashka <siarhei.siamashka@gmail.com>
  *
+ * Copyright (c) 20xx KazushiMe
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
@@ -904,7 +906,8 @@ int main(int argc, char* argv[])
     printf("TinyMemBenchNX v0.4.11\n\
 (based on tinymembench-pthread, a multi-thread fork of simple benchmark for memory throughput and latency)\n\n");
     printf("Copyright (c) 2011-2016 Siarhei Siamashka\n");
-    printf("Copyright (c) 2023 hanai3Bi\n");
+    printf("Copyright (c) 2023 KazushiMe\n");
+    printf("Copyright (c) 2025 Souldbminer\n");
 
     printf("\n");
     consoleUpdate(NULL);
