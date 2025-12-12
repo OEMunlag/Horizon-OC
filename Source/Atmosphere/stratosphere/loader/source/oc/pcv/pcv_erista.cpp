@@ -473,9 +473,9 @@ namespace ams::ldr::oc::pcv::erista {
      //   using namespace pcv::erista;
      //
      //   #define WRITE_PARAM_ALL_REG(TABLE, PARAM, VALUE) // note: add backslashes to make the macro definition work
-     //       TABLE->burst_regs.PARAM = VALUE;             
-     //       TABLE->shadow_regs_ca_train.PARAM = VALUE;   
-     //       TABLE->shadow_regs_quse_train.PARAM = VALUE; 
+     //       TABLE->burst_regs.PARAM = VALUE;
+     //       TABLE->shadow_regs_ca_train.PARAM = VALUE;
+     //       TABLE->shadow_regs_quse_train.PARAM = VALUE;
      //       TABLE->shadow_regs_rdwr_train.PARAM = VALUE;
      //
       #define GET_CYCLE(PARAM) ((u32)((double)(PARAM) / (1000000.0 / 1600000.0)))
@@ -726,7 +726,7 @@ namespace ams::ldr::oc::pcv::erista {
             {"MEM Freq Max", &MemFreqMax, 0, nullptr, EmcClkOSLimit},
             {"MEM Freq PLLM", &MemFreqPllmLimit, 2, nullptr, EmcClkPllmLimit},
             {"MEM Volt", &MemVoltHandler, 2, nullptr, MemVoltHOS},
-            {"GPU Vmin", &GpuVmin, 0, nullptr, gpuVmin},
+            {"GPU Vmin", &GpuVmin, 0, nullptr, GpuVminOfficial},
         };
 
         for (uintptr_t ptr = mapped_nso;

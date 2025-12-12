@@ -24,17 +24,70 @@
 
 namespace ams::ldr::oc::pcv::mariko {
 
-    Result GpuVmin(u32 *ptr) {
-        if (!C.marikoGpuVmin)
-            R_SKIP();
-        PATCH_OFFSET(ptr, (int)C.marikoGpuVmin);
+    /* Note: EOS (probably?) has a bug in this function that always results in high vmin, this is fixed here. */
+    u32 GetAutoVoltage() {
+        u32 voltage = GetGpuVminVoltage();
+        voltage = GetRamVminAdjustment(voltage);
+
+        u32 voltageOffset = 590 - C.commonGpuVoltOffset;
+
+        if (voltageOffset < voltage) {
+            voltage = voltageOffset;
+        }
+
+        return voltage;
+    }
+
+    Result GpuVoltDVFS(u32 *ptr) {
+        /* Check for valid pattern. */
+        for (size_t i = 0; i < std::size(GpuDVFSPattern); ++i) {
+            if (*(ptr + i + 1) != GpuDVFSPattern[i]) {
+                R_THROW(ldr::ResultInvalidGpuDvfs());
+            }
+        }
+
+        /* Default value is 800mV. */
+        if (C.marikoGpuVmax) {
+            PATCH_OFFSET(ptr + 1, C.marikoGpuVmax);
+        }
+
+        /* C.marikoGpuVmin is non zero, user sets manual voltage. */
+        if (C.marikoGpuVmin) {
+            PATCH_OFFSET(ptr, C.marikoGpuVmin);
+            R_SUCCEED();
+        }
+
+        /* C.marikoGpuVmin is zero, auto voltage is applied. */
+        /* Get vmin depending on speedo and ram clock. */
+        u32 autoVmin = GetAutoVoltage();
+        PATCH_OFFSET(ptr, autoVmin);
         R_SUCCEED();
     }
 
-    Result GpuVmax(u32 *ptr) {
-        if (!C.marikoGpuVmax)
-            R_SKIP();
-        PATCH_OFFSET(ptr, (int)C.marikoGpuVmax);
+    Result GpuVoltThermals(u32 *ptr) {
+        u32 vmin = std::memcmp(ptr - 3, GpuVoltThermalPattern, sizeof(GpuVoltThermalPattern));
+        if (vmin) {
+            R_THROW(ldr::ResultInvalidGpuDvfs());
+        }
+
+        /* Automatic voltage. */
+        if (!C.marikoGpuVmin) {
+            vmin = GetAutoVoltage();
+            PATCH_OFFSET(ptr,     vmin);
+            PATCH_OFFSET(ptr + 3, vmin);
+            PATCH_OFFSET(ptr + 6, vmin);
+            PATCH_OFFSET(ptr + 9, vmin);
+        } else {
+            /* Manual voltage. */
+            PATCH_OFFSET(ptr,     C.marikoGpuVmin);
+            PATCH_OFFSET(ptr + 3, C.marikoGpuVmin);
+            PATCH_OFFSET(ptr + 6, C.marikoGpuVmin);
+            PATCH_OFFSET(ptr + 9, C.marikoGpuVmin);
+            vmin = C.marikoGpuVmin;
+        }
+
+        PATCH_OFFSET(ptr + 12, vmin);
+
         R_SUCCEED();
     }
 
@@ -944,9 +997,10 @@ namespace ams::ldr::oc::pcv::mariko {
         PatcherEntry<u32> patches[] = {
             {"CPU Freq Vdd", &CpuFreqVdd, 1, nullptr, CpuClkOSLimit},
             {"CPU Freq Table", CpuFreqCvbTable<true>, 1, nullptr, CpuCvbDefaultMaxFreq},
-            {"CPU Volt DVFS", &CpuVoltDVFS, 2, nullptr, /*CpuVminOfficial*/ 620},
-            // {"CPU Volt Thermals", &CpuVoltThermals, 1, nullptr, /*CpuVminOfficial*/ 620},
+            {"CPU Volt DVFS", &CpuVoltDVFS, 2, nullptr, CpuVminOfficial},
             {"CPU Volt Dfll", &CpuVoltDfll, 1, nullptr, 0x0000FFCF},
+            {"GPU Volt DVFS", &GpuVoltDVFS, 1, nullptr, GpuVminOfficial},
+            {"Gpu Volt Thermals", &GpuVoltThermals, 1, nullptr, GpuVminOfficial},
             {"GPU Freq Table", GpuFreqCvbTable<true>, 1, nullptr, GpuCvbDefaultMaxFreq},
             {"GPU Freq Asm", &GpuFreqMaxAsm, 2, &GpuMaxClockPatternFn},
             {"GPU PLL Max", &GpuFreqPllMax, 1, nullptr, GpuClkPllMax},
@@ -957,8 +1011,6 @@ namespace ams::ldr::oc::pcv::mariko {
             {"MEM Freq PLLM", &MemFreqPllmLimit, 2, nullptr, EmcClkPllmLimit},
             {"MEM Vddq", &EmcVddqVolt, 2, nullptr, EmcVddqDefault},
             {"MEM Vdd2", &MemVoltHandler, 2, nullptr, MemVdd2Default},
-            {"GPU Vmin", &GpuVmin, 0, nullptr, gpuVmin},
-            {"GPU Vmax", &GpuVmax, 0, nullptr, gpuVmax},
         };
 
         for (uintptr_t ptr = mapped_nso; ptr <= mapped_nso + nso_size - sizeof(MarikoMtcTable); ptr += sizeof(u32)) {

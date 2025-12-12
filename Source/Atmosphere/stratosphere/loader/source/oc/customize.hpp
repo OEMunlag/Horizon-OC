@@ -87,8 +87,8 @@ typedef struct CustomizeTable {
     u32 marikoCpuHighVmin;
     u32 marikoCpuMaxVolt;
 
-    u32 marikoCpuBoostClock;
     u32 eristaCpuBoostClock;
+    u32 marikoCpuBoostClock;
 
     u32 eristaGpuUV;
     u32 eristaGpuVmin;
@@ -98,6 +98,9 @@ typedef struct CustomizeTable {
     u32 marikoGpuVmax;
 
     u32 commonGpuVoltOffset;
+
+    /* TODO: Automatically detect speedo. */
+    u32 gpuSpeedo;
 
     u32 marikoGpuFullUnlock;
 
