@@ -469,6 +469,7 @@ namespace ams::ldr::oc::pcv::mariko {
         WRITE_PARAM_ALL_REG(table, emc_rdv_mask, rdv + 2);
         WRITE_PARAM_ALL_REG(table, emc_tr_rdv, rdv);
 
+        /* This needs some clean up. */
         constexpr u32 MC_ARB_DIV = 4;
         constexpr u32 MC_ARB_SFA = 2;
 
@@ -480,9 +481,13 @@ namespace ams::ldr::oc::pcv::mariko {
         table->burst_mc_regs.mc_emem_arb_timing_faw   = (u32) (GET_CYCLE_CEIL(tFAW)   / MC_ARB_DIV) - 1;
         table->burst_mc_regs.mc_emem_arb_timing_rrd   = (u32) (GET_CYCLE_CEIL(tRRD)   / MC_ARB_DIV) - 1;
         table->burst_mc_regs.mc_emem_arb_timing_rfcpb = (u32) (GET_CYCLE_CEIL(tRFCpb) / MC_ARB_DIV);
-        table->burst_mc_regs.mc_emem_arb_timing_rap2pre = (u32) (GET_CYCLE_CEIL(tR2P) / MC_ARB_DIV);
+        table->burst_mc_regs.mc_emem_arb_timing_rap2pre = CEIL(tR2P / MC_ARB_DIV);
         table->burst_mc_regs.mc_emem_arb_timing_wap2pre = (u32) (tW2P / MC_ARB_DIV);
-        table->burst_mc_regs.mc_emem_arb_timing_r2r = (u32) (table->burst_regs.emc_rext / 4) - 1 + MC_ARB_SFA;
+
+        if (table->burst_mc_regs.mc_emem_arb_timing_r2r > 1) {
+            table->burst_mc_regs.mc_emem_arb_timing_r2r = CEIL(table->burst_regs.emc_rext / 4) - 1 + MC_ARB_SFA;
+        }
+
         table->burst_mc_regs.mc_emem_arb_timing_r2w = (u32) (tR2W / MC_ARB_DIV) - 1 + MC_ARB_SFA;
         table->burst_mc_regs.mc_emem_arb_timing_w2r = (u32) (tW2R / MC_ARB_DIV) - 1 + MC_ARB_SFA;
 
@@ -499,75 +504,47 @@ namespace ams::ldr::oc::pcv::mariko {
         da_covers |= (w_cover << 16);
         table->burst_mc_regs.mc_emem_arb_da_covers = da_covers;
 
-        table->burst_mc_regs.mc_emem_arb_misc0 &= 0xFFE08000U;
-        table->burst_mc_regs.mc_emem_arb_misc0 |= ((table->burst_mc_regs.mc_emem_arb_timing_rc + 1) & 0xFF); /* TODO, check this */
+        table->burst_mc_regs.mc_emem_arb_misc0 = (table->burst_mc_regs.mc_emem_arb_misc0 & 0xFFE08000) | (table->burst_mc_regs.mc_emem_arb_timing_rc + 1);
 
-        table->la_scale_regs.mc_mll_mpcorer_ptsa_rate =         MIN((u32)((C.marikoEmcMaxClock / 1600000) * 0xd0U), (u32)0x115);
-        table->la_scale_regs.mc_ftop_ptsa_rate =         MIN((u32)((C.marikoEmcMaxClock / 1600000) * 0x18U), (u32)0x1f);
-        table->la_scale_regs.mc_ptsa_grant_decrement =         MIN((u32)((C.marikoEmcMaxClock / 1600000) * 0x1203U), (u32)0x17ff);
+        table->la_scale_regs.mc_mll_mpcorer_ptsa_rate = 0x115;
 
-        u32 mc_latency_allowance = 0;
-        if (C.marikoEmcMaxClock / 1000 != 0) {
-            mc_latency_allowance = 204800 / (C.marikoEmcMaxClock / 1000);
+        if (C.marikoEmcMaxClock >= 2133000) {
+            table->la_scale_regs.mc_ftop_ptsa_rate = 0x1F;
+        } else {
+            table->la_scale_regs.mc_ftop_ptsa_rate = 0x1B;
         }
 
-        const u32 mc_latency_allowance2 = mc_latency_allowance & 0xFF;
-        const u32 mc_latency_allowance3 = (mc_latency_allowance & 0xFF) << 0x10;
-        table->la_scale_regs.mc_latency_allowance_xusb_0 = (table->la_scale_regs.mc_latency_allowance_xusb_0 & 0xff00ffffU) | mc_latency_allowance3;
-        table->la_scale_regs.mc_latency_allowance_sdmmc_0 = (table->la_scale_regs.mc_latency_allowance_sdmmc_0 & 0xff00ffffU) | mc_latency_allowance3;
-        table->la_scale_regs.mc_latency_allowance_xusb_1 = (table->la_scale_regs.mc_latency_allowance_xusb_1 & 0xff00ffffU) | mc_latency_allowance3;
-        table->la_scale_regs.mc_latency_allowance_tsec_0 = (table->la_scale_regs.mc_latency_allowance_tsec_0 & 0xff00ffffU) | mc_latency_allowance3;
-        table->la_scale_regs.mc_latency_allowance_sdmmca_0 = (table->la_scale_regs.mc_latency_allowance_sdmmca_0 & 0xff00ffffU) | mc_latency_allowance3;
-        table->la_scale_regs.mc_latency_allowance_sdmmcaa_0 = (table->la_scale_regs.mc_latency_allowance_sdmmcaa_0 & 0xff00ffffU) | mc_latency_allowance3;
-        table->la_scale_regs.mc_latency_allowance_sdmmcab_0 = (table->la_scale_regs.mc_latency_allowance_sdmmcab_0 & 0xff00ffffU) | mc_latency_allowance3;
-        table->la_scale_regs.mc_latency_allowance_ppcs_1 = (table->la_scale_regs.mc_latency_allowance_ppcs_1 & 0xff00ffffU) | mc_latency_allowance3;
-        table->la_scale_regs.mc_latency_allowance_mpcore_0 = (table->la_scale_regs.mc_latency_allowance_mpcore_0 & 0xff00ffffU) | mc_latency_allowance3;
-        table->la_scale_regs.mc_latency_allowance_avpc_0 = (table->la_scale_regs.mc_latency_allowance_avpc_0 & 0xff00ffffU) | mc_latency_allowance3;
+        table->la_scale_regs.mc_ptsa_grant_decrement = 0x17ff;
 
-        u32 mc_latency_allowance_hc_0 = 0;
-        if (C.marikoEmcMaxClock / 1000 != 0) {
-            mc_latency_allowance_hc_0 = 35200 / (C.marikoEmcMaxClock / 1000);
-        }
+        constexpr u32 MaskHigh = 0xFF00FFFF;
+        constexpr u32 Mask2 = 0xFFFFFF00;
+        constexpr u32 Mask3 = 0xFF00FF00;
 
-        table->la_scale_regs.mc_latency_allowance_nvdec_0 = (table->la_scale_regs.mc_latency_allowance_nvdec_0 & 0xff00ffffU) | mc_latency_allowance3;
-        table->la_scale_regs.mc_latency_allowance_hc_0 = (table->la_scale_regs.mc_latency_allowance_hc_0 & 0xffffff00U) | mc_latency_allowance_hc_0;
+        const u32 allowance1 = static_cast<u32>(0x32000 / (C.marikoEmcMaxClock / 0x3E8)) & 0xFF;
+        const u32 allowance2 = static_cast<u32>(0x9C40  / (C.marikoEmcMaxClock / 0x3E8)) & 0xFF;
+        const u32 allowance3 = static_cast<u32>(0xB540  / (C.marikoEmcMaxClock / 0x3E8)) & 0xFF;
+        const u32 allowance4 = static_cast<u32>(0x9600  / (C.marikoEmcMaxClock / 0x3E8)) & 0xFF;
+        const u32 allowance5 = static_cast<u32>(0x8980  / (C.marikoEmcMaxClock / 0x3E8)) & 0xFF;
 
-        table->la_scale_regs.mc_latency_allowance_isp2_1 = (table->la_scale_regs.mc_latency_allowance_isp2_1 & 0xff00ff00U) | mc_latency_allowance3 | mc_latency_allowance2;
-        table->la_scale_regs.mc_latency_allowance_hc_1 = (table->la_scale_regs.mc_latency_allowance_hc_1 & 0xffffff00U) | mc_latency_allowance2;
-
-        u32 mc_latency_allowance_gpu_0 = 0;
-        if (C.marikoEmcMaxClock / 1000 != 0) {
-            mc_latency_allowance_gpu_0 = 40000 / (C.marikoEmcMaxClock / 1000);
-        }
-
-        table->la_scale_regs.mc_latency_allowance_gpu_0 = ((mc_latency_allowance_gpu_0 | table->la_scale_regs.mc_latency_allowance_gpu_0) & 0xff00ff00U) | mc_latency_allowance3;
-
-        u32 mc_latency_allowance_gpu2_0 = 0;
-        if (C.marikoEmcMaxClock / 1000 != 0) {
-        mc_latency_allowance_gpu2_0 = 40000 / (C.marikoEmcMaxClock / 1000);
-        }
-
-        table->la_scale_regs.mc_latency_allowance_gpu2_0 = ((mc_latency_allowance_gpu2_0 | table->la_scale_regs.mc_latency_allowance_gpu2_0) & 0xff00ff00U) | mc_latency_allowance3;
-
-        u32 mc_latency_allowance_nvenc_0 = 0;
-        if (C.marikoEmcMaxClock / 1000 != 0) {
-            mc_latency_allowance_nvenc_0 = 38400 / (C.marikoEmcMaxClock / 1000);
-        }
-
-        table->la_scale_regs.mc_latency_allowance_nvenc_0 = ((mc_latency_allowance_nvenc_0 | table->la_scale_regs.mc_latency_allowance_nvenc_0) & 0xff00ff00U) | mc_latency_allowance3;
-
-        u32 mc_latency_allowance_vic_0 = 0;
-        if (C.marikoEmcMaxClock / 1000 != 0) {
-            mc_latency_allowance_vic_0 = 0xb540 / (C.marikoEmcMaxClock / 1000);
-        }
-
-        table->la_scale_regs.mc_latency_allowance_vic_0 = ((mc_latency_allowance_vic_0 | table->la_scale_regs.mc_latency_allowance_vic_0) & 0xff00ff00U) | mc_latency_allowance3;
-        table->la_scale_regs.mc_latency_allowance_vi2_0 = (table->la_scale_regs.mc_latency_allowance_vi2_0 & 0xffffff00U) | mc_latency_allowance2;
-
-        // table->pllm_ss_ctrl1 = 0xb55fe01;
-        // table->pllm_ss_ctrl2 = 0x10170b55;
-        // table->pllmb_ss_ctrl1 = 0xb55fe01;
-        // table->pllmb_ss_ctrl2 = 0x10170b55;
+        table->la_scale_regs.mc_latency_allowance_xusb_0 = (table->la_scale_regs.mc_latency_allowance_xusb_0 & MaskHigh) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_xusb_1 = (table->la_scale_regs.mc_latency_allowance_xusb_1 & MaskHigh) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_tsec_0 = (table->la_scale_regs.mc_latency_allowance_tsec_0 & MaskHigh) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_sdmmcaa_0 = (table->la_scale_regs.mc_latency_allowance_sdmmcaa_0 & MaskHigh) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_sdmmcab_0 = (table->la_scale_regs.mc_latency_allowance_sdmmcab_0 & MaskHigh) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_sdmmc_0 = (table->la_scale_regs.mc_latency_allowance_sdmmc_0 & MaskHigh) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_sdmmca_0 = (table->la_scale_regs.mc_latency_allowance_sdmmca_0 & MaskHigh) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_ppcs_1 = (table->la_scale_regs.mc_latency_allowance_ppcs_1 & MaskHigh) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_nvdec_0 = (table->la_scale_regs.mc_latency_allowance_nvdec_0 & MaskHigh) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_mpcore_0 = (table->la_scale_regs.mc_latency_allowance_mpcore_0 & MaskHigh) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_avpc_0 = (table->la_scale_regs.mc_latency_allowance_avpc_0 & MaskHigh) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_vic_0 = allowance3 | (table->la_scale_regs.mc_latency_allowance_vic_0 & Mask3) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_isp2_1 = (table->la_scale_regs.mc_latency_allowance_isp2_1 & Mask3) | (allowance1 << 16) | allowance1;
+        table->la_scale_regs.mc_latency_allowance_nvenc_0 = allowance4 | (table->la_scale_regs.mc_latency_allowance_nvenc_0 & Mask3) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_hc_0 = (table->la_scale_regs.mc_latency_allowance_hc_0 & Mask2) | allowance5;
+        table->la_scale_regs.mc_latency_allowance_gpu_0 = allowance2 | (table->la_scale_regs.mc_latency_allowance_gpu_0 & Mask3) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_gpu2_0 = allowance2 | (table->la_scale_regs.mc_latency_allowance_gpu2_0 & Mask3) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_hc_1 = (table->la_scale_regs.mc_latency_allowance_hc_1 & Mask2) | allowance1;
+        table->la_scale_regs.mc_latency_allowance_vi2_0 = (table->la_scale_regs.mc_latency_allowance_vi2_0 & Mask2) | allowance1;
 
         table->dram_timings.t_rp = tRFCpb;
         table->dram_timings.t_rfc = tRFCab;
