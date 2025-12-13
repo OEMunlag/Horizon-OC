@@ -524,13 +524,11 @@ void ClockManager::SetKipData() {
     const char* kip = "sdmc:/atmosphere/kips/hoc.kip";
     CustomizeTable table;
 
-    // Read the KIP file ONCE
     if (!cust_read_and_cache(kip, &table)) {
         FileUtils::LogLine("[clock_manager] Failed to read KIP file");
         return;
     }
 
-    // Update all fields in memory
     CUST_WRITE_FIELD_BATCH(&table, custRev, this->config->GetConfigValue(KipConfigValue_custRev));
     CUST_WRITE_FIELD_BATCH(&table, mtcConf, this->config->GetConfigValue(KipConfigValue_mtcConf));
     CUST_WRITE_FIELD_BATCH(&table, hpMode, this->config->GetConfigValue(KipConfigValue_hpMode));
@@ -557,6 +555,7 @@ void ClockManager::SetKipData() {
 
     CUST_WRITE_FIELD_BATCH(&table, marikoCpuUVLow, this->config->GetConfigValue(KipConfigValue_marikoCpuUVLow));
     CUST_WRITE_FIELD_BATCH(&table, marikoCpuUVHigh, this->config->GetConfigValue(KipConfigValue_marikoCpuUVHigh));
+    CUST_WRITE_FIELD_BATCH(&table, tableConf, this->config->GetConfigValue(KipConfigValue_tableConf));
     CUST_WRITE_FIELD_BATCH(&table, marikoCpuLowVmin, this->config->GetConfigValue(KipConfigValue_marikoCpuLowVmin));
     CUST_WRITE_FIELD_BATCH(&table, marikoCpuHighVmin, this->config->GetConfigValue(KipConfigValue_marikoCpuHighVmin));
     CUST_WRITE_FIELD_BATCH(&table, marikoCpuMaxVolt, this->config->GetConfigValue(KipConfigValue_marikoCpuMaxVolt));
@@ -575,17 +574,14 @@ void ClockManager::SetKipData() {
     CUST_WRITE_FIELD_BATCH(&table, gpuSpeedo, this->config->GetConfigValue(KipConfigValue_gpuSpeedo));
     CUST_WRITE_FIELD_BATCH(&table, marikoGpuFullUnlock, this->config->GetConfigValue(KipConfigValue_marikoGpuFullUnlock));
 
-    // Update MARIKO GPU voltages
     for (int i = 0; i < 24; i++) {
         table.marikoGpuVoltArray[i] = this->config->GetConfigValue((SysClkConfigValue)(KipConfigValue_g_volt_76800 + i));
     }
 
-    // Update ERISTA GPU voltages
     for (int i = 0; i < 27; i++) {
         table.eristaGpuVoltArray[i] = this->config->GetConfigValue((SysClkConfigValue)(KipConfigValue_g_volt_e_76800 + i));
     }
 
-    // Write the KIP file ONCE with all changes
     if (!cust_write_table(kip, &table)) {
         FileUtils::LogLine("[clock_manager] Failed to write KIP file");
     }
@@ -597,17 +593,14 @@ void ClockManager::GetKipData() {
     const char* kip = "sdmc:/atmosphere/kips/hoc.kip";
     CustomizeTable table;
 
-    // Read the KIP file ONCE
     if (!cust_read_and_cache(kip, &table)) {
         FileUtils::LogLine("[clock_manager] Failed to read KIP file for GetKipData");
         return;
     }
 
-    // Build a config value list to set all at once
     SysClkConfigValueList configValues;
     memset(&configValues, 0, sizeof(configValues));
 
-    // Read all fields from KIP file
     configValues.values[KipConfigValue_custRev] = cust_get_cust_rev(&table);
     configValues.values[KipConfigValue_mtcConf] = cust_get_mtc_conf(&table);
     configValues.values[KipConfigValue_hpMode] = cust_get_hp_mode(&table);
@@ -633,6 +626,7 @@ void ClockManager::GetKipData() {
     configValues.values[KipConfigValue_eristaCpuMaxVolt] = cust_get_erista_cpu_max_volt(&table);
     configValues.values[KipConfigValue_marikoCpuUVLow] = cust_get_mariko_cpu_uv_low(&table);
     configValues.values[KipConfigValue_marikoCpuUVHigh] = cust_get_mariko_cpu_uv_high(&table);
+    configValues.values[KipConfigValue_tableConf] = cust_get_table_conf(&table);
     configValues.values[KipConfigValue_marikoCpuLowVmin] = cust_get_mariko_cpu_low_vmin(&table);
     configValues.values[KipConfigValue_marikoCpuHighVmin] = cust_get_mariko_cpu_high_vmin(&table);
     configValues.values[KipConfigValue_marikoCpuMaxVolt] = cust_get_mariko_cpu_max_volt(&table);

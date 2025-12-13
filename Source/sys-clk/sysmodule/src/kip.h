@@ -245,6 +245,7 @@ static inline u32 cust_get_mariko_cpu_high_vmin(const CustomizeTable* t) { retur
 static inline u32 cust_get_mariko_cpu_max_volt(const CustomizeTable* t) { return CUST_GET_FIELD(t, marikoCpuMaxVolt); }
 static inline u32 cust_get_erista_cpu_boost(const CustomizeTable* t) { return CUST_GET_FIELD(t, eristaCpuBoostClock); }
 static inline u32 cust_get_mariko_cpu_boost(const CustomizeTable* t) { return CUST_GET_FIELD(t, marikoCpuBoostClock); }
+static inline u32 cust_get_table_conf(const CustomizeTable* t) { return CUST_GET_FIELD(t, tableConf); }
 
 static inline u32 cust_get_erista_gpu_uv(const CustomizeTable* t) { return CUST_GET_FIELD(t, eristaGpuUV); }
 static inline u32 cust_get_erista_gpu_vmin(const CustomizeTable* t) { return CUST_GET_FIELD(t, eristaGpuVmin); }

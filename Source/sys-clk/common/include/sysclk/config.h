@@ -64,14 +64,12 @@ typedef enum {
     KipConfigValue_mtcConf,
     KipConfigValue_hpMode,
 
-    /* EMC */
     KipConfigValue_commonEmcMemVolt,
     KipConfigValue_eristaEmcMaxClock,
     KipConfigValue_marikoEmcMaxClock,
     KipConfigValue_marikoEmcVddqVolt,
     KipConfigValue_emcDvbShift,
 
-    /* Memory timings */
     KipConfigValue_t1_tRCD,
     KipConfigValue_t2_tRP,
     KipConfigValue_t3_tRAS,
@@ -83,11 +81,9 @@ typedef enum {
     KipConfigValue_mem_burst_read_latency,
     KipConfigValue_mem_burst_write_latency,
 
-    /* CPU – Erista */
     KipConfigValue_eristaCpuUV,
     KipConfigValue_eristaCpuMaxVolt,
 
-    /* CPU – Mariko */
     KipConfigValue_marikoCpuUVLow,
     KipConfigValue_marikoCpuUVHigh,
     KipConfigValue_tableConf,
@@ -98,11 +94,9 @@ typedef enum {
     KipConfigValue_eristaCpuBoostClock,
     KipConfigValue_marikoCpuBoostClock,
 
-    /* GPU – Erista */
     KipConfigValue_eristaGpuUV,
     KipConfigValue_eristaGpuVmin,
 
-    /* GPU – Mariko */
     KipConfigValue_marikoGpuUV,
     KipConfigValue_marikoGpuVmin,
     KipConfigValue_marikoGpuVmax,
@@ -111,9 +105,6 @@ typedef enum {
     KipConfigValue_gpuSpeedo,
     KipConfigValue_marikoGpuFullUnlock,
 
-    /* ============================= */
-    /* Mariko GPU voltages (24)      */
-    /* ============================= */
     KipConfigValue_g_volt_76800,
     KipConfigValue_g_volt_153600,
     KipConfigValue_g_volt_230400,
@@ -139,9 +130,6 @@ typedef enum {
     KipConfigValue_g_volt_1497600,
     KipConfigValue_g_volt_1536000,
 
-    /* ============================= */
-    /* Erista GPU voltages (27)      */
-    /* ============================= */
     KipConfigValue_g_volt_e_76800,
     KipConfigValue_g_volt_e_115200,
     KipConfigValue_g_volt_e_153600,
