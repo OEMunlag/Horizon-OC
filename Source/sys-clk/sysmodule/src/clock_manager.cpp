@@ -32,12 +32,11 @@
 #include "process_management.h"
 #include "errors.h"
 #include "ipc_service.h"
-
+#include "kip.h"
 #define HOSPPC_HAS_BOOST (hosversionAtLeast(7,0,0))
 
 ClockManager *ClockManager::instance = NULL;
 
-kip_data_t kip;
 
 ClockManager *ClockManager::GetInstance()
 {
@@ -80,6 +79,7 @@ ClockManager::ClockManager()
     this->lastCsvWriteNs = 0;
 
     this->rnxSync = new ReverseNXSync;
+    this->GetKipData();
 }
 
 ClockManager::~ClockManager()
@@ -519,203 +519,150 @@ void ClockManager::SetRNXRTMode(ReverseNXMode mode)
 }
 
 void ClockManager::SetKipData() {
-    
-    // Populate KIP fields from current config. We preserve fields that
-    // don't have corresponding config entries (e.g. custRev, hpMode).
-    kip.mtcConf = (uint32_t)this->config->GetConfigValue(KipConfigValue_MTCConf);
-    kip.commonCpuBoostClock = (uint32_t)this->config->GetConfigValue(KipConfigValue_commonCpuBoostClock);
-    kip.commonEmcMemVolt = (uint32_t)this->config->GetConfigValue(KipConfigValue_commonEmcMemVolt);
+    std::scoped_lock lock{this->contextMutex};
 
-    // Erista
-    kip.eristaCpuMaxVolt = (uint32_t)this->config->GetConfigValue(KipConfigValue_eristaCpuMaxVolt);
-    kip.eristaEmcMaxClock = (uint32_t)this->config->GetConfigValue(KipConfigValue_eristaEmcMaxClock);
+    const char* kip = "sdmc:/atmosphere/kips/hoc.kip";
+    CustomizeTable table;
 
-    // Mariko
-    kip.marikoCpuMaxVolt = (uint32_t)this->config->GetConfigValue(KipConfigValue_marikoCpuMaxVolt);
-    kip.marikoEmcMaxClock = (uint32_t)this->config->GetConfigValue(KipConfigValue_marikoEmcMaxClock);
-    kip.marikoEmcVddqVolt = (uint32_t)this->config->GetConfigValue(KipConfigValue_marikoEmcVddqVolt);
+    // Read the KIP file ONCE
+    if (!cust_read_and_cache(kip, &table)) {
+        FileUtils::LogLine("[clock_manager] Failed to read KIP file");
+        return;
+    }
 
-    // Undervolt / UV
-    kip.marikoCpuUV = (uint32_t)this->config->GetConfigValue(KipConfigValue_marikoCpuUV);
-    kip.marikoGpuUV = (uint32_t)this->config->GetConfigValue(KipConfigValue_marikoGpuUV);
-    kip.eristaCpuUV = (uint32_t)this->config->GetConfigValue(KipConfigValue_eristaCpuUV);
-    kip.eristaGpuUV = (uint32_t)this->config->GetConfigValue(KipConfigValue_eristaGpuUV);
+    // Update all fields in memory
+    CUST_WRITE_FIELD_BATCH(&table, custRev, this->config->GetConfigValue(KipConfigValue_custRev));
+    CUST_WRITE_FIELD_BATCH(&table, mtcConf, this->config->GetConfigValue(KipConfigValue_mtcConf));
+    CUST_WRITE_FIELD_BATCH(&table, hpMode, this->config->GetConfigValue(KipConfigValue_hpMode));
 
-    // GPU offset / EMC DVB
-    kip.commonGpuVoltOffset = (uint32_t)this->config->GetConfigValue(KipConfigValue_commonGpuVoltOffset);
-    kip.marikoEmcDvbShift = (uint32_t)this->config->GetConfigValue(KipConfigValue_marikoEmcDvbShift);
+    CUST_WRITE_FIELD_BATCH(&table, commonEmcMemVolt, this->config->GetConfigValue(KipConfigValue_commonEmcMemVolt));
+    CUST_WRITE_FIELD_BATCH(&table, eristaEmcMaxClock, this->config->GetConfigValue(KipConfigValue_eristaEmcMaxClock));
+    CUST_WRITE_FIELD_BATCH(&table, marikoEmcMaxClock, this->config->GetConfigValue(KipConfigValue_marikoEmcMaxClock));
+    CUST_WRITE_FIELD_BATCH(&table, marikoEmcVddqVolt, this->config->GetConfigValue(KipConfigValue_marikoEmcVddqVolt));
+    CUST_WRITE_FIELD_BATCH(&table, emcDvbShift, this->config->GetConfigValue(KipConfigValue_emcDvbShift));
 
-    // Memory timing values
-    kip.t1_tRCD = (uint32_t)this->config->GetConfigValue(KipConfigValue_t1_tRCD);
-    kip.t2_tRP = (uint32_t)this->config->GetConfigValue(KipConfigValue_t2_tRP);
-    kip.t3_tRAS = (uint32_t)this->config->GetConfigValue(KipConfigValue_t3_tRAS);
-    kip.t4_tRRD = (uint32_t)this->config->GetConfigValue(KipConfigValue_t4_tRRD);
-    kip.t5_tRFC = (uint32_t)this->config->GetConfigValue(KipConfigValue_t5_tRFC);
-    kip.t6_tRTW = (uint32_t)this->config->GetConfigValue(KipConfigValue_t6_tRTW);
-    kip.t7_tWTR = (uint32_t)this->config->GetConfigValue(KipConfigValue_t7_tWTR);
-    kip.t8_tREFI = (uint32_t)this->config->GetConfigValue(KipConfigValue_t8_tREFI);
+    CUST_WRITE_FIELD_BATCH(&table, t1_tRCD, this->config->GetConfigValue(KipConfigValue_t1_tRCD));
+    CUST_WRITE_FIELD_BATCH(&table, t2_tRP, this->config->GetConfigValue(KipConfigValue_t2_tRP));
+    CUST_WRITE_FIELD_BATCH(&table, t3_tRAS, this->config->GetConfigValue(KipConfigValue_t3_tRAS));
+    CUST_WRITE_FIELD_BATCH(&table, t4_tRRD, this->config->GetConfigValue(KipConfigValue_t4_tRRD));
+    CUST_WRITE_FIELD_BATCH(&table, t5_tRFC, this->config->GetConfigValue(KipConfigValue_t5_tRFC));
+    CUST_WRITE_FIELD_BATCH(&table, t6_tRTW, this->config->GetConfigValue(KipConfigValue_t6_tRTW));
+    CUST_WRITE_FIELD_BATCH(&table, t7_tWTR, this->config->GetConfigValue(KipConfigValue_t7_tWTR));
+    CUST_WRITE_FIELD_BATCH(&table, t8_tREFI, this->config->GetConfigValue(KipConfigValue_t8_tREFI));
+    CUST_WRITE_FIELD_BATCH(&table, mem_burst_read_latency, this->config->GetConfigValue(KipConfigValue_mem_burst_read_latency));
+    CUST_WRITE_FIELD_BATCH(&table, mem_burst_write_latency, this->config->GetConfigValue(KipConfigValue_mem_burst_write_latency));
 
-    kip.mem_burst_read_latency = (uint32_t)this->config->GetConfigValue(KipConfigValue_mem_burst_read_latency);
-    kip.mem_burst_write_latency = (uint32_t)this->config->GetConfigValue(KipConfigValue_mem_burst_write_latency);
+    CUST_WRITE_FIELD_BATCH(&table, eristaCpuUV, this->config->GetConfigValue(KipConfigValue_eristaCpuUV));
+    CUST_WRITE_FIELD_BATCH(&table, eristaCpuMaxVolt, this->config->GetConfigValue(KipConfigValue_eristaCpuMaxVolt));
 
-    // Additional voltages
-    kip.marikoCpuHighVmin = (uint32_t)this->config->GetConfigValue(KipConfigValue_marikoCpuHighVmin);
-    kip.marikoCpuLowVmin = (uint32_t)this->config->GetConfigValue(KipConfigValue_marikoCpuLowVmin);
-    kip.eristaGpuVmin = (uint32_t)this->config->GetConfigValue(KipConfigValue_eristaGpuVmin);
-    kip.marikoGpuVmin = (uint32_t)this->config->GetConfigValue(KipConfigValue_marikoGpuVmin);
-    kip.marikoGpuVmax = (uint32_t)this->config->GetConfigValue(KipConfigValue_marikoGpuVmax);
+    CUST_WRITE_FIELD_BATCH(&table, marikoCpuUVLow, this->config->GetConfigValue(KipConfigValue_marikoCpuUVLow));
+    CUST_WRITE_FIELD_BATCH(&table, marikoCpuUVHigh, this->config->GetConfigValue(KipConfigValue_marikoCpuUVHigh));
+    CUST_WRITE_FIELD_BATCH(&table, marikoCpuLowVmin, this->config->GetConfigValue(KipConfigValue_marikoCpuLowVmin));
+    CUST_WRITE_FIELD_BATCH(&table, marikoCpuHighVmin, this->config->GetConfigValue(KipConfigValue_marikoCpuHighVmin));
+    CUST_WRITE_FIELD_BATCH(&table, marikoCpuMaxVolt, this->config->GetConfigValue(KipConfigValue_marikoCpuMaxVolt));
 
-    kip.marikoGpuFullUnlock = (uint32_t)this->config->GetConfigValue(KipConfigValue_marikoGpuFullUnlock);
+    CUST_WRITE_FIELD_BATCH(&table, eristaCpuBoostClock, this->config->GetConfigValue(KipConfigValue_eristaCpuBoostClock));
+    CUST_WRITE_FIELD_BATCH(&table, marikoCpuBoostClock, this->config->GetConfigValue(KipConfigValue_marikoCpuBoostClock));
 
-    // Mariko GPU voltages
-    kip.g_volt_76800 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_76800);
-    kip.g_volt_153600 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_153600);
-    kip.g_volt_230400 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_230400);
-    kip.g_volt_307200 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_307200);
-    kip.g_volt_384000 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_384000);
-    kip.g_volt_460800 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_460800);
-    kip.g_volt_537600 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_537600);
-    kip.g_volt_614400 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_614400);
-    kip.g_volt_691200 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_691200);
-    kip.g_volt_768000 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_768000);
-    kip.g_volt_844800 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_844800);
-    kip.g_volt_921600 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_921600);
-    kip.g_volt_998400 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_998400);
-    kip.g_volt_1075200 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_1075200);
-    kip.g_volt_1152000 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_1152000);
-    kip.g_volt_1228800 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_1228800);
-    kip.g_volt_1267200 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_1267200);
-    kip.g_volt_1305600 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_1305600);
-    kip.g_volt_1344000 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_1344000);
-    kip.g_volt_1382400 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_1382400);
-    kip.g_volt_1420800 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_1420800);
-    kip.g_volt_1459200 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_1459200);
-    kip.g_volt_1497600 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_1497600);
-    kip.g_volt_1536000 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_1536000);
+    CUST_WRITE_FIELD_BATCH(&table, eristaGpuUV, this->config->GetConfigValue(KipConfigValue_eristaGpuUV));
+    CUST_WRITE_FIELD_BATCH(&table, eristaGpuVmin, this->config->GetConfigValue(KipConfigValue_eristaGpuVmin));
 
-    // Erista GPU voltages
-    kip.g_volt_e_76800 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_76800);
-    kip.g_volt_e_115200 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_115200);
-    kip.g_volt_e_153600 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_153600);
-    kip.g_volt_e_192000 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_192000);
-    kip.g_volt_e_230400 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_230400);
-    kip.g_volt_e_268800 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_268800);
-    kip.g_volt_e_307200 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_307200);
-    kip.g_volt_e_345600 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_345600);
-    kip.g_volt_e_384000 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_384000);
-    kip.g_volt_e_422400 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_422400);
-    kip.g_volt_e_460800 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_460800);
-    kip.g_volt_e_499200 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_499200);
-    kip.g_volt_e_537600 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_537600);
-    kip.g_volt_e_576000 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_576000);
-    kip.g_volt_e_614400 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_614400);
-    kip.g_volt_e_652800 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_652800);
-    kip.g_volt_e_691200 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_691200);
-    kip.g_volt_e_729600 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_729600);
-    kip.g_volt_e_768000 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_768000);
-    kip.g_volt_e_806400 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_806400);
-    kip.g_volt_e_844800 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_844800);
-    kip.g_volt_e_883200 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_883200);
-    kip.g_volt_e_921600 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_921600);
-    kip.g_volt_e_960000 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_960000);
-    kip.g_volt_e_998400 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_998400);
-    kip.g_volt_e_1036800 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_1036800);
-    kip.g_volt_e_1075200 = (uint32_t)this->config->GetConfigValue(KipConfigValue_g_volt_e_1075200);
+    CUST_WRITE_FIELD_BATCH(&table, marikoGpuUV, this->config->GetConfigValue(KipConfigValue_marikoGpuUV));
+    CUST_WRITE_FIELD_BATCH(&table, marikoGpuVmin, this->config->GetConfigValue(KipConfigValue_marikoGpuVmin));
+    CUST_WRITE_FIELD_BATCH(&table, marikoGpuVmax, this->config->GetConfigValue(KipConfigValue_marikoGpuVmax));
 
-    kip_write("loader.kip", &kip, sizeof(kip));
+    CUST_WRITE_FIELD_BATCH(&table, commonGpuVoltOffset, this->config->GetConfigValue(KipConfigValue_commonGpuVoltOffset));
+    CUST_WRITE_FIELD_BATCH(&table, gpuSpeedo, this->config->GetConfigValue(KipConfigValue_gpuSpeedo));
+    CUST_WRITE_FIELD_BATCH(&table, marikoGpuFullUnlock, this->config->GetConfigValue(KipConfigValue_marikoGpuFullUnlock));
+
+    // Update MARIKO GPU voltages
+    for (int i = 0; i < 24; i++) {
+        table.marikoGpuVoltArray[i] = this->config->GetConfigValue((SysClkConfigValue)(KipConfigValue_g_volt_76800 + i));
+    }
+
+    // Update ERISTA GPU voltages
+    for (int i = 0; i < 27; i++) {
+        table.eristaGpuVoltArray[i] = this->config->GetConfigValue((SysClkConfigValue)(KipConfigValue_g_volt_e_76800 + i));
+    }
+
+    // Write the KIP file ONCE with all changes
+    if (!cust_write_table(kip, &table)) {
+        FileUtils::LogLine("[clock_manager] Failed to write KIP file");
+    }
 }
 
 void ClockManager::GetKipData() {
-    kip_read("loader.kip", &kip, sizeof(kip));
+    std::scoped_lock lock{this->contextMutex};
 
-    this->config->SetConfigValue(KipConfigValue_MTCConf, kip.mtcConf);
-    this->config->SetConfigValue(KipConfigValue_commonCpuBoostClock, kip.commonCpuBoostClock);
-    this->config->SetConfigValue(KipConfigValue_hpMode, kip.hpMode);
-    this->config->SetConfigValue(KipConfigValue_commonEmcMemVolt, kip.commonEmcMemVolt);
-    this->config->SetConfigValue(KipConfigValue_eristaCpuMaxVolt, kip.eristaCpuMaxVolt);
-    this->config->SetConfigValue(KipConfigValue_eristaEmcMaxClock, kip.eristaEmcMaxClock);
-    this->config->SetConfigValue(KipConfigValue_marikoCpuMaxVolt, kip.marikoCpuMaxVolt);
-    this->config->SetConfigValue(KipConfigValue_marikoEmcMaxClock, kip.marikoEmcMaxClock);
-    this->config->SetConfigValue(KipConfigValue_marikoEmcVddqVolt, kip.marikoEmcVddqVolt);
-    this->config->SetConfigValue(KipConfigValue_marikoCpuUV, kip.marikoCpuUV);
-    this->config->SetConfigValue(KipConfigValue_marikoGpuUV, kip.marikoGpuUV);
-    this->config->SetConfigValue(KipConfigValue_eristaCpuUV, kip.eristaCpuUV);
-    this->config->SetConfigValue(KipConfigValue_eristaGpuUV, kip.eristaGpuUV);
-    this->config->SetConfigValue(KipConfigValue_commonGpuVoltOffset, kip.commonGpuVoltOffset);
-    this->config->SetConfigValue(KipConfigValue_marikoEmcDvbShift, kip.marikoEmcDvbShift);
-    this->config->SetConfigValue(KipConfigValue_t1_tRCD, kip.t1_tRCD);
-    this->config->SetConfigValue(KipConfigValue_t2_tRP, kip.t2_tRP);
-    this->config->SetConfigValue(KipConfigValue_t3_tRAS, kip.t3_tRAS);
-    this->config->SetConfigValue(KipConfigValue_t4_tRRD, kip.t4_tRRD);
-    this->config->SetConfigValue(KipConfigValue_t5_tRFC, kip.t5_tRFC);
-    this->config->SetConfigValue(KipConfigValue_t6_tRTW, kip.t6_tRTW);
-    this->config->SetConfigValue(KipConfigValue_t7_tWTR, kip.t7_tWTR);
-    this->config->SetConfigValue(KipConfigValue_t8_tREFI, kip.t8_tREFI);
+    const char* kip = "sdmc:/atmosphere/kips/hoc.kip";
+    CustomizeTable table;
 
-    this->config->SetConfigValue(KipConfigValue_mem_burst_read_latency, kip.mem_burst_read_latency);
-    this->config->SetConfigValue(KipConfigValue_mem_burst_write_latency, kip.mem_burst_write_latency);
+    // Read the KIP file ONCE
+    if (!cust_read_and_cache(kip, &table)) {
+        FileUtils::LogLine("[clock_manager] Failed to read KIP file for GetKipData");
+        return;
+    }
 
-    this->config->SetConfigValue(KipConfigValue_marikoCpuHighVmin, kip.marikoCpuHighVmin);
-    this->config->SetConfigValue(KipConfigValue_marikoCpuLowVmin, kip.marikoCpuLowVmin);
+    // Build a config value list to set all at once
+    SysClkConfigValueList configValues;
+    memset(&configValues, 0, sizeof(configValues));
 
-    this->config->SetConfigValue(KipConfigValue_eristaGpuVmin, kip.eristaGpuVmin);
-    this->config->SetConfigValue(KipConfigValue_marikoGpuVmin, kip.marikoGpuVmin);
-    this->config->SetConfigValue(KipConfigValue_marikoGpuVmax, kip.marikoGpuVmax);
+    // Read all fields from KIP file
+    configValues.values[KipConfigValue_custRev] = cust_get_cust_rev(&table);
+    configValues.values[KipConfigValue_mtcConf] = cust_get_mtc_conf(&table);
+    configValues.values[KipConfigValue_hpMode] = cust_get_hp_mode(&table);
 
-    this->config->SetConfigValue(KipConfigValue_marikoGpuFullUnlock, kip.marikoGpuFullUnlock);
+    configValues.values[KipConfigValue_commonEmcMemVolt] = cust_get_common_emc_volt(&table);
+    configValues.values[KipConfigValue_eristaEmcMaxClock] = cust_get_erista_emc_max(&table);
+    configValues.values[KipConfigValue_marikoEmcMaxClock] = cust_get_mariko_emc_max(&table);
+    configValues.values[KipConfigValue_marikoEmcVddqVolt] = cust_get_mariko_emc_vddq(&table);
+    configValues.values[KipConfigValue_emcDvbShift] = cust_get_emc_dvb_shift(&table);
 
-    // Mariko GPU voltages
-    this->config->SetConfigValue(KipConfigValue_g_volt_76800, kip.g_volt_76800);
-    this->config->SetConfigValue(KipConfigValue_g_volt_153600, kip.g_volt_153600);
-    this->config->SetConfigValue(KipConfigValue_g_volt_230400, kip.g_volt_230400);
-    this->config->SetConfigValue(KipConfigValue_g_volt_307200, kip.g_volt_307200);
-    this->config->SetConfigValue(KipConfigValue_g_volt_384000, kip.g_volt_384000);
-    this->config->SetConfigValue(KipConfigValue_g_volt_460800, kip.g_volt_460800);
-    this->config->SetConfigValue(KipConfigValue_g_volt_537600, kip.g_volt_537600);
-    this->config->SetConfigValue(KipConfigValue_g_volt_614400, kip.g_volt_614400);
-    this->config->SetConfigValue(KipConfigValue_g_volt_691200, kip.g_volt_691200);
-    this->config->SetConfigValue(KipConfigValue_g_volt_768000, kip.g_volt_768000);
-    this->config->SetConfigValue(KipConfigValue_g_volt_844800, kip.g_volt_844800);
-    this->config->SetConfigValue(KipConfigValue_g_volt_921600, kip.g_volt_921600);
-    this->config->SetConfigValue(KipConfigValue_g_volt_998400, kip.g_volt_998400);
-    this->config->SetConfigValue(KipConfigValue_g_volt_1075200, kip.g_volt_1075200);
-    this->config->SetConfigValue(KipConfigValue_g_volt_1152000, kip.g_volt_1152000);
-    this->config->SetConfigValue(KipConfigValue_g_volt_1228800, kip.g_volt_1228800);
-    this->config->SetConfigValue(KipConfigValue_g_volt_1267200, kip.g_volt_1267200);
-    this->config->SetConfigValue(KipConfigValue_g_volt_1305600, kip.g_volt_1305600);
-    this->config->SetConfigValue(KipConfigValue_g_volt_1344000, kip.g_volt_1344000);
-    this->config->SetConfigValue(KipConfigValue_g_volt_1382400, kip.g_volt_1382400);
-    this->config->SetConfigValue(KipConfigValue_g_volt_1420800, kip.g_volt_1420800);
-    this->config->SetConfigValue(KipConfigValue_g_volt_1459200, kip.g_volt_1459200);
-    this->config->SetConfigValue(KipConfigValue_g_volt_1497600, kip.g_volt_1497600);
-    this->config->SetConfigValue(KipConfigValue_g_volt_1536000, kip.g_volt_1536000);
+    configValues.values[KipConfigValue_t1_tRCD] = cust_get_tRCD(&table);
+    configValues.values[KipConfigValue_t2_tRP] = cust_get_tRP(&table);
+    configValues.values[KipConfigValue_t3_tRAS] = cust_get_tRAS(&table);
+    configValues.values[KipConfigValue_t4_tRRD] = cust_get_tRRD(&table);
+    configValues.values[KipConfigValue_t5_tRFC] = cust_get_tRFC(&table);
+    configValues.values[KipConfigValue_t6_tRTW] = cust_get_tRTW(&table);
+    configValues.values[KipConfigValue_t7_tWTR] = cust_get_tWTR(&table);
+    configValues.values[KipConfigValue_t8_tREFI] = cust_get_tREFI(&table);
+    configValues.values[KipConfigValue_mem_burst_read_latency] = cust_get_burst_read_lat(&table);
+    configValues.values[KipConfigValue_mem_burst_write_latency] = cust_get_burst_write_lat(&table);
 
-    // Erista GPU voltages
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_76800, kip.g_volt_e_76800);
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_115200, kip.g_volt_e_115200);
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_153600, kip.g_volt_e_153600);
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_192000, kip.g_volt_e_192000);
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_230400, kip.g_volt_e_230400);
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_268800, kip.g_volt_e_268800);
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_307200, kip.g_volt_e_307200);
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_345600, kip.g_volt_e_345600);
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_384000, kip.g_volt_e_384000);
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_422400, kip.g_volt_e_422400);
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_460800, kip.g_volt_e_460800);
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_499200, kip.g_volt_e_499200);
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_537600, kip.g_volt_e_537600);
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_576000, kip.g_volt_e_576000);
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_614400, kip.g_volt_e_614400);
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_652800, kip.g_volt_e_652800);
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_691200, kip.g_volt_e_691200);
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_729600, kip.g_volt_e_729600);
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_768000, kip.g_volt_e_768000);
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_806400, kip.g_volt_e_806400);
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_844800, kip.g_volt_e_844800);
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_883200, kip.g_volt_e_883200);
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_921600, kip.g_volt_e_921600);
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_960000, kip.g_volt_e_960000);
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_998400, kip.g_volt_e_998400);
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_1036800, kip.g_volt_e_1036800);
-    this->config->SetConfigValue(KipConfigValue_g_volt_e_1075200, kip.g_volt_e_1075200);
+    configValues.values[KipConfigValue_eristaCpuUV] = cust_get_erista_cpu_uv(&table);
+    configValues.values[KipConfigValue_eristaCpuMaxVolt] = cust_get_erista_cpu_max_volt(&table);
+    configValues.values[KipConfigValue_marikoCpuUVLow] = cust_get_mariko_cpu_uv_low(&table);
+    configValues.values[KipConfigValue_marikoCpuUVHigh] = cust_get_mariko_cpu_uv_high(&table);
+    configValues.values[KipConfigValue_marikoCpuLowVmin] = cust_get_mariko_cpu_low_vmin(&table);
+    configValues.values[KipConfigValue_marikoCpuHighVmin] = cust_get_mariko_cpu_high_vmin(&table);
+    configValues.values[KipConfigValue_marikoCpuMaxVolt] = cust_get_mariko_cpu_max_volt(&table);
+    configValues.values[KipConfigValue_eristaCpuBoostClock] = cust_get_erista_cpu_boost(&table);
+    configValues.values[KipConfigValue_marikoCpuBoostClock] = cust_get_mariko_cpu_boost(&table);
+
+    configValues.values[KipConfigValue_eristaGpuUV] = cust_get_erista_gpu_uv(&table);
+    configValues.values[KipConfigValue_eristaGpuVmin] = cust_get_erista_gpu_vmin(&table);
+    configValues.values[KipConfigValue_marikoGpuUV] = cust_get_mariko_gpu_uv(&table);
+    configValues.values[KipConfigValue_marikoGpuVmin] = cust_get_mariko_gpu_vmin(&table);
+    configValues.values[KipConfigValue_marikoGpuVmax] = cust_get_mariko_gpu_vmax(&table);
+    configValues.values[KipConfigValue_commonGpuVoltOffset] = cust_get_common_gpu_offset(&table);
+    configValues.values[KipConfigValue_gpuSpeedo] = cust_get_gpu_speedo(&table);
+    configValues.values[KipConfigValue_marikoGpuFullUnlock] = cust_get_mariko_gpu_unlock(&table);
+
+    for (int i = 0; i < 24; i++) {
+        configValues.values[KipConfigValue_g_volt_76800 + i] = cust_get_mariko_gpu_volt(&table, i);
+    }
+
+    for (int i = 0; i < 27; i++) {
+        configValues.values[KipConfigValue_g_volt_e_76800 + i] = cust_get_erista_gpu_volt(&table, i);
+    }
+
+    if (sizeof(SysClkConfigValueList) <= sizeof(configValues)) {
+        if (this->config->SetConfigValues(&configValues, false)) {
+            FileUtils::LogLine("[clock_manager] Successfully loaded KIP data into config");
+        } else {
+            FileUtils::LogLine("[clock_manager] Warning: Failed to set config values from KIP");
+        }
+    } else {
+        FileUtils::LogLine("[clock_manager] Error: Config value list buffer size mismatch");
+    }
 }

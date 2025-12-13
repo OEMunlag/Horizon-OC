@@ -18,13 +18,12 @@
 #include "rgltr_services.h"  // for extern Service g_rgltrSrv, etc.
 
 
+#include "../../sys-clk/common/include/sysclk/client/ipc.h"
 
 #if defined(__cplusplus)
 extern "C"
 {
 #endif
-
-#include <sysclk/client/ipc.h>
 
 #if defined(__cplusplus)
 }
@@ -576,16 +575,13 @@ void Misc(void*) {
                 realCPU_Hz = sysclkCTX.realFreqs[SysClkModule_CPU];
                 realGPU_Hz = sysclkCTX.realFreqs[SysClkModule_GPU];
                 realRAM_Hz = sysclkCTX.realFreqs[SysClkModule_MEM];
-                ramLoad[SysClkRamLoad_All] = sysclkCTX.ramLoad[SysClkRamLoad_All];
-                ramLoad[SysClkRamLoad_Cpu] = sysclkCTX.ramLoad[SysClkRamLoad_Cpu];
+                ramLoad[SysClkPartLoad_EMC] = sysclkCTX.PartLoad[SysClkPartLoad_EMC];
+                ramLoad[SysClkPartLoad_EMCCpu] = sysclkCTX.ramLoad[SysClkPartLoad_EMCCpu];
                 
-                // If using EOS, get voltages from sys-clk
-                if (isUsingEOS && realVoltsPolling) {
-                    realCPU_mV = sysclkCTX.realVolts[0]; 
-                    realGPU_mV = sysclkCTX.realVolts[1]; 
-                    realRAM_mV = sysclkCTX.realVolts[2]; 
-                    realSOC_mV = sysclkCTX.realVolts[3];
-                }
+                realCPU_mV = sysclkCTX.voltages[HocClkVoltage_CPU]; 
+                realGPU_mV = sysclkCTX.realVolts[HocClkVoltage_GPU]; 
+                realRAM_mV = sysclkCTX.realVolts[HocClkVoltage_EMCVDD2]; 
+                realSOC_mV = sysclkCTX.realVolts[HocClkVoltage_SOC];
             }
         }
         

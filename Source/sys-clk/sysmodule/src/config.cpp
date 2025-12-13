@@ -405,22 +405,6 @@ std::uint64_t Config::GetConfigValue(SysClkConfigValue kval)
     return this->configValues[kval];
 }
 
-void Config::SetConfigValue(SysClkConfigValue kval, std::uint64_t value)
-{
-    ASSERT_ENUM_VALID(SysClkConfigValue, kval);
-
-    std::scoped_lock lock{this->configMutex};
-
-    if(sysclkValidConfigValue(kval, value))
-    {
-        this->configValues[kval] = value;
-    }
-    else
-    {
-        this->configValues[kval] = sysclkDefaultConfigValue(kval);
-    }
-}
-
 const char* Config::GetConfigValueName(SysClkConfigValue kval, bool pretty)
 {
     ASSERT_ENUM_VALID(SysClkConfigValue, kval);
@@ -444,7 +428,6 @@ bool Config::SetConfigValues(SysClkConfigValueList* configValues, bool immediate
 {
     std::scoped_lock lock{this->configMutex};
 
-    // Use dynamic allocation instead of fixed stack buffers
     std::vector<const char*> iniKeys;
     std::vector<std::string> iniValues;
     
@@ -496,5 +479,53 @@ bool Config::SetConfigValues(SysClkConfigValueList* configValues, bool immediate
         }
     }
 
+    return true;
+}
+
+bool Config::ResetConfigValue(SysClkConfigValue kval)
+{
+    // Check enum validity BEFORE acquiring lock
+    if (!SYSCLK_ENUM_VALID(SysClkConfigValue, kval)) {
+        FileUtils::LogLine("[cfg] Invalid SysClkConfigValue: %u", kval);
+        return false;
+    }
+
+    std::scoped_lock lock{this->configMutex};
+
+    std::uint64_t defaultValue = sysclkDefaultConfigValue(kval);
+
+    // Build key-value pair for INI file (empty value to remove)
+    std::vector<const char*> iniKeys;
+    std::vector<std::string> iniValues;
+    
+    iniKeys.reserve(2);  // key + NULL terminator
+    iniValues.reserve(1);
+
+    const char* keyStr = sysclkFormatConfigValue(kval, false);
+    
+    iniKeys.push_back(keyStr);
+    iniValues.push_back("");  // Empty string to remove the key
+
+    // Null terminate keys
+    iniKeys.push_back(NULL);
+
+    // Build value pointers array
+    std::vector<const char*> valuePointers;
+    valuePointers.reserve(iniValues.size() + 1);
+    for (const auto& val : iniValues) {
+        valuePointers.push_back(val.c_str());
+    }
+    valuePointers.push_back(NULL);
+
+    // Write to INI file
+    if (!ini_putsection(CONFIG_VAL_SECTION, iniKeys.data(), valuePointers.data(), this->path.c_str())) {
+        FileUtils::LogLine("[cfg] Failed to reset config value %u in INI", kval);
+        return false;
+    }
+
+    // Apply default value in memory
+    this->configValues[kval] = defaultValue;
+    FileUtils::LogLine("[cfg] Reset config value %u to default: %llu", kval, defaultValue);
+    
     return true;
 }

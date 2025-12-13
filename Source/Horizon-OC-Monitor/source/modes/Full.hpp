@@ -446,7 +446,7 @@ public:
         );
         
         if (R_SUCCEEDED(sysclkCheck)) {
-            const int RAM_GPU_Load = ramLoad[SysClkRamLoad_All] - ramLoad[SysClkRamLoad_Cpu];
+            const int RAM_GPU_Load = PartLoad[SysClkPartLoad_EMC] - PartLoad[SysClkPartLoad_EMCCpu];
             snprintf(RAM_load_c, sizeof RAM_load_c, 
                 "%u.%u%%    CPU  %u.%u%%   GPU  %u.%u%%",
                 ramLoad[SysClkRamLoad_All] / 10, ramLoad[SysClkRamLoad_All] % 10,

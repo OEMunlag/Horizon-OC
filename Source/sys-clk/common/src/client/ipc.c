@@ -161,12 +161,12 @@ Result sysclkIpcSetReverseNXRTMode(ReverseNXMode mode)
 
 Result hocClkIpcSetKipData()
 {
-    u32 temp;
+    u32 temp = 0;
     return serviceDispatchIn(&g_sysclkSrv, HocClkIpcCmd_SetKipData, temp);
 }
 
 Result hocClkIpcGetKipData()
 {
-    u32 temp;
+    u32 temp = 0;
     return serviceDispatchIn(&g_sysclkSrv, HocClkIpcCmd_GetKipData, temp);
 }

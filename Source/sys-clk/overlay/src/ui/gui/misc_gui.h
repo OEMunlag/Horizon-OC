@@ -27,9 +27,12 @@ protected:
         const char* altName, 
         const ValueRange& range,
         const std::string& categoryName,
-        const ValueThresholds* thresholds = nullptr);
-    void addFreqButton(SysClkConfigValue configVal, const char* altName, SysClkModule module);
-    void updateConfigToggles();
+        const ValueThresholds* thresholds,
+    const std::map<uint32_t, std::string>& labels = {});
+    void addFreqButton(SysClkConfigValue configVal,
+                            const char* altName,
+                            SysClkModule module,
+                            const std::map<uint32_t, std::string>& labels = {});    void updateConfigToggles();
     
     tsl::elm::ToggleListItem* enabledToggle;
     u8 frameCounter = 60;

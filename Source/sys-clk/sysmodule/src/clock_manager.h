@@ -35,7 +35,6 @@
 #include "board.h"
 #include <nxExt/cpp/lockable_mutex.h>
 #include "integrations.h"
-#include "kip_handler.h"
 
 class ReverseNXSync;
 

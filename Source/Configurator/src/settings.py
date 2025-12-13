@@ -102,6 +102,7 @@ variables = [
 
     ("commonGpuVoltOffset", "u32"),
     # advanced config
+    ("gpuSpeedo", "u32"),
 
 
     ("marikoGpuFullUnlock", "u32"),
@@ -215,6 +216,8 @@ def load_all_vars():
     c.load_entry_object("marikoGpuVmax", 3)
 
     c.load_entry_object("commonGpuVoltOffset", 3)
+    c.load_entry_object("gpuSpeedo", 3)
+
     c.load_entry_object("marikoGpuFullUnlock", 3)
 
     erista_freqs = [

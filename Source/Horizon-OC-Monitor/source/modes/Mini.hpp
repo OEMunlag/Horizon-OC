@@ -994,7 +994,7 @@ public:
                 unsigned ramLoadInt;
                 
                 if (R_SUCCEEDED(sysclkCheck)) {
-                    ramLoadInt = ramLoad[SysClkRamLoad_All] / 10;
+                    ramLoadInt = PartLoad[SysClkPartLoad_EMC] / 10;
                     
                     if (settings.showRAMLoadCPUGPU) {
                         unsigned ramCpuLoadInt = ramLoad[SysClkRamLoad_Cpu] / 10;

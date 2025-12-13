@@ -60,21 +60,18 @@ typedef enum {
 
     HocClkConfigValue_EnforceBoardLimit,
     
-    KipConfigValue_MTCConf,
-    KipConfigValue_commonCpuBoostClock,
+    KipConfigValue_custRev,
+    KipConfigValue_mtcConf,
     KipConfigValue_hpMode,
+
+    /* EMC */
     KipConfigValue_commonEmcMemVolt,
-    KipConfigValue_eristaCpuMaxVolt,
     KipConfigValue_eristaEmcMaxClock,
-    KipConfigValue_marikoCpuMaxVolt,
     KipConfigValue_marikoEmcMaxClock,
     KipConfigValue_marikoEmcVddqVolt,
-    KipConfigValue_marikoCpuUV,
-    KipConfigValue_marikoGpuUV,
-    KipConfigValue_eristaCpuUV,
-    KipConfigValue_eristaGpuUV,
-    KipConfigValue_commonGpuVoltOffset,
-    KipConfigValue_marikoEmcDvbShift,
+    KipConfigValue_emcDvbShift,
+
+    /* Memory timings */
     KipConfigValue_t1_tRCD,
     KipConfigValue_t2_tRP,
     KipConfigValue_t3_tRAS,
@@ -83,20 +80,40 @@ typedef enum {
     KipConfigValue_t6_tRTW,
     KipConfigValue_t7_tWTR,
     KipConfigValue_t8_tREFI,
-
     KipConfigValue_mem_burst_read_latency,
     KipConfigValue_mem_burst_write_latency,
 
-    KipConfigValue_marikoCpuHighVmin,
-    KipConfigValue_marikoCpuLowVmin,
+    /* CPU – Erista */
+    KipConfigValue_eristaCpuUV,
+    KipConfigValue_eristaCpuMaxVolt,
 
+    /* CPU – Mariko */
+    KipConfigValue_marikoCpuUVLow,
+    KipConfigValue_marikoCpuUVHigh,
+    KipConfigValue_tableConf,
+    KipConfigValue_marikoCpuLowVmin,
+    KipConfigValue_marikoCpuHighVmin,
+    KipConfigValue_marikoCpuMaxVolt,
+
+    KipConfigValue_eristaCpuBoostClock,
+    KipConfigValue_marikoCpuBoostClock,
+
+    /* GPU – Erista */
+    KipConfigValue_eristaGpuUV,
     KipConfigValue_eristaGpuVmin,
+
+    /* GPU – Mariko */
+    KipConfigValue_marikoGpuUV,
     KipConfigValue_marikoGpuVmin,
     KipConfigValue_marikoGpuVmax,
 
+    KipConfigValue_commonGpuVoltOffset,
+    KipConfigValue_gpuSpeedo,
     KipConfigValue_marikoGpuFullUnlock,
 
-    // Mariko GPU voltages
+    /* ============================= */
+    /* Mariko GPU voltages (24)      */
+    /* ============================= */
     KipConfigValue_g_volt_76800,
     KipConfigValue_g_volt_153600,
     KipConfigValue_g_volt_230400,
@@ -122,7 +139,9 @@ typedef enum {
     KipConfigValue_g_volt_1497600,
     KipConfigValue_g_volt_1536000,
 
-    // Erista GPU voltages
+    /* ============================= */
+    /* Erista GPU voltages (27)      */
+    /* ============================= */
     KipConfigValue_g_volt_e_76800,
     KipConfigValue_g_volt_e_115200,
     KipConfigValue_g_volt_e_153600,
@@ -172,24 +191,25 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
             return pretty ? "Power logging interval (ms)" : "power_log_interval_ms";
         case SysClkConfigValue_CsvWriteIntervalMs:
             return pretty ? "CSV write interval (ms)" : "csv_write_interval_ms";
+
         case HocClkConfigValue_UncappedClocks:
             return pretty ? "Uncapped Clocks" : "uncapped_clocks";
         case HocClkConfigValue_OverwriteBoostMode:
             return pretty ? "Overwrite Boost Mode" : "ow_boost";
 
         case HocClkConfigValue_EristaMaxCpuClock:
-            return pretty ? "Max CPU Clock" : "cpu_max_e";
+            return pretty ? "Erista Max CPU Clock" : "cpu_max_e";
         case HocClkConfigValue_EristaMaxGpuClock:
-            return pretty ? "Max GPU Clock" : "gpu_max_e";
+            return pretty ? "Erista Max GPU Clock" : "gpu_max_e";
         case HocClkConfigValue_EristaMaxMemClock:
-            return pretty ? "Max MEM Clock" : "mem_max_e";
+            return pretty ? "Erista Max MEM Clock" : "mem_max_e";
 
         case HocClkConfigValue_MarikoMaxCpuClock:
-            return pretty ? "Max CPU Clock" : "cpu_max_m";
+            return pretty ? "Mariko Max CPU Clock" : "cpu_max_m";
         case HocClkConfigValue_MarikoMaxGpuClock:
-            return pretty ? "Max GPU Clock" : "gpu_max_m";
+            return pretty ? "Mariko Max GPU Clock" : "gpu_max_m";
         case HocClkConfigValue_MarikoMaxMemClock:
-            return pretty ? "Max MEM Clock" : "mem_max_m";
+            return pretty ? "Mariko Max MEM Clock" : "mem_max_m";
 
         case HocClkConfigValue_ThermalThrottle:
             return pretty ? "Thermal Throttle" : "thermal_throttle";
@@ -197,53 +217,44 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
         case HocClkConfigValue_ThermalThrottleThreshold:
             return pretty ? "Thermal Throttle Threshold" : "thermal_throttle_threshold";
 
+        case HocClkConfigValue_HandheldGovernor:
+            return pretty ? "Handheld Governor" : "governor";
         case HocClkConfigValue_DockedGovernor:
             return pretty ? "Docked Governor" : "governor_docked";
-        case HocClkConfigValue_HandheldGovernor:
-            return pretty ? "Governor" : "governor";
 
         case HocClkConfigValue_HandheldTDP:
             return pretty ? "Handheld TDP" : "handheld_tdp";
 
         case HocClkConfigValue_HandheldTDPLimit:
-            return pretty ? "TDP Limit" : "tdp_limit";
+            return pretty ? "Handheld TDP Limit" : "tdp_limit";
 
         case HocClkConfigValue_LiteTDPLimit:
             return pretty ? "Lite TDP Limit" : "tdp_limit_l";
 
-        // KIP raw values not normally user-facing
+        case HocClkConfigValue_EnforceBoardLimit:
+            return pretty ? "Enforce Board Limit" : "enforce_board_limit";
 
         // KIP config values
-        case KipConfigValue_MTCConf:
+        case KipConfigValue_custRev:
+            return pretty ? "Custom Revision" : "kip_cust_rev";
+        case KipConfigValue_mtcConf:
             return pretty ? "MTC Config" : "kip_mtc_conf";
         case KipConfigValue_hpMode:
-            return pretty ? "KIP HP Mode" : "kip_hp_mode";
-        case KipConfigValue_commonCpuBoostClock:
-            return pretty ? "Common CPU Boost Clock" : "common_cpu_boost_clock";
+            return pretty ? "HP Mode" : "kip_hp_mode";
+
+        // EMC
         case KipConfigValue_commonEmcMemVolt:
             return pretty ? "Common EMC/MEM Voltage" : "common_emc_mem_volt";
-        case KipConfigValue_eristaCpuMaxVolt:
-            return pretty ? "Erista CPU Max Voltage" : "erista_cpu_max_volt";
         case KipConfigValue_eristaEmcMaxClock:
             return pretty ? "Erista EMC Max Clock" : "erista_emc_max_clock";
-        case KipConfigValue_marikoCpuMaxVolt:
-            return pretty ? "Mariko CPU Max Voltage" : "mariko_cpu_max_volt";
         case KipConfigValue_marikoEmcMaxClock:
             return pretty ? "Mariko EMC Max Clock" : "mariko_emc_max_clock";
         case KipConfigValue_marikoEmcVddqVolt:
             return pretty ? "Mariko EMC VDDQ Voltage" : "mariko_emc_vddq_volt";
-        case KipConfigValue_marikoCpuUV:
-            return pretty ? "Mariko CPU Undervolt" : "mariko_cpu_uv";
-        case KipConfigValue_marikoGpuUV:
-            return pretty ? "Mariko GPU Undervolt" : "mariko_gpu_uv";
-        case KipConfigValue_eristaCpuUV:
-            return pretty ? "Erista CPU Undervolt" : "erista_cpu_uv";
-        case KipConfigValue_eristaGpuUV:
-            return pretty ? "Erista GPU Undervolt" : "erista_gpu_uv";
-        case KipConfigValue_commonGpuVoltOffset:
-            return pretty ? "Common GPU Voltage Offset" : "common_gpu_volt_offset";
-        case KipConfigValue_marikoEmcDvbShift:
-            return pretty ? "Mariko EMC DVB Shift" : "mariko_emc_dvb_shift";
+        case KipConfigValue_emcDvbShift:
+            return pretty ? "EMC DVB Shift" : "emc_dvb_shift";
+
+        // Memory timings
         case KipConfigValue_t1_tRCD:
             return pretty ? "t1 - tRCD" : "t1_trcd";
         case KipConfigValue_t2_tRP:
@@ -264,20 +275,54 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
             return pretty ? "Memory Burst Read Latency" : "mem_burst_read_latency";
         case KipConfigValue_mem_burst_write_latency:
             return pretty ? "Memory Burst Write Latency" : "mem_burst_write_latency";
-        case KipConfigValue_marikoCpuHighVmin:
-            return pretty ? "Mariko CPU High Vmin" : "mariko_cpu_high_vmin";
+
+        // CPU – Erista
+        case KipConfigValue_eristaCpuUV:
+            return pretty ? "Erista CPU Undervolt" : "erista_cpu_uv";
+        case KipConfigValue_eristaCpuMaxVolt:
+            return pretty ? "Erista CPU Max Voltage" : "erista_cpu_max_volt";
+
+        // CPU – Mariko
+        case KipConfigValue_marikoCpuUVLow:
+            return pretty ? "Mariko CPU Undervolt (Low)" : "mariko_cpu_uv_low";
+        case KipConfigValue_marikoCpuUVHigh:
+            return pretty ? "Mariko CPU Undervolt (High)" : "mariko_cpu_uv_high";
+        case KipConfigValue_tableConf:
+            return pretty ? "Table Config" : "kip_table_conf";
         case KipConfigValue_marikoCpuLowVmin:
             return pretty ? "Mariko CPU Low Vmin" : "mariko_cpu_low_vmin";
+        case KipConfigValue_marikoCpuHighVmin:
+            return pretty ? "Mariko CPU High Vmin" : "mariko_cpu_high_vmin";
+        case KipConfigValue_marikoCpuMaxVolt:
+            return pretty ? "Mariko CPU Max Voltage" : "mariko_cpu_max_volt";
+
+        case KipConfigValue_eristaCpuBoostClock:
+            return pretty ? "Erista CPU Boost Clock" : "erista_cpu_boost_clock";
+        case KipConfigValue_marikoCpuBoostClock:
+            return pretty ? "Mariko CPU Boost Clock" : "mariko_cpu_boost_clock";
+
+        // GPU – Erista
+        case KipConfigValue_eristaGpuUV:
+            return pretty ? "Erista GPU Undervolt" : "erista_gpu_uv";
         case KipConfigValue_eristaGpuVmin:
             return pretty ? "Erista GPU Vmin" : "erista_gpu_vmin";
+
+        // GPU – Mariko
+        case KipConfigValue_marikoGpuUV:
+            return pretty ? "Mariko GPU Undervolt" : "mariko_gpu_uv";
         case KipConfigValue_marikoGpuVmin:
             return pretty ? "Mariko GPU Vmin" : "mariko_gpu_vmin";
         case KipConfigValue_marikoGpuVmax:
             return pretty ? "Mariko GPU Vmax" : "mariko_gpu_vmax";
+
+        case KipConfigValue_commonGpuVoltOffset:
+            return pretty ? "Common GPU Voltage Offset" : "common_gpu_volt_offset";
+        case KipConfigValue_gpuSpeedo:
+            return pretty ? "GPU Speedo" : "gpu_speedo";
         case KipConfigValue_marikoGpuFullUnlock:
             return pretty ? "Mariko GPU Full Unlock" : "mariko_gpu_full_unlock";
 
-        // Mariko GPU voltages
+        // Mariko GPU voltages (24)
         case KipConfigValue_g_volt_76800: return pretty ? "Mariko GPU Volt 76 MHz" : "g_volt_76800";
         case KipConfigValue_g_volt_153600: return pretty ? "Mariko GPU Volt 153 MHz" : "g_volt_153600";
         case KipConfigValue_g_volt_230400: return pretty ? "Mariko GPU Volt 230 MHz" : "g_volt_230400";
@@ -303,7 +348,7 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
         case KipConfigValue_g_volt_1497600: return pretty ? "Mariko GPU Volt 1497 MHz" : "g_volt_1497600";
         case KipConfigValue_g_volt_1536000: return pretty ? "Mariko GPU Volt 1536 MHz" : "g_volt_1536000";
 
-        // Erista GPU voltages
+        // Erista GPU voltages (27)
         case KipConfigValue_g_volt_e_76800: return pretty ? "Erista GPU Volt 76 MHz" : "g_volt_e_76800";
         case KipConfigValue_g_volt_e_115200: return pretty ? "Erista GPU Volt 115 MHz" : "g_volt_e_115200";
         case KipConfigValue_g_volt_e_153600: return pretty ? "Erista GPU Volt 153 MHz" : "g_volt_e_153600";
@@ -395,6 +440,7 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case HocClkConfigValue_LiteTDPLimit:
         case SysClkConfigValue_PollingIntervalMs:
             return input > 0;
+        
         case SysClkConfigValue_TempLogIntervalMs:
         case SysClkConfigValue_FreqLogIntervalMs:
         case SysClkConfigValue_PowerLogIntervalMs:
@@ -405,22 +451,17 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case HocClkConfigValue_DockedGovernor:
         case HocClkConfigValue_HandheldGovernor:
         case HocClkConfigValue_HandheldTDP:
+        case HocClkConfigValue_EnforceBoardLimit:
             return (input & 0x1) == input;
         
-        case KipConfigValue_MTCConf:
-        case KipConfigValue_commonCpuBoostClock:
+        case KipConfigValue_custRev:
+        case KipConfigValue_mtcConf:
+        case KipConfigValue_hpMode:
         case KipConfigValue_commonEmcMemVolt:
-        case KipConfigValue_eristaCpuMaxVolt:
         case KipConfigValue_eristaEmcMaxClock:
-        case KipConfigValue_marikoCpuMaxVolt:
         case KipConfigValue_marikoEmcMaxClock:
         case KipConfigValue_marikoEmcVddqVolt:
-        case KipConfigValue_marikoCpuUV:
-        case KipConfigValue_marikoGpuUV:
-        case KipConfigValue_eristaCpuUV:
-        case KipConfigValue_eristaGpuUV:
-        case KipConfigValue_commonGpuVoltOffset:
-        case KipConfigValue_marikoEmcDvbShift:
+        case KipConfigValue_emcDvbShift:
         case KipConfigValue_t1_tRCD:
         case KipConfigValue_t2_tRP:
         case KipConfigValue_t3_tRAS:
@@ -431,11 +472,23 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case KipConfigValue_t8_tREFI:
         case KipConfigValue_mem_burst_read_latency:
         case KipConfigValue_mem_burst_write_latency:
-        case KipConfigValue_marikoCpuHighVmin:
+        case KipConfigValue_eristaCpuUV:
+        case KipConfigValue_eristaCpuMaxVolt:
+        case KipConfigValue_marikoCpuUVLow:
+        case KipConfigValue_marikoCpuUVHigh:
+        case KipConfigValue_tableConf:
         case KipConfigValue_marikoCpuLowVmin:
+        case KipConfigValue_marikoCpuHighVmin:
+        case KipConfigValue_marikoCpuMaxVolt:
+        case KipConfigValue_eristaCpuBoostClock:
+        case KipConfigValue_marikoCpuBoostClock:
+        case KipConfigValue_eristaGpuUV:
         case KipConfigValue_eristaGpuVmin:
+        case KipConfigValue_marikoGpuUV:
         case KipConfigValue_marikoGpuVmin:
         case KipConfigValue_marikoGpuVmax:
+        case KipConfigValue_commonGpuVoltOffset:
+        case KipConfigValue_gpuSpeedo:
         case KipConfigValue_marikoGpuFullUnlock:
         case KipConfigValue_g_volt_76800:
         case KipConfigValue_g_volt_153600:
@@ -488,7 +541,8 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case KipConfigValue_g_volt_e_998400:
         case KipConfigValue_g_volt_e_1036800:
         case KipConfigValue_g_volt_e_1075200:
-            return input >= 0;
+            return true;
+        
         default:
             return false;
     }
