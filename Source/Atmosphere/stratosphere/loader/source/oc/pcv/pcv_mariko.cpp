@@ -457,7 +457,9 @@ namespace ams::ldr::oc::pcv::mariko {
         WRITE_PARAM_ALL_REG(table, emc_wsv, wsv);
         WRITE_PARAM_ALL_REG(table, emc_wev, wev);
         WRITE_PARAM_ALL_REG(table, emc_qrst, qrst);
+        WRITE_PARAM_ALL_REG(table, emc_tr_qrst, qrst);
         WRITE_PARAM_ALL_REG(table, emc_qsafe, qsafe);
+        WRITE_PARAM_ALL_REG(table, emc_tr_qsafe, qsafe);
         WRITE_PARAM_ALL_REG(table, emc_tr_qpop, qpop);
         WRITE_PARAM_ALL_REG(table, emc_qpop, qpop);
         WRITE_PARAM_ALL_REG(table, emc_rdv, rdv);
