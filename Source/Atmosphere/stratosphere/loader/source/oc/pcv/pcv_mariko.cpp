@@ -810,7 +810,7 @@ namespace ams::ldr::oc::pcv::mariko {
 
         u32 actual_freq_khz = static_cast<u32>((divn_integer + 0.5 + divn_fraction * 0.000122070312) * div_step_d);
 
-        if (C.marikoEmcMaxClock - 2366001 <= 133999) {
+        if (C.marikoEmcMaxClock - 2366001 < 133999) {
             s32 divn_fraction_ssc = static_cast<s32>((actual_freq_khz * 0.997 / div_step_d - divn_integer - 0.5) * 8192.0);
 
             double delta_scaled = (0.3 / div_step_d + 0.3 / div_step_d) * (divn_fraction - divn_fraction_ssc);
