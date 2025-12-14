@@ -480,7 +480,7 @@ namespace ams::ldr::oc::pcv::mariko {
         table->burst_mc_regs.mc_emem_arb_timing_ras   = CEIL(GET_CYCLE_CEIL(tRAS)   / MC_ARB_DIV) - 2;
         table->burst_mc_regs.mc_emem_arb_timing_faw   = CEIL(GET_CYCLE_CEIL(tFAW)   / MC_ARB_DIV) - 1;
         table->burst_mc_regs.mc_emem_arb_timing_rrd   = CEIL(GET_CYCLE_CEIL(tRRD)   / MC_ARB_DIV) - 1;
-        table->burst_mc_regs.mc_emem_arb_timing_rfcpb = CEIL(GET_CYCLE_CEIL(tRFCpb) / MC_ARB_DIV);
+        table->burst_mc_regs.mc_emem_arb_timing_rfcpb = CEIL(GET_CYCLE_CEIL(tRFCpb) / MC_ARB_DIV) - 1;
         table->burst_mc_regs.mc_emem_arb_timing_rap2pre = CEIL(tR2P / MC_ARB_DIV);
         table->burst_mc_regs.mc_emem_arb_timing_wap2pre = CEIL(tW2P / MC_ARB_DIV) + MC_ARB_SFA;
 
