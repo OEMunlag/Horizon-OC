@@ -323,7 +323,8 @@ void MiscGui::listUI()
         {160000000, "Docked"},
         {186600000, "Safe Max (3733MT/s)"},
         {213300000, "Safe Max (4266MT/s)"},
-        {320000000, "Absolute Max"},
+        {320000000, "Unsafe Max"},
+        {350000000, "Absolute Max"},
     };
 
     if(IsMariko()) {
@@ -384,8 +385,11 @@ void MiscGui::listUI()
         {1100000, "Default (Mariko)"},
         {1125000, "Default (Erista)"},
         {1175000, "Rating"},
-        {1212500, "Safe Max"},
+        {1212500, "Safe Max (Mariko)"},
+        {1237500, "Safe Max (Erista)"},
+        {1250000, "Unsafe Max"},
     };
+
     ValueThresholds vdd2Thresholds(1212500, 1250000);
     addConfigButton(
         KipConfigValue_commonEmcMemVolt,
@@ -448,6 +452,15 @@ void MiscGui::listUI()
         NamedValue("3133MHz", 3133000),
         NamedValue("3166MHz", 3166000),
         NamedValue("3200MHz", 3200000),
+        NamedValue("3233MHz (Needs high Speedo/PLL)", 3233000),
+        NamedValue("3266MHz (Needs high Speedo/PLL)", 3266000),
+        NamedValue("3300MHz (Needs high Speedo/PLL)", 3300000),
+        NamedValue("3333MHz (Needs extreme Speedo/PLL)", 3333000),
+        NamedValue("3366MHz (Needs extreme Speedo/PLL)", 3366000),
+        NamedValue("3400MHz (Needs extreme Speedo/PLL)", 3400000),
+        NamedValue("3433MHz (Needs ridiculous Speedo/PLL)", 3433000),
+        NamedValue("3466MHz (Needs ridiculous Speedo/PLL)", 3466000),
+        NamedValue("3500MHz (Needs ridiculous Speedo/PLL)", 3500000),
     };
 
     std::vector<NamedValue> eristaMaxEmcClock = {
@@ -469,13 +482,13 @@ void MiscGui::listUI()
         NamedValue("2100MHz", 2100000),
         NamedValue("2133MHz", 2133000),
         NamedValue("2166MHz", 2166000),
-        NamedValue("2200MHz", 2200000),
-        NamedValue("2233MHz", 2233000),
-        NamedValue("2266MHz", 2266000),
-        NamedValue("2300MHz", 2300000),
-        NamedValue("2333MHz", 2333000),
-        NamedValue("2366MHz", 2366000),
-        NamedValue("2400MHz", 2400000),
+        NamedValue("2200MHz (high power draw!)", 2200000),
+        NamedValue("2233MHz (high power draw!)", 2233000),
+        NamedValue("2266MHz (high power draw!)", 2266000),
+        NamedValue("2300MHz (high power draw!)", 2300000),
+        NamedValue("2333MHz (high power draw!)", 2333000),
+        NamedValue("2366MHz (high power draw!)", 2366000),
+        NamedValue("2400MHz (high power draw!)", 2400000),
     };
     if(IsErista()) {
         addConfigButton(
@@ -635,7 +648,7 @@ void MiscGui::listUI()
         NamedValue("Default", 1),
         NamedValue("1581MHz Tbreak", 2),
         NamedValue("1683MHz Tbreak", 3),
-        NamedValue("HELIOS Table", 4)
+        NamedValue("Extreme UV Table", 4)
     };
 
     std::vector<NamedValue> gpuUvConf = {
