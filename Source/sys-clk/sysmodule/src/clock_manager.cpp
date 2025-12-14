@@ -597,6 +597,7 @@ void ClockManager::SetKipData() {
 // I know this is very hacky, but the config system in the sysmodule doesn't really support writing
 
 void ClockManager::GetKipData() {
+    this->config->Refresh();
     std::scoped_lock lock{this->contextMutex};
     const char* kip;
     if(this->config->GetConfigValue(HocClkConfigValue_KipFileName))

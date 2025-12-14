@@ -15,7 +15,9 @@
  * 
  */
  
-/* --------------------------------------------------------------------------
+
+/*
+ * --------------------------------------------------------------------------
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <p-sam@d3vs.net>, <natinusala@gmail.com>, <m4x@m4xw.net>
  * wrote this file. As long as you retain this notice you can do whatever you
@@ -23,7 +25,6 @@
  * stuff is worth it, you can buy us a beer in return.  - The sys-clk authors
  * --------------------------------------------------------------------------
  */
-
 
 #pragma once
 #include <atomic>
@@ -65,7 +66,6 @@ class Config
     const char* GetConfigValueName(SysClkConfigValue val, bool pretty);
     void GetConfigValues(SysClkConfigValueList* out_configValues);
     bool SetConfigValues(SysClkConfigValueList* configValues, bool immediate);
-    bool ResetConfigValue(SysClkConfigValue kval);
   protected:
     void Load();
     void Close();
