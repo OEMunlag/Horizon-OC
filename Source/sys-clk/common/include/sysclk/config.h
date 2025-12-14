@@ -60,6 +60,8 @@ typedef enum {
 
     HocClkConfigValue_EnforceBoardLimit,
     
+    HocClkConfigValue_KipEditing,
+
     KipConfigValue_custRev,
     KipConfigValue_mtcConf,
     KipConfigValue_hpMode,
@@ -222,6 +224,9 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
         case HocClkConfigValue_EnforceBoardLimit:
             return pretty ? "Enforce Board Limit" : "enforce_board_limit";
 
+        case HocClkConfigValue_KipEditing:
+            return pretty ? "Enable KIP Editing" : "kip_editing";
+        
         // KIP config values
         case KipConfigValue_custRev:
             return pretty ? "Custom Revision" : "kip_cust_rev";
@@ -375,7 +380,7 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
     switch(val)
     {
         case SysClkConfigValue_PollingIntervalMs:
-            return 50ULL;
+            return 300ULL;
         case SysClkConfigValue_TempLogIntervalMs:
         case SysClkConfigValue_FreqLogIntervalMs:
         case SysClkConfigValue_PowerLogIntervalMs:
@@ -401,6 +406,8 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
         case HocClkConfigValue_DockedGovernor:
         case HocClkConfigValue_HandheldGovernor:
         case HocClkConfigValue_HandheldTDP:
+        case HocClkConfigValue_EnforceBoardLimit:
+        case HocClkConfigValue_KipEditing:
             return 1ULL;
         case HocClkConfigValue_ThermalThrottleThreshold:
             return 70ULL;
@@ -440,6 +447,7 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case HocClkConfigValue_HandheldGovernor:
         case HocClkConfigValue_HandheldTDP:
         case HocClkConfigValue_EnforceBoardLimit:
+        case HocClkConfigValue_KipEditing:
             return (input & 0x1) == input;
         
         case KipConfigValue_custRev:

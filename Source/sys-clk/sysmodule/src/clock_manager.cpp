@@ -79,7 +79,9 @@ ClockManager::ClockManager()
     this->lastCsvWriteNs = 0;
 
     this->rnxSync = new ReverseNXSync;
-    this->GetKipData();
+    
+    if(this->config->GetConfigValue(HocClkConfigValue_KipEditing))
+        this->GetKipData();
 }
 
 ClockManager::~ClockManager()
@@ -586,6 +588,8 @@ void ClockManager::SetKipData() {
         FileUtils::LogLine("[clock_manager] Failed to write KIP file");
     }
 }
+
+// I know this is very hacky, but the config system in the sysmodule doesn't really support writing
 
 void ClockManager::GetKipData() {
     std::scoped_lock lock{this->contextMutex};

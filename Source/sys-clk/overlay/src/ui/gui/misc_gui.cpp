@@ -336,7 +336,11 @@ void MiscGui::listUI()
         addFreqButton(HocClkConfigValue_EristaMaxMemClock, nullptr, SysClkModule_MEM, emc_freq_label_e);
     }
 
-    this->listElement->addItem(new tsl::elm::CategoryHeader("KIP"));
+    this->listElement->addItem(new tsl::elm::CategoryHeader("KIP Editing"));
+
+    addConfigToggle(HocClkConfigValue_KipEditing, nullptr);
+
+    this->listElement->addItem(new tsl::elm::CategoryHeader("KIP Settings"));
 
     std::vector<NamedValue> autoAdjOptions = {
         NamedValue("AUTO_ADJ", 0),
