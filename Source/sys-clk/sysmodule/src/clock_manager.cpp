@@ -79,7 +79,7 @@ ClockManager::ClockManager()
     this->lastCsvWriteNs = 0;
 
     this->rnxSync = new ReverseNXSync;
-    
+
     if(this->config->GetConfigValue(HocClkConfigValue_KipEditing))
         this->GetKipData();
 }
@@ -523,7 +523,12 @@ void ClockManager::SetRNXRTMode(ReverseNXMode mode)
 void ClockManager::SetKipData() {
     std::scoped_lock lock{this->contextMutex};
 
-    const char* kip = "sdmc:/atmosphere/kips/hoc.kip";
+    const char* kip;
+    if(this->config->GetConfigValue(HocClkConfigValue_KipFileName))
+        kip = "sdmc:/atmosphere/kips/hoc.kip";
+    else
+        kip = "sdmc:/atmosphere/kips/loader.kip";
+
     CustomizeTable table;
 
     if (!cust_read_and_cache(kip, &table)) {
@@ -593,8 +598,12 @@ void ClockManager::SetKipData() {
 
 void ClockManager::GetKipData() {
     std::scoped_lock lock{this->contextMutex};
+    const char* kip;
+    if(this->config->GetConfigValue(HocClkConfigValue_KipFileName))
+        kip = "sdmc:/atmosphere/kips/hoc.kip";
+    else
+        kip = "sdmc:/atmosphere/kips/loader.kip";
 
-    const char* kip = "sdmc:/atmosphere/kips/hoc.kip";
     CustomizeTable table;
 
     if (!cust_read_and_cache(kip, &table)) {

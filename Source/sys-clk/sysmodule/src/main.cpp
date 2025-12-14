@@ -83,9 +83,9 @@ extern "C"
             setsysExit();
         }
         
-        rc = fanInitialize();
-        if (R_FAILED(rc))
-            diagAbortWithResult(MAKERESULT(Module_Libnx, LibnxError_ShouldNotHappen));
+        // rc = fanInitialize();
+        // if (R_FAILED(rc))
+        //     diagAbortWithResult(MAKERESULT(Module_Libnx, LibnxError_ShouldNotHappen));
     
         rc = i2cInitialize();
         if (R_FAILED(rc))
@@ -95,7 +95,7 @@ extern "C"
     void __appExit(void)
     {
         CloseFanControllerThread();
-        fanExit();
+        // fanExit();
         i2cExit();
         fsExit();
         fsdevUnmountAll();    
@@ -126,10 +126,10 @@ int main(int argc, char** argv)
         clockMgr->SetRunning(true);
         clockMgr->GetConfig()->SetEnabled(true);
         ipcSrv->SetRunning(true);
-        TemperaturePoint *table;
-        ReadConfigFile(&table);
-        InitFanController(table);
-        StartFanControllerThread();
+        // TemperaturePoint *table;
+        // ReadConfigFile(&table);
+        // InitFanController(table);
+        // StartFanControllerThread();
 
         while (clockMgr->Running())
         {

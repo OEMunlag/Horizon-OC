@@ -275,7 +275,7 @@ void MiscGui::listUI()
         {1785000000, "Boost Mode"},
         {1963000000, "Safe Max"},
         {2397000000, "Unsafe Max"},
-        {2805000000, "Aboslute Max"},
+        {2805000000, "Absolute Max"},
     };
 
     std::map<uint32_t, std::string> cpu_freq_label_e = {
@@ -284,7 +284,7 @@ void MiscGui::listUI()
         {1224000000, "Dev OC"},
         {1785000000, "Boost Mode & Safe Max"},
         {2091000000, "Unsafe Max"},
-        {2295000000, "Aboslute Max"},
+        {2295000000, "Absolute Max"},
     };
 
     std::map<uint32_t, std::string> gpu_freq_label_e = {
@@ -295,7 +295,7 @@ void MiscGui::listUI()
         {768000000, "Docked"},
         {844000000, "Safe Max"},
         {998400000, "Unsafe Max"},
-        {1075200000, "Aboslute Max"},
+        {1075200000, "Absolute Max"},
     };
 
     std::map<uint32_t, std::string> gpu_freq_label_m = {
@@ -305,9 +305,9 @@ void MiscGui::listUI()
         {460800000, "Handheld"},
         {614400000, "Handheld Safe Max"},
         {768000000, "Docked"},
-        {1152200000, "Safe Max"},
+        {1075200000, "Safe Max"},
         {1305600000, "Unsafe Max"},
-        {1536000000, "Aboslute Max"},
+        {1536000000, "Absolute Max"},
     };
 
     std::map<uint32_t, std::string> emc_freq_label_e = {
@@ -340,6 +340,21 @@ void MiscGui::listUI()
 
     addConfigToggle(HocClkConfigValue_KipEditing, nullptr);
 
+    std::vector<NamedValue> kipNameLabels = {
+        NamedValue("hoc.kip", 0),
+        NamedValue("loader.kip", 1)
+    };
+
+    addConfigButton(
+        HocClkConfigValue_KipFileName,
+        "KIP File Name",
+        ValueRange(0, 6, 1, "", 0),
+        "KIP File Name",
+        &thresholdsDisabled,
+        {},
+        kipNameLabels,
+        false
+    );
     this->listElement->addItem(new tsl::elm::CategoryHeader("KIP Settings"));
 
     std::vector<NamedValue> autoAdjOptions = {
@@ -608,6 +623,8 @@ void MiscGui::listUI()
         wlLabels,
         false
     );
+
+
 
     std::vector<NamedValue> marikoTableConf = {
         NamedValue("Auto", 0),

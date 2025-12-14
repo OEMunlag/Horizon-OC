@@ -61,6 +61,7 @@ typedef enum {
     HocClkConfigValue_EnforceBoardLimit,
     
     HocClkConfigValue_KipEditing,
+    HocClkConfigValue_KipFileName,
 
     KipConfigValue_custRev,
     KipConfigValue_mtcConf,
@@ -227,6 +228,9 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
         case HocClkConfigValue_KipEditing:
             return pretty ? "Enable KIP Editing" : "kip_editing";
         
+        case HocClkConfigValue_KipFileName:
+            return pretty ? "KIP File Name" : "kip_file_name";
+
         // KIP config values
         case KipConfigValue_custRev:
             return pretty ? "Custom Revision" : "kip_cust_rev";
@@ -448,6 +452,7 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case HocClkConfigValue_HandheldTDP:
         case HocClkConfigValue_EnforceBoardLimit:
         case HocClkConfigValue_KipEditing:
+        case HocClkConfigValue_KipFileName:
             return (input & 0x1) == input;
         
         case KipConfigValue_custRev:
