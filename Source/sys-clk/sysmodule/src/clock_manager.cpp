@@ -599,7 +599,7 @@ void ClockManager::GetKipData() {
     }
 
     SysClkConfigValueList configValues;
-    memset(&configValues, 0, sizeof(configValues));
+    this->config->GetConfigValues(&configValues);
 
     configValues.values[KipConfigValue_custRev] = cust_get_cust_rev(&table);
     configValues.values[KipConfigValue_mtcConf] = cust_get_mtc_conf(&table);

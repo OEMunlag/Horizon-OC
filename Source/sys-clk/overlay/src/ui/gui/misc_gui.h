@@ -18,6 +18,7 @@ public:
 protected:
     std::map<SysClkConfigValue, tsl::elm::ListItem*> configButtons;
     std::map<SysClkConfigValue, ValueRange> configRanges;  // Store ranges for refresh
+    std::map<SysClkConfigValue, std::vector<NamedValue>> configNamedValues;  // NEW — Store named values for refresh
     SysClkConfigValueList* configList;
     std::map<SysClkConfigValue, tsl::elm::ToggleListItem*> configToggles;
     std::map<SysClkConfigValue, std::tuple<tsl::elm::TrackBar*, tsl::elm::ListItem*, std::vector<uint64_t>>> configTrackbars;
@@ -28,11 +29,14 @@ protected:
         const ValueRange& range,
         const std::string& categoryName,
         const ValueThresholds* thresholds,
-    const std::map<uint32_t, std::string>& labels = {});
+        const std::map<uint32_t, std::string>& labels = {},
+        const std::vector<NamedValue>& namedValues = {},
+        bool showDefaultValue = true);
     void addFreqButton(SysClkConfigValue configVal,
                             const char* altName,
                             SysClkModule module,
-                            const std::map<uint32_t, std::string>& labels = {});    void updateConfigToggles();
+                            const std::map<uint32_t, std::string>& labels = {});
+    void updateConfigToggles();
     
     tsl::elm::ToggleListItem* enabledToggle;
     u8 frameCounter = 60;
