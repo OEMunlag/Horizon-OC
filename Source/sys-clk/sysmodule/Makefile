@@ -18,6 +18,7 @@ include $(DEVKITPRO)/libnx/switch_rules
 # EXEFS_SRC is the optional input directory containing data copied into exefs, if anything this normally should only contain "main.npdm".
 #---------------------------------------------------------------------------------
 TARGET		:=	horizon-oc
+KIP_CUST_REV := 1
 BUILD		:=	build
 OUTDIR		:=	out
 RESOURCES	:=	res

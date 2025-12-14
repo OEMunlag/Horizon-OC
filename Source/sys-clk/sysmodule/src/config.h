@@ -15,9 +15,7 @@
  * 
  */
  
-
-/*
- * --------------------------------------------------------------------------
+/* --------------------------------------------------------------------------
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <p-sam@d3vs.net>, <natinusala@gmail.com>, <m4x@m4xw.net>
  * wrote this file. As long as you retain this notice you can do whatever you
@@ -25,6 +23,7 @@
  * stuff is worth it, you can buy us a beer in return.  - The sys-clk authors
  * --------------------------------------------------------------------------
  */
+
 
 #pragma once
 #include <atomic>
@@ -66,10 +65,15 @@ class Config
     const char* GetConfigValueName(SysClkConfigValue val, bool pretty);
     void GetConfigValues(SysClkConfigValueList* out_configValues);
     bool SetConfigValues(SysClkConfigValueList* configValues, bool immediate);
+    bool ResetConfigValue(SysClkConfigValue kval);
+    bool SetInternalValues(bool immediate);
+    bool SetConfigValue(SysClkConfigValue kval, std::uint64_t value, bool immediate = true);
+
+    uint64_t configValues[SysClkConfigValue_EnumMax];
   protected:
     void Load();
     void Close();
-
+    bool kipOverride[SysClkConfigValue_EnumMax];
     time_t CheckModificationTime();
     std::uint32_t FindClockMHz(std::uint64_t tid, SysClkModule module, SysClkProfile profile);
     std::uint32_t FindClockHzFromProfiles(std::uint64_t tid, SysClkModule module, std::initializer_list<SysClkProfile> profiles);
@@ -84,5 +88,4 @@ class Config
     LockableMutex overrideMutex;
     std::atomic_bool enabled;
     std::uint32_t overrideFreqs[SysClkModule_EnumMax];
-    std::uint64_t configValues[SysClkConfigValue_EnumMax];
 };
