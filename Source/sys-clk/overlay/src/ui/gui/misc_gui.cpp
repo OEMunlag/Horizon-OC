@@ -268,7 +268,7 @@ void MiscGui::listUI()
     );
 
 
-        std::map<uint32_t, std::string> cpu_freq_label_m = {
+    std::map<uint32_t, std::string> cpu_freq_label_m = {
         {612000000, "Sleep Mode"},
         {1020000000, "Stock"},
         {1224000000, "Dev OC"},
@@ -329,11 +329,11 @@ void MiscGui::listUI()
     if(IsMariko()) {
         addFreqButton(HocClkConfigValue_MarikoMaxCpuClock, nullptr, SysClkModule_CPU, cpu_freq_label_m);
         addFreqButton(HocClkConfigValue_MarikoMaxGpuClock, nullptr, SysClkModule_GPU, gpu_freq_label_m);
-        addFreqButton(HocClkConfigValue_MarikoMaxMemClock, nullptr, SysClkModule_MEM, emc_freq_label_m);
+        // addFreqButton(HocClkConfigValue_MarikoMaxMemClock, nullptr, SysClkModule_MEM, emc_freq_label_m);
     } else {
         addFreqButton(HocClkConfigValue_EristaMaxCpuClock, nullptr, SysClkModule_CPU, cpu_freq_label_e);
         addFreqButton(HocClkConfigValue_EristaMaxGpuClock, nullptr, SysClkModule_GPU, gpu_freq_label_e);
-        addFreqButton(HocClkConfigValue_EristaMaxMemClock, nullptr, SysClkModule_MEM, emc_freq_label_e);
+        // addFreqButton(HocClkConfigValue_EristaMaxMemClock, nullptr, SysClkModule_MEM, emc_freq_label_e);
     }
 
     this->listElement->addItem(new tsl::elm::CategoryHeader("KIP Editing"));
@@ -356,6 +356,11 @@ void MiscGui::listUI()
         false
     );
     this->listElement->addItem(new tsl::elm::CategoryHeader("KIP Settings"));
+
+    if(IsMariko())
+        addFreqButton(KipConfigValue_marikoCpuBoostClock, nullptr, SysClkModule_CPU, cpu_freq_label_m);
+    else
+        addFreqButton(KipConfigValue_eristaCpuBoostClock, nullptr, SysClkModule_CPU, cpu_freq_label_e);
 
     std::vector<NamedValue> autoAdjOptions = {
         NamedValue("AUTO_ADJ", 0),
@@ -625,7 +630,6 @@ void MiscGui::listUI()
     );
 
 
-
     std::vector<NamedValue> marikoTableConf = {
         NamedValue("Auto", 0),
         NamedValue("Default", 1),
@@ -779,6 +783,8 @@ void MiscGui::listUI()
     if(IsMariko())
         addConfigToggle(KipConfigValue_marikoGpuFullUnlock, "GPU Full Unlock");
 
+
+    this->listElement->addItem(new tsl::elm::CategoryHeader("GPU Custom Table"));
 
     if(IsMariko()) {
         addConfigButton(
