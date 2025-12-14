@@ -470,26 +470,26 @@ namespace ams::ldr::oc::pcv::mariko {
         WRITE_PARAM_ALL_REG(table, emc_tr_rdv, rdv);
 
         /* This needs some clean up. */
-        constexpr u32 MC_ARB_DIV = 4;
+        constexpr double MC_ARB_DIV = 4.0;
         constexpr u32 MC_ARB_SFA = 2;
 
         table->burst_mc_regs.mc_emem_arb_cfg          = C.marikoEmcMaxClock           / (33.3 * 1000) / MC_ARB_DIV;
-        table->burst_mc_regs.mc_emem_arb_timing_rcd   = (u32) (GET_CYCLE_CEIL(tRCD)   / MC_ARB_DIV) - 2;
-        table->burst_mc_regs.mc_emem_arb_timing_rp    = (u32) (GET_CYCLE_CEIL(tRPpb)  / MC_ARB_DIV) - 1 + MC_ARB_SFA;
-        table->burst_mc_regs.mc_emem_arb_timing_rc    = (u32) (GET_CYCLE_CEIL(tRC)    / MC_ARB_DIV) - 1;
-        table->burst_mc_regs.mc_emem_arb_timing_ras   = (u32) (GET_CYCLE_CEIL(tRAS)   / MC_ARB_DIV) - 2;
-        table->burst_mc_regs.mc_emem_arb_timing_faw   = (u32) (GET_CYCLE_CEIL(tFAW)   / MC_ARB_DIV) - 1;
-        table->burst_mc_regs.mc_emem_arb_timing_rrd   = (u32) (GET_CYCLE_CEIL(tRRD)   / MC_ARB_DIV) - 1;
-        table->burst_mc_regs.mc_emem_arb_timing_rfcpb = (u32) (GET_CYCLE_CEIL(tRFCpb) / MC_ARB_DIV);
+        table->burst_mc_regs.mc_emem_arb_timing_rcd   = CEIL(GET_CYCLE_CEIL(tRCD)   / MC_ARB_DIV) - 2;
+        table->burst_mc_regs.mc_emem_arb_timing_rp    = CEIL(GET_CYCLE_CEIL(tRPpb)  / MC_ARB_DIV) - 1;
+        table->burst_mc_regs.mc_emem_arb_timing_rc    = CEIL(GET_CYCLE_CEIL(tRC)    / MC_ARB_DIV) - 1;
+        table->burst_mc_regs.mc_emem_arb_timing_ras   = CEIL(GET_CYCLE_CEIL(tRAS)   / MC_ARB_DIV) - 2;
+        table->burst_mc_regs.mc_emem_arb_timing_faw   = CEIL(GET_CYCLE_CEIL(tFAW)   / MC_ARB_DIV) - 1;
+        table->burst_mc_regs.mc_emem_arb_timing_rrd   = CEIL(GET_CYCLE_CEIL(tRRD)   / MC_ARB_DIV) - 1;
+        table->burst_mc_regs.mc_emem_arb_timing_rfcpb = CEIL(GET_CYCLE_CEIL(tRFCpb) / MC_ARB_DIV);
         table->burst_mc_regs.mc_emem_arb_timing_rap2pre = CEIL(tR2P / MC_ARB_DIV);
-        table->burst_mc_regs.mc_emem_arb_timing_wap2pre = (u32) (tW2P / MC_ARB_DIV);
+        table->burst_mc_regs.mc_emem_arb_timing_wap2pre = CEIL(tW2P / MC_ARB_DIV) + MC_ARB_SFA;
 
         if (table->burst_mc_regs.mc_emem_arb_timing_r2r > 1) {
             table->burst_mc_regs.mc_emem_arb_timing_r2r = CEIL(table->burst_regs.emc_rext / 4) - 1 + MC_ARB_SFA;
         }
 
-        table->burst_mc_regs.mc_emem_arb_timing_r2w = (u32) (tR2W / MC_ARB_DIV) - 1 + MC_ARB_SFA;
-        table->burst_mc_regs.mc_emem_arb_timing_w2r = (u32) (tW2R / MC_ARB_DIV) - 1 + MC_ARB_SFA;
+        table->burst_mc_regs.mc_emem_arb_timing_r2w = CEIL(tR2W / MC_ARB_DIV) - 1 + MC_ARB_SFA;
+        table->burst_mc_regs.mc_emem_arb_timing_w2r = CEIL(tW2R / MC_ARB_DIV) - 1 + MC_ARB_SFA;
 
         u32 da_turns = 0;
         da_turns |= u8(table->burst_mc_regs.mc_emem_arb_timing_r2w / 2) << 16;
@@ -499,7 +499,7 @@ namespace ams::ldr::oc::pcv::mariko {
         u32 da_covers = 0;
         u8 r_cover = (table->burst_mc_regs.mc_emem_arb_timing_rap2pre + table->burst_mc_regs.mc_emem_arb_timing_rp + table->burst_mc_regs.mc_emem_arb_timing_rcd) / 2;
         u8 w_cover = (table->burst_mc_regs.mc_emem_arb_timing_wap2pre + table->burst_mc_regs.mc_emem_arb_timing_rp + table->burst_mc_regs.mc_emem_arb_timing_rcd) / 2;
-        da_covers |= (u8) (table->burst_mc_regs.mc_emem_arb_timing_rc / 2);
+        da_covers |= (table->burst_mc_regs.mc_emem_arb_timing_rc / 2);
         da_covers |= (r_cover << 8);
         da_covers |= (w_cover << 16);
         table->burst_mc_regs.mc_emem_arb_da_covers = da_covers;

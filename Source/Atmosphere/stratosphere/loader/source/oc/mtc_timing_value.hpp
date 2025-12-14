@@ -123,7 +123,7 @@ namespace ams::ldr::oc {
         const u32 tRC = tRAS + tRPpb;
         const u32 tRFCab = tRFCpb * 2;
         const double tXSR = (double) (tRFCab + 7.5);
-        const u32 tFAW = (u32) (tRRD * 4.0);
+        const u32 tFAW = static_cast<u32>(tRRD * 4.0);
         const double tRPab = tRPpb + 3;
 
         const u32 tR2P = 12 + (C.mem_burst_read_latency / 2);
