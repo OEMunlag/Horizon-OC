@@ -385,7 +385,7 @@ void MiscGui::listUI()
     addConfigButton(
         KipConfigValue_commonEmcMemVolt,
         "EMC VDD2 Voltage",
-        ValueRange(912500, 1350000, 12500, "mV", 1000),
+        ValueRange(912500, 1350000, 12500, "mV", 1000, 1),
         "Voltage",
         &vdd2Thresholds,
         emc_voltage_label,
@@ -634,7 +634,16 @@ void MiscGui::listUI()
         NamedValue("HELIOS Table", 4)
     };
 
+    std::vector<NamedValue> gpuUvConf = {
+        NamedValue("No UV", 0),
+        NamedValue("SLT Table", 1),
+        NamedValue("HiOPT Table", 2),
+        NamedValue("Custom Table", 3)
+    };
+
     ValueThresholds mCpuVoltThresholds(1160, 1180);
+    ValueThresholds MgpuVmaxThresholds(800, 850);
+    ValueThresholds EgpuVmaxThresholds(950, 975);
 
     if(IsErista()) {
         addConfigButton(
@@ -657,6 +666,27 @@ void MiscGui::listUI()
             {},
             false
         );
+        addConfigButton(
+            KipConfigValue_eristaGpuUV,
+            "GPU Undervolt Table",
+            ValueRange(0, 1, 1, "", 1),
+            "GPU Undervolt Table",
+            &thresholdsDisabled,
+            {},
+            gpuUvConf,
+            false
+        );
+        addConfigButton(
+            KipConfigValue_eristaGpuVmin,
+            "GPU VMIN",
+            ValueRange(700, 875, 5, "mV", 1),
+            "GPU VMIN",
+            &thresholdsDisabled,
+            {},
+            {},
+            false
+        );
+
     } else {
         addConfigButton(
             KipConfigValue_tableConf,
@@ -698,8 +728,573 @@ void MiscGui::listUI()
             {},
             false
         );
+
+        addConfigButton(
+            KipConfigValue_marikoGpuUV,
+            "GPU Undervolt Table",
+            ValueRange(0, 1, 1, "", 1),
+            "GPU Undervolt Table",
+            &thresholdsDisabled,
+            {},
+            gpuUvConf,
+            false
+        );
+
+        addConfigButton(
+            KipConfigValue_marikoGpuVmin,
+            "GPU VMIN",
+            ValueRange(480, 825, 5, "mV", 1),
+            "GPU VMIN",
+            &thresholdsDisabled,
+            {},
+            {},
+            false
+        );
+
+
+        addConfigButton(
+            KipConfigValue_marikoGpuVmax,
+            "GPU VMAX",
+            ValueRange(750, 960, 5, "mV", 1),
+            "GPU VMAX",
+            &MgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+
     }
 
+    addConfigButton(
+        KipConfigValue_commonGpuVoltOffset,
+        "GPU Volt Offset",
+        ValueRange(0, 50, 5, "mV", 1),
+        "GPU Volt Offset",
+        &thresholdsDisabled,
+        {},
+        {},
+        false
+    );
+
+    if(IsMariko())
+        addConfigToggle(KipConfigValue_marikoGpuFullUnlock, "GPU Full Unlock");
+
+
+    if(IsMariko()) {
+        addConfigButton(
+            KipConfigValue_g_volt_76800,
+            "GPU Voltage (76.8MHz)",
+            ValueRange(480, 960, 5, "mV", 1),
+            "Voltage",
+            &MgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_153600,
+            "GPU Voltage (153.6MHz)",
+            ValueRange(480, 960, 5, "mV", 1),
+            "Voltage",
+            &MgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_230400,
+            "GPU Voltage (230.4MHz)",
+            ValueRange(480, 960, 5, "mV", 1),
+            "Voltage",
+            &MgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_307200,
+            "GPU Voltage (307.2MHz)",
+            ValueRange(480, 960, 5, "mV", 1),
+            "Voltage",
+            &MgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+
+        addConfigButton(
+            KipConfigValue_g_volt_384000,
+            "GPU Voltage (384.0MHz)",
+            ValueRange(480, 960, 5, "mV", 1),
+            "Voltage",
+            &MgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_460800,
+            "GPU Voltage (460.8MHz)",
+            ValueRange(480, 960, 5, "mV", 1),
+            "Voltage",
+            &MgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_537600,
+            "GPU Voltage (537.6MHz)",
+            ValueRange(480, 960, 5, "mV", 1),
+            "Voltage",
+            &MgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_614400,
+            "GPU Voltage (614.4MHz)",
+            ValueRange(480, 960, 5, "mV", 1),
+            "Voltage",
+            &MgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_691200,
+            "GPU Voltage (691.2MHz)",
+            ValueRange(480, 960, 5, "mV", 1),
+            "Voltage",
+            &MgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_768000,
+            "GPU Voltage (768.0MHz)",
+            ValueRange(480, 960, 5, "mV", 1),
+            "Voltage",
+            &MgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_844800,
+            "GPU Voltage (844.8MHz)",
+            ValueRange(480, 960, 5, "mV", 1),
+            "Voltage",
+            &MgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_921600,
+            "GPU Voltage (921.6MHz)",
+            ValueRange(480, 960, 5, "mV", 1),
+            "Voltage",
+            &MgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_998400,
+            "GPU Voltage (998.4MHz)",
+            ValueRange(480, 960, 5, "mV", 1),
+            "Voltage",
+            &MgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_1075200,
+            "GPU Voltage (1075.2MHz)",
+            ValueRange(480, 960, 5, "mV", 1),
+            "Voltage",
+            &MgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_1152000,
+            "GPU Voltage (1152.0MHz)",
+            ValueRange(480, 960, 5, "mV", 1),
+            "Voltage",
+            &MgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_1228800,
+            "GPU Voltage (1228.8MHz)",
+            ValueRange(480, 960, 5, "mV", 1),
+            "Voltage",
+            &MgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_1267200,
+            "GPU Voltage (1267.2MHz)",
+            ValueRange(480, 960, 5, "mV", 1),
+            "Voltage",
+            &MgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_1305600,
+            "GPU Voltage (1305.6MHz)",
+            ValueRange(480, 960, 5, "mV", 1),
+            "Voltage",
+            &MgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_1344000,
+            "GPU Voltage (1344.0MHz)",
+            ValueRange(480, 960, 5, "mV", 1),
+            "Voltage",
+            &MgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_1382400,
+            "GPU Voltage (1382.4MHz)",
+            ValueRange(480, 960, 5, "mV", 1),
+            "Voltage",
+            &MgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_1420800,
+            "GPU Voltage (1420.8MHz)",
+            ValueRange(480, 960, 5, "mV", 1),
+            "Voltage",
+            &MgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_1459200,
+            "GPU Voltage (1459.2MHz)",
+            ValueRange(480, 960, 5, "mV", 1),
+            "Voltage",
+            &MgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_1497600,
+            "GPU Voltage (1497.6MHz)",
+            ValueRange(480, 960, 5, "mV", 1),
+            "Voltage",
+            &MgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_1536000,
+            "GPU Voltage (1536.0MHz)",
+            ValueRange(480, 960, 5, "mV", 1),
+            "Voltage",
+            &MgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+
+    } else {
+                addConfigButton(
+            KipConfigValue_g_volt_e_76800,
+            "GPU Voltage (76.8MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_e_115200,
+            "GPU Voltage (115.2MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_e_153600,
+            "GPU Voltage (153.6MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_e_192000,
+            "GPU Voltage (192.0MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_e_230400,
+            "GPU Voltage (230.4MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_e_268800,
+            "GPU Voltage (268.8MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_e_307200,
+            "GPU Voltage (307.2MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_e_345600,
+            "GPU Voltage (345.6MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_e_384000,
+            "GPU Voltage (384.0MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_e_422400,
+            "GPU Voltage (422.4MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_e_460800,
+            "GPU Voltage (460.8MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_e_499200,
+            "GPU Voltage (499.2MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_e_537600,
+            "GPU Voltage (537.6MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_e_576000,
+            "GPU Voltage (576.0MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_e_614400,
+            "GPU Voltage (614.4MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_e_652800,
+            "GPU Voltage (652.8MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_e_691200,
+            "GPU Voltage (691.2MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_e_729600,
+            "GPU Voltage (729.6MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_e_768000,
+            "GPU Voltage (768.0MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_e_806400,
+            "GPU Voltage (806.4MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_e_844800,
+            "GPU Voltage (844.8MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_e_883200,
+            "GPU Voltage (883.2MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_e_921600,
+            "GPU Voltage (921.6MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_e_960000,
+            "GPU Voltage (960.0MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_e_998400,
+            "GPU Voltage (998.4MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_e_1036800,
+            "GPU Voltage (1036.8MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+        addConfigButton(
+            KipConfigValue_g_volt_e_1075200,
+            "GPU Voltage (1075.2MHz)",
+            ValueRange(700, 995, 5, "mV", 1),
+            "Voltage",
+            &EgpuVmaxThresholds,
+            {},
+            {},
+            false
+        );
+    }
     tsl::elm::ListItem* saveBtn = new tsl::elm::ListItem("Save KIP Settings");
     saveBtn->setClickListener([](u64 keys) {
         if (keys & HidNpadButton_A) {
@@ -714,6 +1309,7 @@ void MiscGui::listUI()
     });
     this->listElement->addItem(saveBtn);
 }
+
 
 static std::string getValueDisplayText(uint64_t currentValue, 
                                        const ValueRange& range,

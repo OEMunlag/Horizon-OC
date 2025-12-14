@@ -521,71 +521,69 @@ void ClockManager::SetRNXRTMode(ReverseNXMode mode)
 }
 
 void ClockManager::SetKipData() {
-    if(this->config->Refresh()) {
-        std::scoped_lock lock{this->contextMutex};
-        CustomizeTable table;
+    std::scoped_lock lock{this->contextMutex};
+    CustomizeTable table;
 
-        if (!cust_read_and_cache(this->config->GetConfigValue(HocClkConfigValue_KipFileName) ? "sdmc:/atmosphere/kips/loader.kip" : "sdmc:/atmosphere/kips/hoc.kip", &table)) {
-            FileUtils::LogLine("[clock_manager] Failed to read KIP file");
-            return;
-        }
+    if (!cust_read_and_cache(this->config->GetConfigValue(HocClkConfigValue_KipFileName) ? "sdmc:/atmosphere/kips/loader.kip" : "sdmc:/atmosphere/kips/hoc.kip", &table)) {
+        FileUtils::LogLine("[clock_manager] Failed to read KIP file");
+        return;
+    }
 
-        CUST_WRITE_FIELD_BATCH(&table, custRev, this->config->GetConfigValue(KipConfigValue_custRev));
-        CUST_WRITE_FIELD_BATCH(&table, mtcConf, this->config->GetConfigValue(KipConfigValue_mtcConf));
-        CUST_WRITE_FIELD_BATCH(&table, hpMode, this->config->GetConfigValue(KipConfigValue_hpMode));
+    CUST_WRITE_FIELD_BATCH(&table, custRev, this->config->GetConfigValue(KipConfigValue_custRev));
+    CUST_WRITE_FIELD_BATCH(&table, mtcConf, this->config->GetConfigValue(KipConfigValue_mtcConf));
+    CUST_WRITE_FIELD_BATCH(&table, hpMode, this->config->GetConfigValue(KipConfigValue_hpMode));
 
-        CUST_WRITE_FIELD_BATCH(&table, commonEmcMemVolt, this->config->GetConfigValue(KipConfigValue_commonEmcMemVolt));
-        CUST_WRITE_FIELD_BATCH(&table, eristaEmcMaxClock, this->config->GetConfigValue(KipConfigValue_eristaEmcMaxClock));
-        CUST_WRITE_FIELD_BATCH(&table, marikoEmcMaxClock, this->config->GetConfigValue(KipConfigValue_marikoEmcMaxClock));
-        CUST_WRITE_FIELD_BATCH(&table, marikoEmcVddqVolt, this->config->GetConfigValue(KipConfigValue_marikoEmcVddqVolt));
-        CUST_WRITE_FIELD_BATCH(&table, emcDvbShift, this->config->GetConfigValue(KipConfigValue_emcDvbShift));
+    CUST_WRITE_FIELD_BATCH(&table, commonEmcMemVolt, this->config->GetConfigValue(KipConfigValue_commonEmcMemVolt));
+    CUST_WRITE_FIELD_BATCH(&table, eristaEmcMaxClock, this->config->GetConfigValue(KipConfigValue_eristaEmcMaxClock));
+    CUST_WRITE_FIELD_BATCH(&table, marikoEmcMaxClock, this->config->GetConfigValue(KipConfigValue_marikoEmcMaxClock));
+    CUST_WRITE_FIELD_BATCH(&table, marikoEmcVddqVolt, this->config->GetConfigValue(KipConfigValue_marikoEmcVddqVolt));
+    CUST_WRITE_FIELD_BATCH(&table, emcDvbShift, this->config->GetConfigValue(KipConfigValue_emcDvbShift));
 
-        CUST_WRITE_FIELD_BATCH(&table, t1_tRCD, this->config->GetConfigValue(KipConfigValue_t1_tRCD));
-        CUST_WRITE_FIELD_BATCH(&table, t2_tRP, this->config->GetConfigValue(KipConfigValue_t2_tRP));
-        CUST_WRITE_FIELD_BATCH(&table, t3_tRAS, this->config->GetConfigValue(KipConfigValue_t3_tRAS));
-        CUST_WRITE_FIELD_BATCH(&table, t4_tRRD, this->config->GetConfigValue(KipConfigValue_t4_tRRD));
-        CUST_WRITE_FIELD_BATCH(&table, t5_tRFC, this->config->GetConfigValue(KipConfigValue_t5_tRFC));
-        CUST_WRITE_FIELD_BATCH(&table, t6_tRTW, this->config->GetConfigValue(KipConfigValue_t6_tRTW));
-        CUST_WRITE_FIELD_BATCH(&table, t7_tWTR, this->config->GetConfigValue(KipConfigValue_t7_tWTR));
-        CUST_WRITE_FIELD_BATCH(&table, t8_tREFI, this->config->GetConfigValue(KipConfigValue_t8_tREFI));
-        CUST_WRITE_FIELD_BATCH(&table, mem_burst_read_latency, this->config->GetConfigValue(KipConfigValue_mem_burst_read_latency));
-        CUST_WRITE_FIELD_BATCH(&table, mem_burst_write_latency, this->config->GetConfigValue(KipConfigValue_mem_burst_write_latency));
+    CUST_WRITE_FIELD_BATCH(&table, t1_tRCD, this->config->GetConfigValue(KipConfigValue_t1_tRCD));
+    CUST_WRITE_FIELD_BATCH(&table, t2_tRP, this->config->GetConfigValue(KipConfigValue_t2_tRP));
+    CUST_WRITE_FIELD_BATCH(&table, t3_tRAS, this->config->GetConfigValue(KipConfigValue_t3_tRAS));
+    CUST_WRITE_FIELD_BATCH(&table, t4_tRRD, this->config->GetConfigValue(KipConfigValue_t4_tRRD));
+    CUST_WRITE_FIELD_BATCH(&table, t5_tRFC, this->config->GetConfigValue(KipConfigValue_t5_tRFC));
+    CUST_WRITE_FIELD_BATCH(&table, t6_tRTW, this->config->GetConfigValue(KipConfigValue_t6_tRTW));
+    CUST_WRITE_FIELD_BATCH(&table, t7_tWTR, this->config->GetConfigValue(KipConfigValue_t7_tWTR));
+    CUST_WRITE_FIELD_BATCH(&table, t8_tREFI, this->config->GetConfigValue(KipConfigValue_t8_tREFI));
+    CUST_WRITE_FIELD_BATCH(&table, mem_burst_read_latency, this->config->GetConfigValue(KipConfigValue_mem_burst_read_latency));
+    CUST_WRITE_FIELD_BATCH(&table, mem_burst_write_latency, this->config->GetConfigValue(KipConfigValue_mem_burst_write_latency));
 
-        CUST_WRITE_FIELD_BATCH(&table, eristaCpuUV, this->config->GetConfigValue(KipConfigValue_eristaCpuUV));
-        CUST_WRITE_FIELD_BATCH(&table, eristaCpuMaxVolt, this->config->GetConfigValue(KipConfigValue_eristaCpuMaxVolt));
+    CUST_WRITE_FIELD_BATCH(&table, eristaCpuUV, this->config->GetConfigValue(KipConfigValue_eristaCpuUV));
+    CUST_WRITE_FIELD_BATCH(&table, eristaCpuMaxVolt, this->config->GetConfigValue(KipConfigValue_eristaCpuMaxVolt));
 
-        CUST_WRITE_FIELD_BATCH(&table, marikoCpuUVLow, this->config->GetConfigValue(KipConfigValue_marikoCpuUVLow));
-        CUST_WRITE_FIELD_BATCH(&table, marikoCpuUVHigh, this->config->GetConfigValue(KipConfigValue_marikoCpuUVHigh));
-        CUST_WRITE_FIELD_BATCH(&table, tableConf, this->config->GetConfigValue(KipConfigValue_tableConf));
-        CUST_WRITE_FIELD_BATCH(&table, marikoCpuLowVmin, this->config->GetConfigValue(KipConfigValue_marikoCpuLowVmin));
-        CUST_WRITE_FIELD_BATCH(&table, marikoCpuHighVmin, this->config->GetConfigValue(KipConfigValue_marikoCpuHighVmin));
-        CUST_WRITE_FIELD_BATCH(&table, marikoCpuMaxVolt, this->config->GetConfigValue(KipConfigValue_marikoCpuMaxVolt));
+    CUST_WRITE_FIELD_BATCH(&table, marikoCpuUVLow, this->config->GetConfigValue(KipConfigValue_marikoCpuUVLow));
+    CUST_WRITE_FIELD_BATCH(&table, marikoCpuUVHigh, this->config->GetConfigValue(KipConfigValue_marikoCpuUVHigh));
+    CUST_WRITE_FIELD_BATCH(&table, tableConf, this->config->GetConfigValue(KipConfigValue_tableConf));
+    CUST_WRITE_FIELD_BATCH(&table, marikoCpuLowVmin, this->config->GetConfigValue(KipConfigValue_marikoCpuLowVmin));
+    CUST_WRITE_FIELD_BATCH(&table, marikoCpuHighVmin, this->config->GetConfigValue(KipConfigValue_marikoCpuHighVmin));
+    CUST_WRITE_FIELD_BATCH(&table, marikoCpuMaxVolt, this->config->GetConfigValue(KipConfigValue_marikoCpuMaxVolt));
 
-        CUST_WRITE_FIELD_BATCH(&table, eristaCpuBoostClock, this->config->GetConfigValue(KipConfigValue_eristaCpuBoostClock));
-        CUST_WRITE_FIELD_BATCH(&table, marikoCpuBoostClock, this->config->GetConfigValue(KipConfigValue_marikoCpuBoostClock));
+    CUST_WRITE_FIELD_BATCH(&table, eristaCpuBoostClock, this->config->GetConfigValue(KipConfigValue_eristaCpuBoostClock));
+    CUST_WRITE_FIELD_BATCH(&table, marikoCpuBoostClock, this->config->GetConfigValue(KipConfigValue_marikoCpuBoostClock));
 
-        CUST_WRITE_FIELD_BATCH(&table, eristaGpuUV, this->config->GetConfigValue(KipConfigValue_eristaGpuUV));
-        CUST_WRITE_FIELD_BATCH(&table, eristaGpuVmin, this->config->GetConfigValue(KipConfigValue_eristaGpuVmin));
+    CUST_WRITE_FIELD_BATCH(&table, eristaGpuUV, this->config->GetConfigValue(KipConfigValue_eristaGpuUV));
+    CUST_WRITE_FIELD_BATCH(&table, eristaGpuVmin, this->config->GetConfigValue(KipConfigValue_eristaGpuVmin));
 
-        CUST_WRITE_FIELD_BATCH(&table, marikoGpuUV, this->config->GetConfigValue(KipConfigValue_marikoGpuUV));
-        CUST_WRITE_FIELD_BATCH(&table, marikoGpuVmin, this->config->GetConfigValue(KipConfigValue_marikoGpuVmin));
-        CUST_WRITE_FIELD_BATCH(&table, marikoGpuVmax, this->config->GetConfigValue(KipConfigValue_marikoGpuVmax));
+    CUST_WRITE_FIELD_BATCH(&table, marikoGpuUV, this->config->GetConfigValue(KipConfigValue_marikoGpuUV));
+    CUST_WRITE_FIELD_BATCH(&table, marikoGpuVmin, this->config->GetConfigValue(KipConfigValue_marikoGpuVmin));
+    CUST_WRITE_FIELD_BATCH(&table, marikoGpuVmax, this->config->GetConfigValue(KipConfigValue_marikoGpuVmax));
 
-        CUST_WRITE_FIELD_BATCH(&table, commonGpuVoltOffset, this->config->GetConfigValue(KipConfigValue_commonGpuVoltOffset));
-        CUST_WRITE_FIELD_BATCH(&table, gpuSpeedo, this->config->GetConfigValue(KipConfigValue_gpuSpeedo));
-        CUST_WRITE_FIELD_BATCH(&table, marikoGpuFullUnlock, this->config->GetConfigValue(KipConfigValue_marikoGpuFullUnlock));
+    CUST_WRITE_FIELD_BATCH(&table, commonGpuVoltOffset, this->config->GetConfigValue(KipConfigValue_commonGpuVoltOffset));
+    CUST_WRITE_FIELD_BATCH(&table, gpuSpeedo, this->config->GetConfigValue(KipConfigValue_gpuSpeedo));
+    CUST_WRITE_FIELD_BATCH(&table, marikoGpuFullUnlock, this->config->GetConfigValue(KipConfigValue_marikoGpuFullUnlock));
 
-        for (int i = 0; i < 24; i++) {
-            table.marikoGpuVoltArray[i] = this->config->GetConfigValue((SysClkConfigValue)(KipConfigValue_g_volt_76800 + i));
-        }
+    for (int i = 0; i < 24; i++) {
+        table.marikoGpuVoltArray[i] = this->config->GetConfigValue((SysClkConfigValue)(KipConfigValue_g_volt_76800 + i));
+    }
 
-        for (int i = 0; i < 27; i++) {
-            table.eristaGpuVoltArray[i] = this->config->GetConfigValue((SysClkConfigValue)(KipConfigValue_g_volt_e_76800 + i));
-        }
+    for (int i = 0; i < 27; i++) {
+        table.eristaGpuVoltArray[i] = this->config->GetConfigValue((SysClkConfigValue)(KipConfigValue_g_volt_e_76800 + i));
+    }
 
-        if (!cust_write_table(this->config->GetConfigValue(HocClkConfigValue_KipFileName) ? "sdmc:/atmosphere/kips/loader.kip" : "sdmc:/atmosphere/kips/hoc.kip", &table)) {
-            FileUtils::LogLine("[clock_manager] Failed to write KIP file");
-        }
+    if (!cust_write_table(this->config->GetConfigValue(HocClkConfigValue_KipFileName) ? "sdmc:/atmosphere/kips/loader.kip" : "sdmc:/atmosphere/kips/hoc.kip", &table)) {
+        FileUtils::LogLine("[clock_manager] Failed to write KIP file");
     }
 }
 
