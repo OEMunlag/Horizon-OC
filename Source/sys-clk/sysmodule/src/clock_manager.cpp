@@ -252,10 +252,12 @@ u32 findIndexMHz(u32 arr[], u32 size, u32 value) {
 void ClockManager::Tick()
 {        
     std::scoped_lock lock{this->contextMutex};
-    if((Board::GetHz(SysClkModule_MEM) / 1000000) > 1600)
-        I2c_BuckConverter_SetMvOut(Board::GetSocType == SysClkSocType_Mariko ? &I2c_Mariko_GPU : &I2c_Erista_GPU, this->config->GetConfigValue(HocClkConfigValue_HighRamFreqVmin));
-    else
-        I2c_BuckConverter_SetMvOut(Board::GetSocType == SysClkSocType_Mariko ? &I2c_Mariko_GPU : &I2c_Erista_GPU, this->config->GetConfigValue(KipConfigValue_marikoGpuVmin));
+    if(Board::GetSocType() == SysClkSocType_Mariko && this->config->GetConfigValue(HocClkConfigValue_KipEditing)) {
+        if((Board::GetHz(SysClkModule_MEM) / 1000000) > 1600)
+            I2c_BuckConverter_SetMvOut(&I2c_Mariko_GPU, this->config->GetConfigValue(HocClkConfigValue_HighRamFreqVmin));
+        else
+            I2c_BuckConverter_SetMvOut(&I2c_Mariko_GPU, this->config->GetConfigValue(KipConfigValue_marikoGpuVmin));
+    }
     std::uint32_t mode = 0;
     AppletOperationMode opMode = appletGetOperationMode();
     Result rc = apmExtGetCurrentPerformanceConfiguration(&mode);
@@ -372,7 +374,14 @@ void ClockManager::Tick()
 
             }
         }
-    
+    if(Board::GetSocType() == SysClkSocType_Mariko && this->config->GetConfigValue(HocClkConfigValue_KipEditing)) {
+        if((Board::GetHz(SysClkModule_MEM) / 1000000) <= 1600)
+            I2c_BuckConverter_SetMvOut(&I2c_Mariko_GPU, this->config->GetConfigValue(KipConfigValue_marikoGpuVmin));
+        else
+            I2c_BuckConverter_SetMvOut(&I2c_Mariko_GPU, this->config->GetConfigValue(HocClkConfigValue_HighRamFreqVmin));
+    }
+
+
 }
 
 void ClockManager::ResetToStockClocks() {
