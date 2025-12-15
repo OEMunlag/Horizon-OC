@@ -62,6 +62,7 @@ typedef enum {
     
     HocClkConfigValue_KipEditing,
     HocClkConfigValue_KipFileName,
+    HocClkConfigValue_HighRamFreqVmin,
 
     KipConfigValue_custRev,
     KipConfigValue_mtcConf,
@@ -230,6 +231,9 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
         
         case HocClkConfigValue_KipFileName:
             return pretty ? "KIP File Name" : "kip_file_name";
+
+        case HocClkConfigValue_HighRamFreqVmin:
+            return pretty ? "High RAM Vmin" : "high_ram_vmin";
 
         // KIP config values
         case KipConfigValue_custRev:
@@ -420,6 +424,8 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
             return 8600ULL;
         case HocClkConfigValue_LiteTDPLimit:
             return 6400ULL;
+        case HocClkConfigValue_HighRamFreqVmin:
+            return 610ULL;
         default:
             return 0ULL;
     }
@@ -543,6 +549,7 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case KipConfigValue_g_volt_e_998400:
         case KipConfigValue_g_volt_e_1036800:
         case KipConfigValue_g_volt_e_1075200:
+        case HocClkConfigValue_HighRamFreqVmin:
             return true;
         
         default:
