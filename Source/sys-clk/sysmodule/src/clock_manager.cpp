@@ -254,7 +254,8 @@ void ClockManager::Tick()
     std::scoped_lock lock{this->contextMutex};
     if(Board::GetSocType() == SysClkSocType_Mariko && this->config->GetConfigValue(HocClkConfigValue_KipEditing)) {
         if((Board::GetHz(SysClkModule_MEM) / 1000000) > 1600)
-            I2c_BuckConverter_SetMvOut(&I2c_Mariko_GPU, this->config->GetConfigValue(HocClkConfigValue_HighRamFreqVmin));
+            if(I2c_BuckConverter_GetMvOut(&I2c_Mariko_GPU) < this->config->GetConfigValue(HocClkConfigValue_HighRamFreqVmin))
+                I2c_BuckConverter_SetMvOut(&I2c_Mariko_GPU, this->config->GetConfigValue(HocClkConfigValue_HighRamFreqVmin));
         else
             I2c_BuckConverter_SetMvOut(&I2c_Mariko_GPU, this->config->GetConfigValue(KipConfigValue_marikoGpuVmin));
     }
@@ -378,7 +379,8 @@ void ClockManager::Tick()
         if((Board::GetHz(SysClkModule_MEM) / 1000000) <= 1600)
             I2c_BuckConverter_SetMvOut(&I2c_Mariko_GPU, this->config->GetConfigValue(KipConfigValue_marikoGpuVmin));
         else
-            I2c_BuckConverter_SetMvOut(&I2c_Mariko_GPU, this->config->GetConfigValue(HocClkConfigValue_HighRamFreqVmin));
+            if(I2c_BuckConverter_GetMvOut(&I2c_Mariko_GPU) < this->config->GetConfigValue(HocClkConfigValue_HighRamFreqVmin))
+                I2c_BuckConverter_SetMvOut(&I2c_Mariko_GPU, this->config->GetConfigValue(HocClkConfigValue_HighRamFreqVmin));
     }
 
 
