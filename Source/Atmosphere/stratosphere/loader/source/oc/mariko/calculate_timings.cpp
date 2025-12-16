@@ -20,13 +20,6 @@
 
 namespace ams::ldr::oc::pcv::mariko {
 
-    s32 FixEinput(s32 val) {
-        if (auto patch = FindEinput()) {
-            return patch->correct;
-        }
-        return val;
-    }
-
     u32 GetRext() {
         if (auto r = FindRext()) {
             return r->correct;
@@ -36,8 +29,7 @@ namespace ams::ldr::oc::pcv::mariko {
 
     /* TODO: This function is quite uggly, refactor! */
     void CalculateMiscTimings() {
-        tW2P            = 0x2d;
-        rdv             = 0x39       + C.mem_burst_read_latency;
+        rdv             = 0x39 + C.mem_burst_read_latency;
         einput_duration = 0x1C;
         quse_width      = 0x8;
 
@@ -50,12 +42,7 @@ namespace ams::ldr::oc::pcv::mariko {
             }
         }
 
-        if (WL >= 16) tW2P += 6;
-        if (WL >= 18) tW2P += 8;
-
-        s32 einput_calc = quse_width - (0.010182 * (C.marikoEmcMaxClock / 1000.0) - 0.0879) + 0.5;
-        einput = FixEinput(einput_calc);
-        rext   = GetRext();
+        rext = GetRext();
     }
 
     void CalculateIbdly() {
@@ -82,35 +69,10 @@ namespace ams::ldr::oc::pcv::mariko {
     }
 
     void CalculateTR2W() {
-        tR2W = CEIL(RL_DBI + (tDQSCK_max / tCK_avg) + (BL / 2) - WL + tWPRE + FLOOR(tRPST) + 9.0);
+        tR2W = CEIL(RL_DBI + (tDQSCK_max / tCK_avg) + (BL / 2) - WL + tWPRE + FLOOR(tRPST) + 9.0) - (C.t6_tRTW * 3);
 
         if (auto patch = FindTR2WPatch()) {
             tR2W += patch->adjust;
-        }
-    }
-
-    void CalculateTW2R() {
-        tW2R = WL + (BL / 2) - 6 + CEIL(tWTR / tCK_avg);
-
-        const FreqTW2R* t = FindTW2R();
-        if (!t) return;
-
-        tW2R += t->adjust;
-
-        if (t->min_val) {
-            tW2R = MAX(tW2R, t->min_val);
-        }
-
-        if (t->max_val) {
-            tW2R = MIN(tW2R, t->max_val);
-        }
-    }
-
-    void CalculateQuse() {
-        quse = ROUND(0.002266 * (C.marikoEmcMaxClock / 1000.0) + 31.88) + C.mem_burst_read_latency;
-
-        if (auto patch = FindQusePatch()) {
-            quse += patch->adjust;
         }
     }
 
@@ -173,8 +135,6 @@ namespace ams::ldr::oc::pcv::mariko {
         CalculateObdly();
         CalculateTWTPDEN();
         CalculateTR2W();
-        CalculateTW2R();
-        CalculateQuse();
         CalculateQrst();
         CalculateQsafe();
         CalculateQpop();
