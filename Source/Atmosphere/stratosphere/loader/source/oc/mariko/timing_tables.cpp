@@ -47,29 +47,6 @@ namespace ams::ldr::oc::pcv::mariko {
 
     const u32 g_misc_table_size = sizeof(g_misc_table) / sizeof(g_misc_table[0]);
 
-    const ReplacePatch g_einput_patches[] = {
-        {2'133'000, 0x16}, {2'166'000, 0x17}, {2'200'000, 0x17},
-        {2'233'000, 0x16}, {2'266'000, 0x16}, {2'300'000, 0x15},
-        {2'333'000, 0x14}, {2'366'000, 0x16}, {2'400'000, 0x16},
-        {2'433'000, 0x15}, {2'466'000, 0x15}, {2'500'000, 0x14},
-        {2'533'000, 0x13}, {2'566'000, 0x14}, {2'600'000, 0x14},
-        {2'633'000, 0x13}, {2'666'000, 0x13}, {2'700'000, 0x12},
-        {2'733'000, 0x11}, {2'766'000, 0x13}, {2'800'000, 0x13},
-        {2'833'000, 0x12}, {2'866'000, 0x12}, {2'900'000, 0x12},
-        {2'933'000, 0x10}, {2'966'000, 0x11}, {3'000'000, 0x11},
-        {3'033'000, 0x10}, {3'066'000, 0x10}, {3'100'000, 0x10},
-        {3'133'000, 0x0F}
-    };
-
-    const u32 g_einput_patches_size = sizeof(g_einput_patches) / sizeof(g_einput_patches[0]);
-
-    const ReplacePatch *FindEinput() {
-        for (u32 i = 0; i < g_einput_patches_size; i++)
-            if (g_einput_patches[i].freq == C.marikoEmcMaxClock)
-                return &g_einput_patches[i];
-        return nullptr;
-    }
-
     const ReplacePatch g_rext_table[] = {
         {2'133'000, 0x1A}, {2'166'000, 0x19}, {2'200'000, 0x19},
         {2'233'000, 0x19}, {2'266'000, 0x1A}, {2'300'000, 0x1B},
@@ -90,28 +67,6 @@ namespace ams::ldr::oc::pcv::mariko {
         for (u32 i = 0; i < g_rext_table_size; i++)
             if (g_rext_table[i].freq == C.marikoEmcMaxClock)
                 return &g_rext_table[i];
-        return nullptr;
-    }
-
-    const FreqTW2R g_tw2r_table[] = {
-        {2'300'000, 0x2B, 0xFFFFFFFF,  0},
-        {2'400'000,    0,       0x2B,  0},
-        {2'500'000, 0x2C, 0xFFFFFFFF, -1},
-        {2'566'000, 0x2D, 0xFFFFFFFF, -1},
-        {2'700'000, 0x2E, 0xFFFFFFFF, -1},
-        {2'800'000, 0x2F, 0xFFFFFFFF, -1},
-        {2'900'000, 0x30, 0xFFFFFFFF, -1},
-        {3'000'000, 0x31, 0xFFFFFFFF, -1},
-        {3'100'000, 0x32, 0xFFFFFFFF, -1},
-        {0xFFFFFFFF,   0,       0x33,  0},
-    };
-
-    const u32 g_tw2r_table_size = sizeof(g_tw2r_table) / sizeof(g_tw2r_table[0]);
-
-    const FreqTW2R *FindTW2R() {
-        for (u32 i = 0; i < g_tw2r_table_size; i++)
-            if (C.marikoEmcMaxClock <= g_tw2r_table[i].max_freq)
-                return &g_tw2r_table[i];
         return nullptr;
     }
 
@@ -189,35 +144,6 @@ namespace ams::ldr::oc::pcv::mariko {
         for (u32 i = 0; i < g_tr2w_table_size; i++)
             if (g_tr2w_patches[i].freq == C.marikoEmcMaxClock)
                 return &g_tr2w_patches[i];
-        return nullptr;
-    }
-
-    const AdjustPatch g_quse_patches[] = {
-        {2'133'000, -1},
-        {2'300'000, -1},
-        {2'333'000, -1},
-        {2'366'000, +1},
-        {2'400'000, +1},
-        {2'433'000, +1},
-        {2'466'000, +1},
-        {2'500'000, -1},
-        {2'533'000, -1},
-        {2'700'000, -1},
-        {2'733'000, -1},
-        {2'766'000, +1},
-        {2'800'000, +1},
-        {2'833'000, +1},
-        {2'866'000, +1},
-        {2'900'000, +1},
-        {2'933'000, -1},
-    };
-
-    const u32 g_quse_table_size = sizeof(g_quse_patches) / sizeof(g_quse_patches[0]);
-
-    const AdjustPatch *FindQusePatch() {
-        for (u32 i = 0; i < g_quse_table_size; i++)
-            if (g_quse_patches[i].freq == C.marikoEmcMaxClock)
-                return &g_quse_patches[i];
         return nullptr;
     }
 

@@ -118,7 +118,7 @@ namespace ams::ldr::oc {
         const u32 tRAS  = tRAS_values[C.t3_tRAS];
         const double tRRD = tRRD_values[C.t4_tRRD];
         const u32 tRFCpb = tRFC_values[C.t5_tRFC];
-        const u32 tWTR   = tWTR_values[C.t7_tWTR];
+        const u32 tWTR   = MAX(static_cast<u32>(0), 10 - tWTR_values[C.t7_tWTR]);
 
         const u32 tRC = tRAS + tRPpb;
         const u32 tRFCab = tRFCpb * 2;
@@ -128,28 +128,28 @@ namespace ams::ldr::oc {
 
         const u32 tR2P = 12 + (C.mem_burst_read_latency / 2);
         inline u32 tR2W;
-        const u32 tRTM = RL + 9 + (tDQSCK_max / tCK_avg) + FLOOR(tRPST) + CEIL(10 / tCK_avg);
-        const u32 tRATM = tRTM + CEIL(10 / tCK_avg) - 12;
+        const u32 tRTM = RL + 9 + (tDQSCK_max / tCK_avg) + FLOOR(tRPST) + CEIL(10 / tCK_avg); // Fix?
+        const u32 tRATM = tRTM + CEIL(10 / tCK_avg) - 12; // Fix?
         inline u32 rdv;
-        inline u32 einput;
+        const u32 quse = FLOOR((-0.0048159 * (C.marikoEmcMaxClock / 1000.0)) + RL_DBI) + (FLOOR((C.marikoEmcMaxClock / 1000.0) * 0.0050997) * 1.5134);
+        const u32 einput = quse - ((C.marikoEmcMaxClock / 1000.0) * 0.01);
         inline u32 einput_duration;
         inline u32 ibdly;
         inline u32 obdly;
-        inline u32 quse;
         inline u32 quse_width;
         inline u32 rext;
         inline u32 qrst;
         inline u32 qsafe;
         inline u32 qpop;
 
-        inline u32 tW2P;
+        const u32 tW2P = (CEIL(WL * 1.7303) * 2) - 5;
         inline u32 tWTPDEN;
-        inline u32 tW2R;
+        const u32 tW2R = CEIL(MAX(WL + (0.010322547033278747 * (C.marikoEmcMaxClock / 1000.0)), (WL * -0.2067922202979121) + FLOOR(((RL_DBI * -0.1331159971685554) + WL) * 3.654131957826108)) - (tWTR / tCK_avg));
         const u32 tWTM = WL + (BL / 2) + 1 + CEIL(7.5 / tCK_avg);
         const u32 tWATM = tWTM + CEIL(tWR / tCK_avg);
 
-        const u32 wdv = 0xE + C.mem_burst_write_latency;
-        const u32 wsv = 0xC + C.mem_burst_write_latency;
+        const u32 wdv = WL;
+        const u32 wsv = WL - 2;
         const u32 wev = 0xA + C.mem_burst_write_latency;
 
         inline u32 pdex2rw;
