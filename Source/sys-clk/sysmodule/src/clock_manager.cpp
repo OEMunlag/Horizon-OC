@@ -33,9 +33,6 @@
 #include "errors.h"
 #include "ipc_service.h"
 #include "kip.h"
-#include "i2c_reg.h"
-
-
 #define HOSPPC_HAS_BOOST (hosversionAtLeast(7,0,0))
 
 ClockManager *ClockManager::instance = NULL;
@@ -250,12 +247,8 @@ u32 findIndexMHz(u32 arr[], u32 size, u32 value) {
 }
 
 void ClockManager::Tick()
-{        
+{
     std::scoped_lock lock{this->contextMutex};
-    if((Board::GetHz(SysClkModule_MEM) / 1000000) > 1600)
-        I2c_BuckConverter_SetMvOut(Board::GetSocType == SysClkSocType_Mariko ? &I2c_Mariko_GPU : &I2c_Erista_GPU, this->config->GetConfigValue(HocClkConfigValue_HighRamFreqVmin));
-    else
-        I2c_BuckConverter_SetMvOut(Board::GetSocType == SysClkSocType_Mariko ? &I2c_Mariko_GPU : &I2c_Erista_GPU, this->config->GetConfigValue(KipConfigValue_marikoGpuVmin));
     std::uint32_t mode = 0;
     AppletOperationMode opMode = appletGetOperationMode();
     Result rc = apmExtGetCurrentPerformanceConfiguration(&mode);
@@ -356,6 +349,7 @@ void ClockManager::Tick()
 
                     if (targetHz)
                     {
+
                         maxHz = this->GetMaxAllowedHz((SysClkModule)module, this->context->profile);
                         nearestHz = this->GetNearestHz((SysClkModule)module, targetHz, maxHz);
                         if (nearestHz != this->context->freqs[module] && this->context->enabled) {

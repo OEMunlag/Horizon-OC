@@ -35,7 +35,7 @@
 #include "board.h"
 #include <nxExt/cpp/lockable_mutex.h>
 #include "integrations.h"
-#include "i2c_reg.h"
+
 class ReverseNXSync;
 
 class ClockManager

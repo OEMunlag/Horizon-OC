@@ -336,16 +336,7 @@ void MiscGui::listUI()
         addFreqButton(HocClkConfigValue_EristaMaxGpuClock, nullptr, SysClkModule_GPU, gpu_freq_label_e);
         // addFreqButton(HocClkConfigValue_EristaMaxMemClock, nullptr, SysClkModule_MEM, emc_freq_label_e);
     }
-    addConfigButton(
-        HocClkConfigValue_HighRamFreqVmin,
-        "RAM HF Vmin",
-        ValueRange(480, 960, 5, "mV", 1),
-        "Voltage",
-        &thresholdsDisabled,
-        {},
-        {},
-        false
-    );
+
     this->listElement->addItem(new tsl::elm::CategoryHeader("KIP Editing"));
 
     addConfigToggle(HocClkConfigValue_KipEditing, nullptr);

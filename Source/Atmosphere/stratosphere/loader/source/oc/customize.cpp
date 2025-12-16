@@ -38,7 +38,7 @@ volatile CustomizeTable C = {
 .commonEmcMemVolt  = 1175000, // LPDDR4X JEDEC Specification
 .eristaEmcMaxClock = 1600000, // Maximum HB-MGCH ram rating
 
-.marikoEmcMaxClock = 2133000,
+.marikoEmcMaxClock = 2133000, // Hynix NME and Samsung AM-MGCJ Rating (others are 4766MT, 2133MHz)
 .marikoEmcVddqVolt = 600000,
 .emcDvbShift = 0,
 
