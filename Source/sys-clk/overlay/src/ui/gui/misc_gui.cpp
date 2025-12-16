@@ -348,7 +348,7 @@ void MiscGui::listUI()
     );
     this->listElement->addItem(new tsl::elm::CategoryHeader("KIP Editing"));
 
-    // addConfigToggle(HocClkConfigValue_KipEditing, nullptr);
+    addConfigToggle(HocClkConfigValue_KipEditing, nullptr);
 
     std::vector<NamedValue> kipNameLabels = {
         NamedValue("hoc.kip", 0),
