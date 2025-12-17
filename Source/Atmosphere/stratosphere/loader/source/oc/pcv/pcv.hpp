@@ -60,6 +60,21 @@ namespace ams::ldr::oc::pcv {
         constexpr s32 CpuVoltageSecondaryPatchOffsets[] = { -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
         static_assert(sizeof(CpuVoltageSecondaryPatchValues) == sizeof(CpuVoltageSecondaryPatchOffsets), "Invalid secondary CpuVoltagePatch size");
 
+        constexpr u32 CapCpuClock() {
+            constexpr u32 AllowedCpuMaxFrequencies[] = { 2'397'000, 2'499'000, 2'601'000, 2'703'000, };
+
+            u32 cpuCap = AllowedCpuMaxFrequencies[0];
+
+            for (u32 freq : AllowedCpuMaxFrequencies) {
+                if (C.marikoCpuMaxClock >= freq) {
+                    cpuCap = freq;
+                } else {
+                    break;
+                }
+            }
+            return cpuCap;
+        }
+
         constexpr cvb_entry_t GpuCvbTableDefault[] = {
             // GPUB01_NA_CVB_TABLE
             {   76800, {}, {  610000,                                 } },

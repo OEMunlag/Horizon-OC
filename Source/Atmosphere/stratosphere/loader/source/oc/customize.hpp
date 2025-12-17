@@ -86,6 +86,7 @@ typedef struct CustomizeTable {
     u32 marikoCpuLowVmin;
     u32 marikoCpuHighVmin;
     u32 marikoCpuMaxVolt;
+    u32 marikoCpuMaxClock;
 
     u32 eristaCpuBoostClock;
     u32 marikoCpuBoostClock;
