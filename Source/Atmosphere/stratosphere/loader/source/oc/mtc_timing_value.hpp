@@ -118,7 +118,7 @@ namespace ams::ldr::oc {
         const u32 tRAS  = tRAS_values[C.t3_tRAS];
         const double tRRD = tRRD_values[C.t4_tRRD];
         const u32 tRFCpb = tRFC_values[C.t5_tRFC];
-        const u32 tWTR   = MAX(static_cast<u32>(0), 10 - tWTR_values[C.t7_tWTR]);
+        const u32 tWTR   = 10 - tWTR_values[C.t7_tWTR];
 
         const u32 tRC = tRAS + tRPpb;
         const u32 tRFCab = tRFCpb * 2;
