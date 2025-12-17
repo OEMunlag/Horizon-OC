@@ -139,7 +139,7 @@ volatile CustomizeTable C = {
                     AUTO  /*  384                       */,
                     AUTO  /*  460                       */,
                     AUTO  /*  537                       */,
-                    700  /*  614                       */,
+                    AUTO  /*  614                       */,
                     AUTO  /*  691                       */,
                     AUTO  /*  768                       */,
                     AUTO  /*  844                       */,
