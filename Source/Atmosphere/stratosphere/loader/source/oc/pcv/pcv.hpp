@@ -60,7 +60,8 @@ namespace ams::ldr::oc::pcv {
         static constexpr s32 CpuVoltageSecondaryPatchOffsets[] = { -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
         static_assert(sizeof(CpuVoltageSecondaryPatchValues) == sizeof(CpuVoltageSecondaryPatchOffsets), "Invalid secondary CpuVoltagePatch size");
 
-        static constexpr u32 AllowedCpuMaxFrequencies[] = { 2'397'000, 2'499'000, 2'601'000, 2'703'000, };
+        static constexpr u32 AllowedCpuMaxFrequencies[] = { 1'963'000, 2'397'000, 2'499'000, 2'601'000, 2'703'000 /*, 2'805'000 */}; // 2805MHz should NOT be used unless you have a god speedo!
+
 
         constexpr cvb_entry_t GpuCvbTableDefault[] = {
             // GPUB01_NA_CVB_TABLE
@@ -193,6 +194,8 @@ namespace ams::ldr::oc::pcv {
 
         constexpr int GpuVminOfficial = 810;
 
+        constexpr int GpuVmaxOfficial = 1200; /* No point in patching this but here's the info if one needs it */
+
         constexpr u32 CpuVoltOfficial = 1235;
 
         constexpr u32 CpuVoltL4T = 1235'000;
@@ -205,6 +208,8 @@ namespace ams::ldr::oc::pcv {
         }
 
         constexpr u32 GpuClkPllLimit = 921'600'000;
+        constexpr u32 GpuClkPllMax = 1300'000'000;  /* No point in patching this but here's the info if one needs it */
+        constexpr u32 GpuClkPllLimit2 = 2'600'000;  /* No point in patching this but here's the info if one needs it */
 
         /* GPU Max Clock asm Pattern:
          *

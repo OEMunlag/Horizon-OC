@@ -93,7 +93,7 @@ typedef enum {
     KipConfigValue_marikoCpuLowVmin,
     KipConfigValue_marikoCpuHighVmin,
     KipConfigValue_marikoCpuMaxVolt,
-
+    KipConfigValue_marikoCpuMaxClock,
     KipConfigValue_eristaCpuBoostClock,
     KipConfigValue_marikoCpuBoostClock,
 
@@ -298,6 +298,9 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
         case KipConfigValue_marikoCpuBoostClock:
             return pretty ? "Mariko CPU Boost Clock" : "mariko_cpu_boost_clock";
 
+        case KipConfigValue_marikoCpuMaxClock:
+            return pretty ? "Mariko CPU Max Clock" : "mariko_cpu_max_clock";
+
         // GPU – Erista
         case KipConfigValue_eristaGpuUV:
             return pretty ? "Erista GPU Undervolt" : "erista_gpu_uv";
@@ -375,7 +378,7 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
         case KipConfigValue_g_volt_e_1075200: return pretty ? "Erista GPU Volt 1075 MHz" : "g_volt_e_1075200";
 
         default:
-            return pretty ? "Null" : "null";
+            return pretty ? "[cfg] no enum format string" : "err_no_format_string";
     }
 }
 
@@ -484,6 +487,7 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case KipConfigValue_marikoCpuMaxVolt:
         case KipConfigValue_eristaCpuBoostClock:
         case KipConfigValue_marikoCpuBoostClock:
+        case KipConfigValue_marikoCpuMaxClock:
         case KipConfigValue_eristaGpuUV:
         case KipConfigValue_eristaGpuVmin:
         case KipConfigValue_marikoGpuUV:

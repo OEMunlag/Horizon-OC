@@ -51,7 +51,7 @@ constexpr uint32_t ERISTA_MTC_MAGIC = 0x43544D45; // EMTC
 constexpr uint32_t MARIKO_MTC_MAGIC = 0x43544D4D; // MMTC
 
 typedef struct CustomizeTable {
-    u8  cust[4] = {'C', 'U', 'S', 'T'};
+    u8  cust[16] = {'H', 'O', 'C', 'K', 'I', 'P', 'C', 'U', 'S', 'T', '\0', '\0', '\0', '\0'};
     u32 custRev = CUST_REV;
 
     u32 mtcConf;

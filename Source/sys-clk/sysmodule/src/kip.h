@@ -8,7 +8,7 @@
 #pragma pack(push, 1)
 
 typedef struct {
-    u8  cust[4];
+    u8  cust[16];
     u32 custRev;
     u32 mtcConf;
     u32 hpMode;
@@ -35,6 +35,7 @@ typedef struct {
     u32 marikoCpuLowVmin;
     u32 marikoCpuHighVmin;
     u32 marikoCpuMaxVolt;
+    u32 marikoCpuMaxClock;
     u32 eristaCpuBoostClock;
     u32 marikoCpuBoostClock;
     u32 eristaGpuUV;
@@ -51,8 +52,8 @@ typedef struct {
 
 #pragma pack(pop)
 
-#define CUST_MAGIC "CUST"
-#define CUST_MAGIC_LEN 4
+#define CUST_MAGIC "HOCKIPCUST\0\0\0\0"
+#define CUST_MAGIC_LEN 16
 
 typedef struct {
     FILE* file;
@@ -104,7 +105,7 @@ static inline bool cust_read_table(const char* path, CustomizeTable* out) {
     bool ok = fread(out, 1, sizeof(CustomizeTable), f) == sizeof(CustomizeTable);
     fclose(f);
 
-    return ok && memcmp(out->cust, CUST_MAGIC, 4) == 0;
+    return ok && memcmp(out->cust, CUST_MAGIC, CUST_MAGIC_LEN) == 0;
 }
 
 static inline bool cust_write_table(const char* path, const CustomizeTable* in) {
@@ -190,6 +191,7 @@ static inline bool cust_set_mariko_gpu_vmax(const char* p, u32 v) { CUST_WRITE_F
 static inline bool cust_set_common_gpu_offset(const char* p, u32 v) { CUST_WRITE_FIELD(p, commonGpuVoltOffset, v); }
 static inline bool cust_set_gpu_speedo(const char* p, u32 v) { CUST_WRITE_FIELD(p, gpuSpeedo, v); }
 static inline bool cust_set_mariko_gpu_unlock(const char* p, u32 v) { CUST_WRITE_FIELD(p, marikoGpuFullUnlock, v); }
+static inline bool cust_set_marikoCpuMaxClock(const char* p, u32 v) { CUST_WRITE_FIELD(p, marikoCpuMaxClock, v); }
 
 /* GPU VOLT ARRAY HELPERS */
 static inline bool cust_set_erista_gpu_volt(const char* p, int idx, u32 v) {
@@ -255,6 +257,7 @@ static inline u32 cust_get_mariko_gpu_vmax(const CustomizeTable* t) { return CUS
 static inline u32 cust_get_common_gpu_offset(const CustomizeTable* t) { return CUST_GET_FIELD(t, commonGpuVoltOffset); }
 static inline u32 cust_get_gpu_speedo(const CustomizeTable* t) { return CUST_GET_FIELD(t, gpuSpeedo); }
 static inline u32 cust_get_mariko_gpu_unlock(const CustomizeTable* t) { return CUST_GET_FIELD(t, marikoGpuFullUnlock); }
+static inline u32 cust_get_marikoCpuMaxClock(const CustomizeTable* t) { return CUST_GET_FIELD(t, marikoCpuMaxClock); }
 
 static inline u32 cust_get_erista_gpu_volt(const CustomizeTable* t, int idx) {
     if (!t || idx < 0 || idx >= 27) return 0;

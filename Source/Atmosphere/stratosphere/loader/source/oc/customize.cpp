@@ -26,7 +26,7 @@
 #define DISABLED 0
 #define DEACTIVATED_GPU_FREQ 2000
 #define CPU_MAX_MAX_VOLT 1235000
-
+#define GPU_MIN_MIN_VOLT 480000
 namespace ams::ldr::oc {
 
 volatile CustomizeTable C = {
@@ -38,7 +38,7 @@ volatile CustomizeTable C = {
 .eristaEmcMaxClock = 1600000, // Maximum HB-MGCH ram rating
 
 .marikoEmcMaxClock = 2133000,
-.marikoEmcVddqVolt = 640000,
+.marikoEmcVddqVolt = 600000,
 .emcDvbShift = 0,
 
 // Primary
@@ -53,7 +53,7 @@ volatile CustomizeTable C = {
 .t8_tREFI = 0,
 
 /* Set to 4 read and 2 write for 1866bl. */
-/* For 2131bl: 8 read and 4 write. */
+/* For 2133bl: 8 read and 4 write. */
 .mem_burst_read_latency = 8,
 .mem_burst_write_latency = 4,
 
@@ -67,11 +67,11 @@ volatile CustomizeTable C = {
 .marikoCpuHighVmin = 750,
 .marikoCpuMaxVolt = 1120,
 
-/* Supported values: 2397000, 2499000, 2601000, 2703000. */
+/* Supported values: 1963000, 2397000, 2499000, 2601000, 2703000. */
 /* 2499000 should be used with caution. */
 /* 2601000 exceeds pmic limit on most consoles. */
 /* 2703000 is potentially dangerous and not advised. */
-.marikoCpuMaxClock = 2397000,
+.marikoCpuMaxClock = 1963000,
 
 .eristaCpuBoostClock = 1785000, // Default boost clock
 .marikoCpuBoostClock = 1963000, // Default boost clock
@@ -80,8 +80,9 @@ volatile CustomizeTable C = {
 .eristaGpuVmin = 810,
 
 .marikoGpuUV = 0,
+
 /* For automatic vmin detection, set this to AUTO. */
-.marikoGpuVmin = 621,
+.marikoGpuVmin = 610,
 
 .marikoGpuVmax = 800,
 
@@ -148,7 +149,7 @@ volatile CustomizeTable C = {
                     AUTO  /* 1075                       */,
                     AUTO  /* 1152                       */,
                     AUTO  /* 1228                       */,
-                    AUTO  /* 1267 (Disabled by default) */,
+                    AUTO  /* 1267                       */,
     DEACTIVATED_GPU_FREQ  /* 1305 (Disabled by default) */,
     DEACTIVATED_GPU_FREQ  /* 1344 (Disabled by default) */,
     DEACTIVATED_GPU_FREQ  /* 1382 (Disabled by default) */,
@@ -158,7 +159,8 @@ volatile CustomizeTable C = {
     DEACTIVATED_GPU_FREQ  /* 1536 (Disabled by default) */,
 },
 
-/* You shouldn't have to anything past here. */
+/* You shouldn't have to modify anything past here. */
+
 .eristaCpuDvfsTable = {
     {  204000, {  721094 }, {} },
     {  306000, {  754040 }, {} },
@@ -344,7 +346,7 @@ volatile CustomizeTable C = {
     {  844800, { }, { 1233208, 8144, -940, 808, -21583, 226 } },
     {  883200, { }, { 1275100, 8144, -940, 808, -21583, 226 } },
     {  921600, { }, { 1275100, 8144, -940, 808, -21583, 226 } },
-//    {  998400, { }, { 1316991, 8144, -940, 808, -21583, 226 } },
+//  {  998400, { }, { 1316991, 8144, -940, 808, -21583, 226 } },
 //  {  1075200, { }, { 1358882, 8144, -940, 808, -21583, 226 } },
 },
 
@@ -408,9 +410,9 @@ volatile CustomizeTable C = {
 },
 
 .marikoGpuDvfsTable = {
-    {   76800, { }, {  480000, } },
-    {  153600, { }, {  480000, } },
-    {  230400, { }, {  480000, } },
+    {   76800, { }, {  GPU_MIN_MIN_VOLT, } },
+    {  153600, { }, {  GPU_MIN_MIN_VOLT, } },
+    {  230400, { }, {  GPU_MIN_MIN_VOLT, } },
     {  307200, { }, {  738712, -7304, -552, 119, -3750,  -2 } },
     {  384000, { }, {  758712, -7304, -552, 119, -3750,  -2 } },
     {  460800, { }, {  778712, -7304, -552, 119, -3750,  -2 } },
@@ -423,14 +425,14 @@ volatile CustomizeTable C = {
     {  998400, { }, { 1065665,-16075, -497,-179,  3213,   9 } },
     { 1075200, { }, { 1132576,-16093, -648,   0,  1077,  40 } },
     { 1152000, { }, { 1180029,-14534, -830,   0,  1469, 110 } },
-    { 1228800, { }, { 1248293,-16383, -859,   0,  3722, 313 } },
-    { 1267200, { }, { 1286399,-17475, -867,   0,  3681, 559 } },
+//  { 1228800, { }, { 1248293,-16383, -859,   0,  3722, 313 } },
+//  { 1267200, { }, { 1286399,-17475, -867,   0,  3681, 559 } },
 },
 
 .marikoGpuDvfsTableSLT = {
-    {   76800, { }, {  480000,                                } },
-    {  153600, { }, {  480000,                                } },
-    {  230400, { }, {  480000,                                } },
+    {   76800, { }, {  GPU_MIN_MIN_VOLT,                      } },
+    {  153600, { }, {  GPU_MIN_MIN_VOLT,                      } },
+    {  230400, { }, {  GPU_MIN_MIN_VOLT,                      } },
     {  307200, { }, {  738712,  -7304, -552,  119, -3750,  -2 } },
     {  384000, { }, {  758712,  -7304, -552,  119, -3750,  -2 } },
     {  460800, { }, {  778712,  -7304, -552,  119, -3750,  -2 } },
@@ -448,9 +450,9 @@ volatile CustomizeTable C = {
 },
 
 .marikoGpuDvfsTableHiOPT = {
-    {   76800, { }, {  480000,                                } },
-    {  153600, { }, {  480000,                                } },
-    {  230400, { }, {  480000,                                } },
+    {   76800, { }, {  GPU_MIN_MIN_VOLT,                      } },
+    {  153600, { }, {  GPU_MIN_MIN_VOLT,                      } },
+    {  230400, { }, {  GPU_MIN_MIN_VOLT,                      } },
     {  307200, { }, {  738712,  -7304, -552,  119, -3750,  -2 } },
     {  384000, { }, {  758712,  -7304, -552,  119, -3750,  -2 } },
     {  460800, { }, {  778712,  -7304, -552,  119, -3750,  -2 } },

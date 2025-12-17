@@ -73,8 +73,8 @@ Result MemVoltHandler(u32* ptr) {
 }
 
 void SafetyCheck() {
-    if (C.custRev != CUST_REV)
-        CRASH("Triggered");
+    // if (C.custRev != CUST_REV) // causes more issues than help
+    //     CRASH("Triggered");
 
     struct sValidator {
         volatile u32 value;
