@@ -83,11 +83,13 @@ Refer to COMPILATION.md
 
 ## Credits
 
-* **Lightos** – RAM timings
-* **ScriesM** - Atmosphere CFW
+* **Lightos** – loader patches development
+* **SciresM** - Atmosphere CFW
 * **KazushiMe** – Switch OC Suite
-* **B3711** - UV Tables
+* **Meha** – Switch OC Suite, EOS, sys-clk-eos
+* **Naga** – OC-kernel
+* **B3711** – EOS
 * **sys-clk team** – sys-clk
 * **b0rd2death** – Ultrahand sys-clk fork
 * **MasaGratoR and ZachyCatGames** - General help
-* **Lightos, Dom, Samybigio, Dom, Arcdelta, Miki, Algie, Happy, Flopsider, Winnerboi77, Blaise, Alvise, TRRR and Xenshen** - Testing
+* **Dom, Samybigio, Arcdelta, Miki, Algie, Happy, Flopsider, Winnerboi77, Blaise, Alvise, TDRR, agjeococh and Xenshen** - Testing
