@@ -52,28 +52,15 @@ namespace ams::ldr::oc::pcv {
         constexpr u32 CpuVoltOfficial = 1120;
         constexpr u32 CpuVminOfficial = 620;
 
-        constexpr u32 CpuVoltagePatchValues[]  = { 850, 38, 1120, 1000, 100, 1000, 0 };
-        constexpr s32 CpuVoltagePatchOffsets[] = {  -2, -1,    5,    6,   7,    8, 9 };
+        static constexpr u32 CpuVoltagePatchValues[]  = { 850, 38, 1120, 1000, 100, 1000, 0 };
+        static constexpr s32 CpuVoltagePatchOffsets[] = {  -2, -1,    5,    6,   7,    8, 9 };
         static_assert(sizeof(CpuVoltagePatchValues) == sizeof(CpuVoltagePatchOffsets), "Invalid CpuVoltagePatch size");
 
-        constexpr u32 CpuVoltageSecondaryPatchValues[] = { 800, 1120, 0, 800, 1120, 0, 620, 1120, 20000, 620, 1120, 70000, 950, 1132, 0, 950 };
-        constexpr s32 CpuVoltageSecondaryPatchOffsets[] = { -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+        static constexpr u32 CpuVoltageSecondaryPatchValues[] = { 800, 1120, 0, 800, 1120, 0, 620, 1120, 20000, 620, 1120, 70000, 950, 1132, 0, 950 };
+        static constexpr s32 CpuVoltageSecondaryPatchOffsets[] = { -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
         static_assert(sizeof(CpuVoltageSecondaryPatchValues) == sizeof(CpuVoltageSecondaryPatchOffsets), "Invalid secondary CpuVoltagePatch size");
 
-        constexpr u32 CapCpuClock() {
-            constexpr u32 AllowedCpuMaxFrequencies[] = { 2'397'000, 2'499'000, 2'601'000, 2'703'000, };
-
-            u32 cpuCap = AllowedCpuMaxFrequencies[0];
-
-            for (u32 freq : AllowedCpuMaxFrequencies) {
-                if (C.marikoCpuMaxClock >= freq) {
-                    cpuCap = freq;
-                } else {
-                    break;
-                }
-            }
-            return cpuCap;
-        }
+        static constexpr u32 AllowedCpuMaxFrequencies[] = { 2'397'000, 2'499'000, 2'601'000, 2'703'000, };
 
         constexpr cvb_entry_t GpuCvbTableDefault[] = {
             // GPUB01_NA_CVB_TABLE
@@ -101,8 +88,8 @@ namespace ams::ldr::oc::pcv {
         constexpr u32 GpuClkPllLimit = 2'600'000;
         constexpr int GpuVminOfficial = 610;
 
-        constexpr u32 GpuDVFSPattern[] = { 1050, 1000, 100, 1000, 10, };
-        constexpr u32 GpuVoltThermalPattern[] = { 800, 1120, 0, 610, 1120, 20000, 610, 1120, 30000, 610, 1120, 50000, 610, 1120, 70000, 610, 1120, 90000, };
+        static constexpr u32 GpuDVFSPattern[] = { 1050, 1000, 100, 1000, 10, };
+        static constexpr u32 GpuVoltThermalPattern[] = { 800, 1120, 0, 610, 1120, 20000, 610, 1120, 30000, 610, 1120, 50000, 610, 1120, 70000, 610, 1120, 90000, };
         static_assert(sizeof(GpuVoltThermalPattern) == 72, "Invalid GpuVoltThermalPattern");
 
         struct SpeedoVminTable {
@@ -115,52 +102,26 @@ namespace ams::ldr::oc::pcv {
             u32 offset;
         };
 
-        constexpr u32 GetGpuVminVoltage() {
-            constexpr SpeedoVminTable Table[] {
-                {1560,       590},
-                {1583,       570},
-                {1620,       565},
-                {1670,       560},
-                {1694,       555},
-                {1731,       550},
-                {1750,       540},
-                {0xFFFFFFFF, 530},
-            };
+        static constexpr SpeedoVminTable Table[] {
+            {1560,       590},
+            {1583,       570},
+            {1620,       565},
+            {1670,       560},
+            {1694,       555},
+            {1731,       550},
+            {1750,       540},
+            {0xFFFFFFFF, 530},
+        };
 
-            for (auto e : Table) {
-                if (C.gpuSpeedo <= e.speedo) {
-                    return e.voltage;
-                }
-            }
-
-            return 530;
-        }
-
-        constexpr u32 GetRamVminAdjustment(u32 vmin) {
-            if (C.marikoEmcMaxClock < 2133000) {
-                return vmin;
-            }
-
-            const u32 ramScale = (((C.marikoEmcMaxClock / 1000) - 2133) / 33) * 5 + vmin;
-
-            constexpr RamVminOffsetTable RamOffset[] {
-                {2400000,     5},
-                {2533000,    10},
-                {2666000,    15},
-                {2800000,    20},
-                {2933000,    25},
-                {3200000,    30},
-                {0xFFFFFFFF, 35},
-            };
-
-            for (auto r : RamOffset) {
-                if (C.marikoEmcMaxClock < r.maxClock) {
-                    return ramScale + r.offset;
-                }
-            }
-
-            return ramScale;
-        }
+        static constexpr RamVminOffsetTable RamOffset[] {
+            {2400000,     5},
+            {2533000,    10},
+            {2666000,    15},
+            {2800000,    20},
+            {2933000,    25},
+            {3200000,    30},
+            {0xFFFFFFFF, 35},
+        };
 
         /* GPU Max Clock asm Pattern:
          *

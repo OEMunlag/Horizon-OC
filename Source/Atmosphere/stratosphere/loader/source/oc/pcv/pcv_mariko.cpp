@@ -24,6 +24,32 @@
 
 namespace ams::ldr::oc::pcv::mariko {
 
+    u32 GetGpuVminVoltage() {
+        for (auto e : Table) {
+            if (C.gpuSpeedo <= e.speedo) {
+                return e.voltage;
+            }
+        }
+
+        return 530;
+    }
+
+    u32 GetRamVminAdjustment(u32 vmin) {
+        if (C.marikoEmcMaxClock < 2133000) {
+            return vmin;
+        }
+
+        const u32 ramScale = (((C.marikoEmcMaxClock / 1000) - 2133) / 33) * 5 + vmin;
+
+        for (auto r : RamOffset) {
+            if (C.marikoEmcMaxClock < r.maxClock) {
+                return ramScale + r.offset;
+            }
+        }
+
+        return ramScale;
+    }
+
     /* Note: EOS (probably?) has a bug in this function that always results in high vmin, this is fixed here. */
     u32 GetAutoVoltage() {
         u32 voltage = GetGpuVminVoltage();
@@ -89,6 +115,19 @@ namespace ams::ldr::oc::pcv::mariko {
         PATCH_OFFSET(ptr + 12, vmin);
 
         R_SUCCEED();
+    }
+
+    u32 CapCpuClock() {
+        u32 cpuCap = AllowedCpuMaxFrequencies[0];
+
+        for (u32 freq : AllowedCpuMaxFrequencies) {
+            if (C.marikoCpuMaxClock >= freq) {
+                cpuCap = freq;
+            } else {
+                break;
+            }
+        }
+        return cpuCap;
     }
 
     Result CpuFreqVdd(u32 *ptr) {
