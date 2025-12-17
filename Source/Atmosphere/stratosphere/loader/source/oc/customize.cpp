@@ -20,9 +20,11 @@
 
 #include "customize.hpp"
 
+/* Never edit these. */
 #define AUTO 0
 #define ENABLED 1
 #define DISABLED 0
+#define DEACTIVATED_GPU_FREQ 2000
 #define CPU_MAX_MAX_VOLT 1235000
 
 namespace ams::ldr::oc {
@@ -38,8 +40,8 @@ volatile CustomizeTable C = {
 .commonEmcMemVolt  = 1175000, // LPDDR4X JEDEC Specification
 .eristaEmcMaxClock = 1600000, // Maximum HB-MGCH ram rating
 
-.marikoEmcMaxClock = 2133000, // Hynix NME and Samsung AM-MGCJ Rating (others are 4766MT, 2133MHz)
-.marikoEmcVddqVolt = 600000,
+.marikoEmcMaxClock = 2133000,
+.marikoEmcVddqVolt = 640000,
 .emcDvbShift = 0,
 
 // Primary
@@ -76,7 +78,7 @@ volatile CustomizeTable C = {
 
 .marikoGpuUV = 0,
 /* For automatic vmin detection, set this to AUTO. */
-.marikoGpuVmin = 610,
+.marikoGpuVmin = 621,
 
 .marikoGpuVmax = 800,
 
@@ -91,68 +93,69 @@ volatile CustomizeTable C = {
 /* No warranty is provided in any way whatsoever. */
 .marikoGpuFullUnlock = DISABLED,
 
-// NOTE: These tables should NOT BE USED and are only here as placeholders. Always try and find your own optimal tables.
-// Ensure the voltages actually increase or stay the sameot
+/* This table is used with a gpu uv mode of 2. */
+/* Setting DEACTIVATED_GPU_FREQ on any freq will disable it and all freqs greater than it. (the latter is a bug :/) */
+/* AUTO: Voltage is optimally chosen; with commonGpuVoltOffset applied. */
+/* AUTO only works up to 1305 GPU */
+/* You can overwrite auto with any voltage (in mv) of your choice - offset will not be applied. */
 .eristaGpuVoltArray = {
-    750  /*  76  */,
-    750  /* 115  */,
-    750  /* 153  */,
-    750  /* 192  */,
-    750  /* 230  */,
-    775  /* 269  */,
-    775  /* 307  */,
-    800  /* 346  */,
-    800  /* 384  */,
-    825  /* 422  */,
-    825  /* 460  */,
-    850  /* 499  */,
-    850  /* 537  */,
-    875  /* 576  */,
-    875  /* 614  */,
-    900  /* 652  */,
-    900  /* 691  */,
-    925  /* 729  */,
-    925  /* 768  */,
-    950  /* 806  */,
-    950  /* 844  */,
-    975  /* 883  */,
-    975  /* 921  */,
-    0    /* 960  (Disabled by default) */,
-    0    /* 998  (Disabled by default) */,
-    0    /* 1036 (Disabled by default) */,
-    0    /* 1075 (Disabled by default) */,
+                    AUTO /*   76                       */,
+                    AUTO /*  115                       */,
+                    AUTO /*  153                       */,
+                    AUTO /*  192                       */,
+                    AUTO /*  230                       */,
+                    AUTO /*  269                       */,
+                    AUTO /*  307                       */,
+                    AUTO /*  346                       */,
+                    AUTO /*  384                       */,
+                    AUTO /*  422                       */,
+                    AUTO /*  460                       */,
+                    AUTO /*  499                       */,
+                    AUTO /*  537                       */,
+                    AUTO /*  576                       */,
+                    AUTO /*  614                       */,
+                    AUTO /*  652                       */,
+                    AUTO /*  691                       */,
+                    AUTO /*  729                       */,
+                    AUTO /*  768                       */,
+                    AUTO /*  806                       */,
+                    AUTO /*  844                       */,
+                    AUTO /*  883                       */,
+                    AUTO /*  921                       */,
+    DEACTIVATED_GPU_FREQ /*  960 (Disabled by default) */,
+    DEACTIVATED_GPU_FREQ /*  998 (Disabled by default) */,
+    DEACTIVATED_GPU_FREQ /* 1036 (Disabled by default) */,
+    DEACTIVATED_GPU_FREQ /* 1075 (Disabled by default) */,
 },
 
 .marikoGpuVoltArray = {
-    610  /* 76 */,
-    610  /* 153 */,
-    610  /* 230 */,
-    610  /* 307 */,
-    610  /* 384 */,
-    610  /* 460 */,
-    610  /* 537 */,
-    610  /* 614 */,
-    615  /* 691 */,
-    625  /* 768 */,
-    635  /* 844 */,
-    655  /* 921 */,
-    690  /* 998 */,
-    725  /* 1075 */,
-    750  /* 1152 */,
-    800  /* 1228 */,
-    0    /* 1267  (Disabled by default) */,
-    0    /* 1305  (Disabled by default) */,
-    0    /* 1344  (Disabled by default) */,
-    0    /* 1382  (Disabled by default) */,
-    0    /* 1420  (Disabled by default) */,
-    0    /* 1459  (Disabled by default) */,
-    0    /* 1497  (Disabled by default) */,
-    0    /* 1536  (Disabled by default) */,
+                    AUTO  /*   76                       */,
+                    AUTO  /*  153                       */,
+                    AUTO  /*  230                       */,
+                    AUTO  /*  307                       */,
+                    AUTO  /*  384                       */,
+                    AUTO  /*  460                       */,
+                    AUTO  /*  537                       */,
+                    700  /*  614                       */,
+                    AUTO  /*  691                       */,
+                    AUTO  /*  768                       */,
+                    AUTO  /*  844                       */,
+                    AUTO  /*  921                       */,
+                    AUTO  /*  998                       */,
+                    AUTO  /* 1075                       */,
+                    AUTO  /* 1152                       */,
+                    AUTO  /* 1228                       */,
+                    AUTO  /* 1267 (Disabled by default) */,
+    DEACTIVATED_GPU_FREQ  /* 1305 (Disabled by default) */,
+    DEACTIVATED_GPU_FREQ  /* 1344 (Disabled by default) */,
+    DEACTIVATED_GPU_FREQ  /* 1382 (Disabled by default) */,
+    DEACTIVATED_GPU_FREQ  /* 1420 (Disabled by default) */,
+    DEACTIVATED_GPU_FREQ  /* 1459 (Disabled by default) */,
+    DEACTIVATED_GPU_FREQ  /* 1497 (Disabled by default) */,
+    DEACTIVATED_GPU_FREQ  /* 1536 (Disabled by default) */,
 },
 
-/* Advanced settings:
- * - Erista CPU DVFS Table:
- */
+/* You shouldn't have to anything past here. */
 .eristaCpuDvfsTable = {
     {  204000, {  721094 }, {} },
     {  306000, {  754040 }, {} },
@@ -177,9 +180,6 @@ volatile CustomizeTable C = {
     { 2295000, { CPU_MAX_MAX_VOLT }, {  5100873, -279186,  4747 } },
 },
 
-/* - Mariko CPU DVFS Table:
- * 2397000 might not work for some SoCs.
- */
 .marikoCpuDvfsTable = {
     {  204000, {  721589, -12695, 27, }, {                   } },
     {  306000, {  747134, -14195, 27, }, {                   } },
@@ -317,8 +317,6 @@ volatile CustomizeTable C = {
     { 2703000, { 1770375, -37515, 113, }, { CPU_MAX_MAX_VOLT, } },
 },
 
-/* - Erista GPU DVFS Table:
- */
 .eristaGpuDvfsTable = {
     {   76800, { }, {  814294, 8144, -940, 808, -21583, 226 } },
     {  115200, { }, {  856185, 8144, -940, 808, -21583, 226 } },
@@ -345,7 +343,6 @@ volatile CustomizeTable C = {
     {  921600, { }, { 1275100, 8144, -940, 808, -21583, 226 } },
 //    {  998400, { }, { 1316991, 8144, -940, 808, -21583, 226 } },
 //  {  1075200, { }, { 1358882, 8144, -940, 808, -21583, 226 } },
-
 },
 
 .eristaGpuDvfsTableSLT = {
@@ -407,9 +404,6 @@ volatile CustomizeTable C = {
     { 1075200, { }, { 1275100, 8144, -940, 808, -21583, 226 } },
 },
 
-/* - Mariko GPU DVFS Table:
- * 1305600 might not work for some SoCs.
- */
 .marikoGpuDvfsTable = {
     {   76800, { }, {  480000, } },
     {  153600, { }, {  480000, } },

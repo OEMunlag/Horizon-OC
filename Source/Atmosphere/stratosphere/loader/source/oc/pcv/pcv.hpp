@@ -350,6 +350,14 @@ namespace ams::ldr::oc::pcv {
         R_SUCCEED();
     }
 
+    constexpr void ClearCvbPllEntry(cvb_entry_t *entry) {
+        PATCH_OFFSET(&(entry->cvb_pll_param.c1), 0);
+        PATCH_OFFSET(&(entry->cvb_pll_param.c2), 0);
+        PATCH_OFFSET(&(entry->cvb_pll_param.c3), 0);
+        PATCH_OFFSET(&(entry->cvb_pll_param.c4), 0);
+        PATCH_OFFSET(&(entry->cvb_pll_param.c5), 0);
+    }
+
     template <bool isMariko>
     Result GpuFreqCvbTable(u32 *ptr) {
         cvb_entry_t *default_table = isMariko ? (cvb_entry_t *)(&mariko::GpuCvbTableDefault) : (cvb_entry_t *)(&erista::GpuCvbTableDefault);
@@ -363,7 +371,6 @@ namespace ams::ldr::oc::pcv {
                 customize_table = const_cast<cvb_entry_t *>(C.marikoGpuDvfsTableSLT);
                 break;
             case 2:
-            case 3:
                 customize_table = const_cast<cvb_entry_t *>(C.marikoGpuDvfsTableHiOPT);
                 break;
             default:
@@ -379,7 +386,6 @@ namespace ams::ldr::oc::pcv {
                 customize_table = const_cast<cvb_entry_t *>(C.eristaGpuDvfsTableSLT);
                 break;
             case 2:
-            case 3:
                 customize_table = const_cast<cvb_entry_t *>(C.eristaGpuDvfsTableHigh);
                 break;
             default:
@@ -402,32 +408,31 @@ namespace ams::ldr::oc::pcv {
         std::memcpy(gpu_cvb_table_head, (void *)customize_table, customize_table_size);
 
         // Patch GPU volt
-        if (C.marikoGpuUV == 3 || C.eristaGpuUV == 3) {
+        if (C.marikoGpuUV == 2 || C.eristaGpuUV == 2) {
             cvb_entry_t *entry = static_cast<cvb_entry_t *>(gpu_cvb_table_head);
-            for (size_t i = 0; i < customize_entry_count; i++) {
+            for (size_t i = 0; i < customize_entry_count; ++i) {
                 if (isMariko) {
-                    if (C.marikoGpuVoltArray[i] == 0) {
-                        continue;
+                    if (C.marikoGpuVoltArray[i] != 0) {
+                        PATCH_OFFSET(&(entry->cvb_pll_param.c0), (C.marikoGpuVoltArray[i] * 1000));
+                        ClearCvbPllEntry(entry);
+                    } else {
+                        PATCH_OFFSET(&(entry->cvb_pll_param.c0), (entry->cvb_pll_param.c0 - C.commonGpuVoltOffset * 1000));
                     }
-                    PATCH_OFFSET(&(entry->cvb_pll_param.c0), C.marikoGpuVoltArray[i] * 1000);
                 } else {
-                    if (C.eristaGpuVoltArray[i] == 0) {
-                        continue;
+                    if (C.eristaGpuVoltArray[i] != 0) {
+                        PATCH_OFFSET(&(entry->cvb_pll_param.c0), (C.eristaGpuVoltArray[i] * 1000));
+                        ClearCvbPllEntry(entry);
+                    } else {
+                        PATCH_OFFSET(&(entry->cvb_pll_param.c0), (entry->cvb_pll_param.c0 - C.commonGpuVoltOffset * 1000));
                     }
-                    PATCH_OFFSET(&(entry->cvb_pll_param.c0), C.eristaGpuVoltArray[i] * 1000);
                 }
-                PATCH_OFFSET(&(entry->cvb_pll_param.c1), 0);
-                PATCH_OFFSET(&(entry->cvb_pll_param.c2), 0);
-                PATCH_OFFSET(&(entry->cvb_pll_param.c3), 0);
-                PATCH_OFFSET(&(entry->cvb_pll_param.c4), 0);
-                PATCH_OFFSET(&(entry->cvb_pll_param.c5), 0);
-                entry++;
+                ++entry;
             }
         } else if (C.commonGpuVoltOffset) {
             cvb_entry_t *entry = static_cast<cvb_entry_t *>(gpu_cvb_table_head);
-            for (size_t i = 0; i < customize_entry_count; i++)   {
+            for (size_t i = 0; i < customize_entry_count; ++i) {
                 PATCH_OFFSET(&(entry->cvb_pll_param.c0), (entry->cvb_pll_param.c0 - C.commonGpuVoltOffset * 1000));
-                entry++;
+                ++entry;
             }
         }
 
