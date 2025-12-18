@@ -25,7 +25,7 @@
 namespace ams::ldr::oc::pcv::mariko {
 
     u32 GetGpuVminVoltage() {
-        for (auto e : Table) {
+        for (auto e : vminTable) {
             if (C.gpuSpeedo <= e.speedo) {
                 return e.voltage;
             }
@@ -41,7 +41,7 @@ namespace ams::ldr::oc::pcv::mariko {
 
         const u32 ramScale = (((C.marikoEmcMaxClock / 1000) - 2133) / 33) * 5 + vmin;
 
-        for (auto r : RamOffset) {
+        for (auto r : ramOffset) {
             if (C.marikoEmcMaxClock < r.maxClock) {
                 return ramScale + r.offset;
             }
@@ -66,8 +66,8 @@ namespace ams::ldr::oc::pcv::mariko {
 
     Result GpuVoltDVFS(u32 *ptr) {
         /* Check for valid pattern. */
-        for (size_t i = 0; i < std::size(GpuDVFSPattern); ++i) {
-            if (*(ptr + i + 1) != GpuDVFSPattern[i]) {
+        for (size_t i = 0; i < std::size(gpuDVFSPattern); ++i) {
+            if (*(ptr + i + 1) != gpuDVFSPattern[i]) {
                 R_THROW(ldr::ResultInvalidGpuDvfs());
             }
         }
@@ -91,7 +91,7 @@ namespace ams::ldr::oc::pcv::mariko {
     }
 
     Result GpuVoltThermals(u32 *ptr) {
-        u32 vmin = std::memcmp(ptr - 3, GpuVoltThermalPattern, sizeof(GpuVoltThermalPattern));
+        u32 vmin = std::memcmp(ptr - 3, gpuVoltThermalPattern, sizeof(gpuVoltThermalPattern));
         if (vmin) {
             R_THROW(ldr::ResultInvalidGpuDvfs());
         }
@@ -118,9 +118,9 @@ namespace ams::ldr::oc::pcv::mariko {
     }
 
     u32 CapCpuClock() {
-        u32 cpuCap = AllowedCpuMaxFrequencies[0];
+        u32 cpuCap = allowedCpuMaxFrequencies[0];
 
-        for (u32 freq : AllowedCpuMaxFrequencies) {
+        for (u32 freq : allowedCpuMaxFrequencies) {
             if (C.marikoCpuMaxClock >= freq) {
                 cpuCap = freq;
             } else {
@@ -157,7 +157,7 @@ namespace ams::ldr::oc::pcv::mariko {
         };
 
         /* Check first pattern. */
-        if (MatchesPattern(ptr, CpuVoltagePatchOffsets, CpuVoltagePatchValues)) {
+        if (MatchesPattern(ptr, cpuVoltagePatchOffsets, cpuVoltagePatchValues)) {
             if (C.marikoCpuLowVmin) {
                 PATCH_OFFSET(ptr, C.marikoCpuLowVmin);
             }
@@ -174,7 +174,7 @@ namespace ams::ldr::oc::pcv::mariko {
         }
 
         /* Check alternative pattern. */
-        if (MatchesPattern(ptr, CpuVoltageSecondaryPatchOffsets, CpuVoltageSecondaryPatchValues)) {
+        if (MatchesPattern(ptr, cpuVoltageSecondaryPatchOffsets, cpuVoltageSecondaryPatchValues)) {
             if (C.marikoCpuLowVmin) {
                 PATCH_OFFSET(ptr,     C.marikoCpuLowVmin);
                 PATCH_OFFSET(ptr + 3, C.marikoCpuLowVmin);
