@@ -67,11 +67,11 @@ volatile CustomizeTable C = {
 .marikoCpuHighVmin = 750,
 .marikoCpuMaxVolt = 1120,
 
-/* Supported values: 1963000, 2397000, 2499000, 2601000, 2703000. */
+/* Supported values: 2397000, 2499000, 2601000, 2703000. */
 /* 2499000 should be used with caution. */
 /* 2601000 exceeds pmic limit on most consoles. */
 /* 2703000 is potentially dangerous and not advised. */
-.marikoCpuMaxClock = 1963000,
+.marikoCpuMaxClock = 2397000,
 
 .eristaCpuBoostClock = 1785000, // Default boost clock
 .marikoCpuBoostClock = 1963000, // Default boost clock
