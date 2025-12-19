@@ -23,81 +23,112 @@
 
 namespace ams::ldr::oc::pcv::erista {
 
-    /* Remove? */
-    Result CpuFreqVdd(u32* ptr) {
-        dvfs_rail* entry = reinterpret_cast<dvfs_rail *>(reinterpret_cast<u8 *>(ptr) - offsetof(dvfs_rail, freq));
+    Result CpuVoltDvfs(u32 *ptr) {
+        if (MatchesPattern(ptr, cpuVoltDvfsPattern, cpuVoltDvfsOffsets)) {
+            if (C.eristaCpuVmin) {
+                PATCH_OFFSET(ptr, C.eristaCpuVmin);
+            }
 
-        R_UNLESS(entry->id == 1,            ldr::ResultInvalidCpuFreqVddEntry());
-        R_UNLESS(entry->min_mv == 250'000,  ldr::ResultInvalidCpuFreqVddEntry());
-        R_UNLESS(entry->step_mv == 5000,    ldr::ResultInvalidCpuFreqVddEntry());
-        R_UNLESS(entry->max_mv == 1525'000, ldr::ResultInvalidCpuFreqVddEntry());
+            if (C.eristaCpuUV) {
+                PATCH_OFFSET(ptr - 2, C.eristaCpuVmin);
+            }
 
-        R_SUCCEED();
-    }
+            if (C.eristaCpuMaxVolt) {
+                PATCH_OFFSET(ptr + 5, C.eristaCpuMaxVolt);
+            }
 
-    Result GpuVmin(u32 *ptr) {
-        if (!C.eristaGpuVmin) {
-            R_SKIP();
-        }
-
-        PATCH_OFFSET(ptr, (int)C.eristaGpuVmin);
-        R_SUCCEED();
-    }
-
-    Result CpuVoltRange(u32 *ptr) {
-        u32 min_volt_got = *(ptr - 1);
-        for (const auto &mv : CpuMinVolts) {
-            if (min_volt_got != mv)
-                continue;
-
-            if (!C.eristaCpuMaxVolt)
-                R_SKIP();
-
-            PATCH_OFFSET(ptr, C.eristaCpuMaxVolt);
             R_SUCCEED();
         }
+
         R_THROW(ldr::ResultInvalidCpuMinVolt());
+    }
+
+    Result CpuVoltThermals(u32 *ptr) {
+        if (std::memcmp(ptr - 6, cpuVoltageThermalPattern, sizeof(cpuVoltageThermalPattern))) {
+           // AMS_ABORT_UNLESS(0);
+            R_THROW(ldr::ResultInvalidCpuMinVolt());
+        }
+
+        if (C.eristaCpuVmin) {
+            PATCH_OFFSET(    ptr, C.eristaCpuVmin);
+            PATCH_OFFSET(ptr + 3, C.eristaCpuVmin);
+            PATCH_OFFSET(ptr + 9, C.eristaCpuVmin);
+        }
+
+        if (C.eristaCpuMaxVolt) {
+            PATCH_OFFSET(ptr - 2, C.eristaCpuMaxVolt);
+            PATCH_OFFSET(ptr + 1, C.eristaCpuMaxVolt);
+            PATCH_OFFSET(ptr + 4, C.eristaCpuMaxVolt);
+            PATCH_OFFSET(ptr + 7, C.eristaCpuMaxVolt);
+        }
+
+        R_SUCCEED();
     }
 
     Result CpuVoltDfll(u32* ptr) {
         cvb_cpu_dfll_data *entry = reinterpret_cast<cvb_cpu_dfll_data *>(ptr);
 
-    // R_UNLESS(entry->tune0_low == 0x0000FFCF,   ldr::ResultInvalidCpuVoltDfllEntry());
-    //        R_UNLESS(entry->tune0_high == 0x00000000,    ldr::ResultInvalidCpuVoltDfllEntry());
-    //        R_UNLESS(entry->tune1_low == 0x012207FF,   ldr::ResultInvalidCpuVoltDfllEntry());
-    //        R_UNLESS(entry->tune1_high == 0x03FFF7FF,    ldr::ResultInvalidCpuVoltDfllEntry());
-        if(!C.eristaCpuUV) {
+        R_UNLESS(entry->tune0_low == 0x0000FFCF,   ldr::ResultInvalidCpuVoltDfllEntry());
+        R_UNLESS(entry->tune0_high == 0x00000000,    ldr::ResultInvalidCpuVoltDfllEntry());
+        R_UNLESS(entry->tune1_low == 0x012207FF,   ldr::ResultInvalidCpuVoltDfllEntry());
+        R_UNLESS(entry->tune1_high == 0x03FFF7FF,    ldr::ResultInvalidCpuVoltDfllEntry());
+
+        if( !C.eristaCpuUV) {
             R_SKIP();
         }
 
-        PATCH_OFFSET(&(entry->dvco_calibration_max), 0x1C);
-        PATCH_OFFSET(&(entry->tune1_high), 0x10);
-        PATCH_OFFSET(&(entry->tune_high_margin_millivolts), 0xc);
-
         switch(C.eristaCpuUV) {
             case 1:
-                PATCH_OFFSET(&(entry->tune0_low), 0x0000FFFF); //process_id 0 // EOS UV1
-                PATCH_OFFSET(&(entry->tune1_low), 0x027007FF);
+                PATCH_OFFSET(&(entry->tune0_high), 0xffff);
+                PATCH_OFFSET(&(entry->tune1_high), 0x27007ff);
                 break;
             case 2:
-                PATCH_OFFSET(&(entry->tune0_low), 0x0000EFFF); //process_id 1 // EOS Uv2
-                PATCH_OFFSET(&(entry->tune1_low), 0x027407FF);
+                PATCH_OFFSET(&(entry->tune0_high), 0xefff);
+                PATCH_OFFSET(&(entry->tune1_high), 0x27407ff);
                 break;
             case 3:
-                PATCH_OFFSET(&(entry->tune0_low), 0x0000DFFF); //process_id 0 // EOS UV3
-                PATCH_OFFSET(&(entry->tune1_low), 0x027807FF);
+                PATCH_OFFSET(&(entry->tune0_high), 0xdfff);
+                PATCH_OFFSET(&(entry->tune1_high), 0x27807ff);
                 break;
             case 4:
-                PATCH_OFFSET(&(entry->tune0_low), 0x0000DFDF); //process_id 1 // EOS Uv4
-                PATCH_OFFSET(&(entry->tune1_low), 0x027A07FF);
+                PATCH_OFFSET(&(entry->tune0_high), 0xdfdf);
+                PATCH_OFFSET(&(entry->tune1_high), 0x27a07ff);
                 break;
             case 5:
-                PATCH_OFFSET(&(entry->tune0_low), 0x0000CFDF); // EOS UV5
-                PATCH_OFFSET(&(entry->tune1_low), 0x037007FF);
+                PATCH_OFFSET(&(entry->tune0_high), 0xcfdf);
+                PATCH_OFFSET(&(entry->tune1_high), 0x37007ff);
                 break;
             default:
                 break;
         }
+        R_SUCCEED();
+    }
+
+    Result GpuVoltDVFS(u32 *ptr) {
+        if (MatchesPattern(ptr, gpuVoltDvfsPattern, gpuVoltDvfsOffsets)) {
+            if (C.eristaGpuVmin) {
+                PATCH_OFFSET(ptr, C.eristaGpuVmin);
+            }
+            R_SUCCEED();
+        }
+
+        R_THROW(ldr::ResultInvalidGpuDvfs());
+    }
+
+    Result GpuVoltThermals(u32 *ptr) {
+        u32 result = std::memcmp(ptr - 3, gpuVoltThermalPattern, sizeof(gpuVoltThermalPattern));
+        if (result) {
+            R_THROW(ldr::ResultInvalidGpuDvfs());
+        }
+
+        if (C.eristaGpuVmin) {
+            PATCH_OFFSET(ptr    , C.eristaGpuVmin);
+            PATCH_OFFSET(ptr + 3, C.eristaGpuVmin);
+            PATCH_OFFSET(ptr + 6, C.eristaGpuVmin);
+            PATCH_OFFSET(ptr + 9, C.eristaGpuVmin);
+            PATCH_OFFSET(ptr + 12, C.eristaGpuVmin);
+        }
+
         R_SUCCEED();
     }
 
@@ -121,8 +152,7 @@ namespace ams::ldr::oc::pcv::erista {
             max_clock = GetDvfsTableLastEntry(C.eristaGpuDvfsTableSLT)->freq;
             break;
         case 2:
-        case 3:
-            max_clock = GetDvfsTableLastEntry(C.eristaGpuDvfsTableHigh)->freq;
+            max_clock = GetDvfsTableLastEntry(C.eristaGpuDvfsTableHiOPT)->freq;
             break;
         default:
             max_clock = GetDvfsTableLastEntry(C.eristaGpuDvfsTable)->freq;
@@ -151,17 +181,14 @@ namespace ams::ldr::oc::pcv::erista {
         R_SUCCEED();
     }
 
-    /* This is not done properly, this is not scaled correctly.                                                                                              */
-    /* It is fixable of course, but I don't know if I hate myself enough to fix it, especially considering erista does not benefit much from proper timings. */
-    /* This currently patches a lot of unwanted extra stuff that needs to be removed.                                                                        */
-    void MemMtcTableAutoAdjustBaseLatency(EristaMtcTable *table) {
-        using namespace pcv::erista;
-        #define WRITE_PARAM_ALL_REG(TABLE, PARAM, VALUE) \
+  //  void MemMtcTableAutoAdjustBaseLatency(EristaMtcTable *table) {
+  //      using namespace pcv::erista;
+  /*      #define WRITE_PARAM_ALL_REG(TABLE, PARAM, VALUE) \
             TABLE->burst_regs.PARAM = VALUE;             \
-            TABLE->shadow_regs_ca_train.PARAM   = VALUE; \
+           TABLE->shadow_regs_ca_train.PARAM   = VALUE; \
             TABLE->shadow_regs_quse_train.PARAM = VALUE; \
-            TABLE->shadow_regs_rdwr_train.PARAM = VALUE;
-
+          TABLE->shadow_regs_rdwr_train.PARAM = VALUE;
+*/
      //   #define GET_CYCLE(PARAM) ((u32)((double)(PARAM) / tCK_avg))
 
         /* This condition is insane but it's done in eos. */
@@ -199,7 +226,7 @@ namespace ams::ldr::oc::pcv::erista {
      //   if (C.hpMode) {
      //       WRITE_PARAM_ALL_REG(table, emc_cfg, 0x13200000);
      //   } else {
-         WRITE_PARAM_ALL_REG(table, emc_cfg, 0xF3200000);
+    //     WRITE_PARAM_ALL_REG(table, emc_cfg, 0xF3200000);
      //   }
 
     //    WRITE_PARAM_ALL_REG(table, emc_rc,                           /*0x00000060*/ GET_CYCLE(tRC));
@@ -463,22 +490,21 @@ namespace ams::ldr::oc::pcv::erista {
     //    table->la_scale_regs.mc_latency_allowance_nvenc_0     = 0x00800018;
     //    table->dram_timings.t_rp                              =     tRFCpb;
     //    table->dram_timings.t_rfc                             =     tRFCab;
-    }
+  //  }
 
     /* These timings are slightly off from eos, I am not sure why but I am going to figure it out at some point. */
     void MemMtcTableAutoAdjust(EristaMtcTable *table) {
-        if (C.mtcConf != AUTO_ADJ) /* Return even needed? */
-            return;
+        (void) table;
 
      //   using namespace pcv::erista;
      //
-     //   #define WRITE_PARAM_ALL_REG(TABLE, PARAM, VALUE) // note: add backslashes to make the macro definition work
-     //       TABLE->burst_regs.PARAM = VALUE;
-     //       TABLE->shadow_regs_ca_train.PARAM = VALUE;
-     //       TABLE->shadow_regs_quse_train.PARAM = VALUE;
-     //       TABLE->shadow_regs_rdwr_train.PARAM = VALUE;
-     //
-      #define GET_CYCLE(PARAM) ((u32)((double)(PARAM) / (1000000.0 / 1600000.0)))
+     /*   #define WRITE_PARAM_ALL_REG(TABLE, PARAM, VALUE) // note: add backslashes to make the macro definition work
+            TABLE->burst_regs.PARAM = VALUE; \
+           TABLE->shadow_regs_ca_train.PARAM = VALUE; \
+        TABLE->shadow_regs_quse_train.PARAM = VALUE; \
+            TABLE->shadow_regs_rdwr_train.PARAM = VALUE;
+     */
+      // #define GET_CYCLE(PARAM) ((u32)((double)(PARAM) / (1000000.0 / 1600000.0)))
      //
      //   /* This condition is insane but it's done in eos. */
      //   /* Need to clean up at some point. */
@@ -551,7 +577,7 @@ namespace ams::ldr::oc::pcv::erista {
      //
      //   WRITE_PARAM_ALL_REG(table, emc_pchg2pden, GET_CYCLE(1.75));
      //   WRITE_PARAM_ALL_REG(table, emc_ar2pden,   GET_CYCLE(1.75));
-     WRITE_PARAM_ALL_REG(table, emc_pdex2cke,  GET_CYCLE(1.75));
+     //   WRITE_PARAM_ALL_REG(table, emc_pdex2cke,  GET_CYCLE(1.75));
      //   WRITE_PARAM_ALL_REG(table, emc_act2pden,  GET_CYCLE(14.0));
      //   WRITE_PARAM_ALL_REG(table, emc_cke2pden,  GET_CYCLE(5.0));
      //   WRITE_PARAM_ALL_REG(table, emc_pdex2mrr,  GET_CYCLE(pdex2mrr));
@@ -690,11 +716,7 @@ namespace ams::ldr::oc::pcv::erista {
         for (u32 i = khz_list_size - 1; i > 0; i--)
             std::memcpy(static_cast<void *>(table_list[i]), static_cast<void *>(table_list[i - 1]), sizeof(EristaMtcTable));
 
-        if (C.mtcConf == AUTO_ADJ) {
-            MemMtcTableAutoAdjust(table_list[0]);
-        } else {
-            MemMtcTableAutoAdjustBaseLatency(table_list[0]);
-        }
+        MemMtcTableAutoAdjust(table_list[0]);
 
         PATCH_OFFSET(ptr, C.eristaEmcMaxClock);
         R_SUCCEED();
@@ -714,35 +736,35 @@ namespace ams::ldr::oc::pcv::erista {
         u32 GpuCvbDefaultMaxFreq = static_cast<u32>(GetDvfsTableLastEntry(GpuCvbTableDefault)->freq);
 
         PatcherEntry<u32> patches[] = {
-            {"CPU Freq Vdd",   &CpuFreqVdd,            1, nullptr, CpuClkOSLimit },
             {"CPU Freq Table", CpuFreqCvbTable<false>, 1, nullptr, CpuCvbDefaultMaxFreq},
-            {"CPU Volt Limit", &CpuVoltRange,         13, nullptr, CpuVoltOfficial },
-            {"CPU Volt Dfll",  &CpuVoltDfll,           1, nullptr, 0xFFEAD0FF },
+            {"CPU Volt DVFS", &CpuVoltDvfs, 1, nullptr, 825},
+            {"CPU Volt Thermals", &CpuVoltThermals, 1, nullptr, 825},
+            {"CPU Volt Dfll",  &CpuVoltDfll, 1, nullptr, 0xFFD0EAFF},
+            {"GPU Volt DVFS", &GpuVoltDVFS, 1, nullptr, 810},
+            {"GPU Volt Thermals", &GpuVoltThermals, 1, nullptr, 810},
             {"GPU Freq Table", GpuFreqCvbTable<false>, 1, nullptr, GpuCvbDefaultMaxFreq},
             {"GPU Freq Asm", &GpuFreqMaxAsm, 2, &GpuMaxClockPatternFn},
-            {"GPU Volt Thermal", &GpuFreqMaxAsm, 1, &GpuMaxClockPatternFn},
             {"GPU Freq PLL", &GpuFreqPllLimit, 1, nullptr, GpuClkPllLimit},
             {"MEM Freq Mtc", &MemFreqMtcTable, 0, nullptr, EmcClkOSLimit},
             {"MEM Freq Max", &MemFreqMax, 0, nullptr, EmcClkOSLimit},
             {"MEM Freq PLLM", &MemFreqPllmLimit, 2, nullptr, EmcClkPllmLimit},
             {"MEM Volt", &MemVoltHandler, 2, nullptr, MemVoltHOS},
-            {"GPU Vmin", &GpuVmin, 0, nullptr, GpuVminOfficial},
         };
 
-        for (uintptr_t ptr = mapped_nso;
-            ptr <= mapped_nso + nso_size - sizeof(EristaMtcTable);
-            ptr += sizeof(u32)) {
+        for (uintptr_t ptr = mapped_nso; ptr <= mapped_nso + nso_size - sizeof(EristaMtcTable); ptr += sizeof(u32)) {
             u32 *ptr32 = reinterpret_cast<u32 *>(ptr);
             for (auto &entry : patches) {
-                if (R_SUCCEEDED(entry.SearchAndApply(ptr32)))
+                if (R_SUCCEEDED(entry.SearchAndApply(ptr32))) {
                     break;
+                }
             }
         }
 
         for (auto &entry : patches) {
             LOGGING("%s Count: %zu", entry.description, entry.patched_count);
-            if (R_FAILED(entry.CheckResult()))
+            if (R_FAILED(entry.CheckResult())) {
                 CRASH(entry.description);
+            }
         }
     }
 }

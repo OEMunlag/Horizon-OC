@@ -73,8 +73,8 @@ Result MemVoltHandler(u32* ptr) {
 }
 
 void SafetyCheck() {
-    // if (C.custRev != CUST_REV)
-        // CRASH("Triggered");
+    if (C.custRev != CUST_REV)
+        CRASH("Triggered");
 
     struct sValidator {
         volatile u32 value;
@@ -116,7 +116,7 @@ void SafetyCheck() {
         break;
     case 2:
     case 3:
-        eristaGpuDvfsMaxFreq = static_cast<u32>(GetDvfsTableLastEntry(C.eristaGpuDvfsTableHigh)->freq);
+        eristaGpuDvfsMaxFreq = static_cast<u32>(GetDvfsTableLastEntry(C.eristaGpuDvfsTableHiOPT)->freq);
         break;
     default:
         eristaGpuDvfsMaxFreq = static_cast<u32>(GetDvfsTableLastEntry(C.eristaGpuDvfsTable)->freq);

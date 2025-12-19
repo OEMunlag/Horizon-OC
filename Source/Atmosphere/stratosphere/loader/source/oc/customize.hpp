@@ -51,7 +51,7 @@ constexpr uint32_t ERISTA_MTC_MAGIC = 0x43544D45; // EMTC
 constexpr uint32_t MARIKO_MTC_MAGIC = 0x43544D4D; // MMTC
 
 typedef struct CustomizeTable {
-    u8  cust[16] = {'H', 'O', 'C', 'K', 'I', 'P', 'C', 'U', 'S', 'T', '\0', '\0', '\0', '\0'};
+    u8  cust[4] = {'C', 'U', 'S', 'T'};
     u32 custRev = CUST_REV;
 
     u32 mtcConf;
@@ -78,7 +78,9 @@ typedef struct CustomizeTable {
     u32 mem_burst_write_latency;
 
     u32 eristaCpuUV;
+    u32 eristaCpuVmin;
     u32 eristaCpuMaxVolt;
+    u32 eristaCpuUnlock;
 
     u32 marikoCpuUVLow;
     u32 marikoCpuUVHigh;
@@ -109,6 +111,7 @@ typedef struct CustomizeTable {
     u32 marikoGpuVoltArray[24];
 
     CustomizeCpuDvfsTable eristaCpuDvfsTable;
+    CustomizeCpuDvfsTable eristaCpuDvfsTableSLT;
 
     CustomizeCpuDvfsTable marikoCpuDvfsTable;
     CustomizeCpuDvfsTable marikoCpuDvfsTableSLT;
@@ -118,7 +121,7 @@ typedef struct CustomizeTable {
 
     CustomizeGpuDvfsTable eristaGpuDvfsTable;
     CustomizeGpuDvfsTable eristaGpuDvfsTableSLT;
-    CustomizeGpuDvfsTable eristaGpuDvfsTableHigh;
+    CustomizeGpuDvfsTable eristaGpuDvfsTableHiOPT;
 
     CustomizeGpuDvfsTable marikoGpuDvfsTable;
     CustomizeGpuDvfsTable marikoGpuDvfsTableSLT;

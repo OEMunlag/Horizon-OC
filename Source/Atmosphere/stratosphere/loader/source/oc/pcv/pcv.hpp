@@ -54,11 +54,11 @@ namespace ams::ldr::oc::pcv {
 
         static const u32 cpuVoltagePatchValues[]  = { 850, 38, 1120, 1000, 100, 1000, 0 };
         static const s32 cpuVoltagePatchOffsets[] = {  -2, -1,    5,    6,   7,    8, 9 };
-        static_assert(sizeof(cpuVoltagePatchValues) == sizeof(cpuVoltagePatchOffsets), "Invalid CpuVoltagePatch size");
+        static_assert(sizeof(cpuVoltagePatchValues) == sizeof(cpuVoltagePatchOffsets), "Invalid cpuVoltagePatch size");
 
         static const u32 cpuVoltageSecondaryPatchValues[] = { 800, 1120, 0, 800, 1120, 0, 620, 1120, 20000, 620, 1120, 70000, 950, 1132, 0, 950 };
         static const s32 cpuVoltageSecondaryPatchOffsets[] = { -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-        static_assert(sizeof(cpuVoltageSecondaryPatchValues) == sizeof(cpuVoltageSecondaryPatchOffsets), "Invalid secondary CpuVoltagePatch size");
+        static_assert(sizeof(cpuVoltageSecondaryPatchValues) == sizeof(cpuVoltageSecondaryPatchOffsets), "Invalid secondary cpuVoltagePatch size");
 
         static const u32 allowedCpuMaxFrequencies[] = { 2'397'000, 2'499'000, 2'601'000, 2'703'000, };
 
@@ -86,7 +86,7 @@ namespace ams::ldr::oc::pcv {
 
         constexpr u32 GpuClkPllMax = 1300'000'000;
         constexpr u32 GpuClkPllLimit = 2'600'000;
-        constexpr int GpuVminOfficial = 610;
+        constexpr u32 GpuVminOfficial = 610;
 
         static const u32 gpuDVFSPattern[] = { 1050, 1000, 100, 1000, 10, };
         static const u32 gpuVoltThermalPattern[] = { 800, 1120, 0, 610, 1120, 20000, 610, 1120, 30000, 610, 1120, 50000, 610, 1120, 70000, 610, 1120, 90000, };
@@ -200,20 +200,30 @@ namespace ams::ldr::oc::pcv {
             {                                                 },
         };
 
-        constexpr int GpuVminOfficial = 810;
 
         constexpr u32 CpuVoltOfficial = 1235;
 
+        constexpr u32 CpuVminOfficial = 825;
+
         constexpr u32 CpuVoltL4T = 1235'000;
 
-        constexpr u16 CpuMinVolts[] = {950, 850, 825, 810};
+        static const u32 cpuVoltDvfsPattern[] = { 1227, 1000, 100, 1000, 0 };
+        static const u32 cpuVoltDvfsOffsets[] = {    5,    6,   7,    9, 8 };
+        static_assert(sizeof(cpuVoltDvfsPattern) == sizeof(cpuVoltDvfsOffsets), "Invalid cpuVoltDvfsPattern");
 
-        inline bool CpuMaxVoltPatternFn(u32 *ptr32) {
-            u32 val = *ptr32;
-            return (val == 1132 || val == 1170 || val == 1227);
-        }
+        static const u32 cpuVoltageThermalPattern[] = { 950, 1132, 0, 950, 1227, 0, 825, 1227, 15000, 825, 1170, 60000, 825, 1132, 80000 };
+        static_assert(sizeof(cpuVoltageThermalPattern) == 0x3c, "invalid cpuVoltageThermalPattern size");
 
         constexpr u32 GpuClkPllLimit = 921'600'000;
+        constexpr u32 GpuVminOfficial = 810;
+
+        static const u32 gpuVoltDvfsPattern[] = { 1150, 1000, 100, 1000, 10, };
+        static const u32 gpuVoltDvfsOffsets[] = {     1,   2,   3,    4,  5, };
+        static_assert(sizeof(gpuVoltDvfsPattern) == sizeof(gpuVoltDvfsOffsets), "Invalid gpuVoltDvfsPattern");
+
+        static const u32 gpuVoltThermalPattern[] = { 950, 1132, 0, 810, 1132, 15000, 810, 1132, 30000, 810, 1132, 50000, 810, 1132, 70000, 810, 1132, 105000 };
+        static_assert(sizeof(gpuVoltThermalPattern) == 0x48, "invalid gpuVoltageThermalPattern size");
+
 
         /* GPU Max Clock asm Pattern:
          *
@@ -249,7 +259,7 @@ namespace ams::ldr::oc::pcv {
 
         inline bool GpuMaxClockPatternFn(u32 *ptr32) {
             return asm_compare_no_rd(*ptr32, asm_pattern[0]);
-        }
+        };
 
         constexpr cvb_entry_t GpuCvbTableDefault[] = {
             // NA_FREQ_CVB_TABLE
@@ -276,10 +286,19 @@ namespace ams::ldr::oc::pcv {
         void Patch(uintptr_t mapped_nso, size_t nso_size);
     }
 
+    inline auto MatchesPattern = [](u32 *base, const auto &offsets, const auto &values) {
+        for (size_t i = 0; i < std::size(values); ++i) {
+            if (*(base + offsets[i]) != values[i]) {
+                return false;
+            }
+        }
+        return true;
+    };
+
     template <bool isMariko>
     Result CpuFreqCvbTable(u32 *ptr) {
         cvb_entry_t *default_table = isMariko ? (cvb_entry_t *)(&mariko::CpuCvbTableDefault) : (cvb_entry_t *)(&erista::CpuCvbTableDefault);
-        cvb_entry_t *customize_table = const_cast<cvb_entry_t *>(C.marikoCpuDvfsTableHelios);
+        cvb_entry_t *customize_table = nullptr;
 
         if (isMariko) {
             switch (C.tableConf) {
@@ -302,6 +321,16 @@ namespace ams::ldr::oc::pcv {
                     break;
                 }
             }
+        } else {
+            if (C.eristaCpuUV) {
+                if (C.eristaCpuUnlock) {
+                    customize_table = const_cast<cvb_entry_t *>(C.eristaCpuDvfsTableSLT);
+                } else {
+                    customize_table = const_cast<cvb_entry_t *>(C.eristaCpuDvfsTable);
+                }
+            } else {
+                customize_table = default_table;;
+            }
         }
 
         u32 cpu_max_volt = isMariko ? C.marikoCpuMaxVolt : C.eristaCpuMaxVolt;
@@ -309,6 +338,8 @@ namespace ams::ldr::oc::pcv {
 
         if (isMariko) {
             cpu_freq_threshold = 2193'000;
+        } else {
+            cpu_freq_threshold = 2091'000;
         }
 
         size_t default_entry_count = GetDvfsTableEntryCount(default_table);
@@ -327,7 +358,11 @@ namespace ams::ldr::oc::pcv {
             cvb_entry_t *entry = static_cast<cvb_entry_t *>(cpu_cvb_table_head);
             for (size_t i = 0; i < customize_entry_count; i++) {
                 if (entry->freq >= cpu_freq_threshold) {
-                    PATCH_OFFSET(&(entry->cvb_pll_param.c0), cpu_max_volt * 1000);
+                    if (isMariko) {
+                        PATCH_OFFSET(&(entry->cvb_pll_param.c0), cpu_max_volt * 1000);
+                    } else {
+                        // PATCH_OFFSET(&(entry->cvb_dfll_param.c0), cpu_max_volt * 1000);
+                    }
                 }
                 entry++;
             }
@@ -371,7 +406,7 @@ namespace ams::ldr::oc::pcv {
                 customize_table = const_cast<cvb_entry_t *>(C.eristaGpuDvfsTableSLT);
                 break;
             case 2:
-                customize_table = const_cast<cvb_entry_t *>(C.eristaGpuDvfsTableHigh);
+                customize_table = const_cast<cvb_entry_t *>(C.eristaGpuDvfsTableHiOPT);
                 break;
             default:
                 customize_table = const_cast<cvb_entry_t *>(C.eristaGpuDvfsTable);

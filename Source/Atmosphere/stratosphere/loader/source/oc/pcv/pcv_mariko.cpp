@@ -147,15 +147,6 @@ namespace ams::ldr::oc::pcv::mariko {
     }
 
     Result CpuVoltDVFS(u32 *ptr) {
-        auto MatchesPattern = [](u32 *base, const auto &offsets, const auto &values) {
-            for (size_t i = 0; i < std::size(values); ++i) {
-                if (*(base + offsets[i]) != values[i]) {
-                    return false;
-                }
-            }
-            return true;
-        };
-
         /* Check first pattern. */
         if (MatchesPattern(ptr, cpuVoltagePatchOffsets, cpuVoltagePatchValues)) {
             if (C.marikoCpuLowVmin) {
@@ -375,7 +366,6 @@ namespace ams::ldr::oc::pcv::mariko {
             max_clock = GetDvfsTableLastEntry(C.marikoGpuDvfsTableSLT)->freq;
             break;
         case 2:
-        case 3:
             max_clock = GetDvfsTableLastEntry(C.marikoGpuDvfsTableHiOPT)->freq;
             break;
         default:
@@ -422,7 +412,7 @@ namespace ams::ldr::oc::pcv::mariko {
         R_SUCCEED();
     }
 
-    void MemMtcTableAutoAdjustBaseLatency(MarikoMtcTable *table) {
+    void MemMtcTableAutoAdjust(MarikoMtcTable *table) {
         #define WRITE_PARAM_ALL_REG(TABLE, PARAM, VALUE) \
             TABLE->burst_regs.PARAM = VALUE;             \
             TABLE->shadow_regs_ca_train.PARAM   = VALUE; \
@@ -595,30 +585,30 @@ namespace ams::ldr::oc::pcv::mariko {
         table->emc_cfg_2 = 0x11083D;
     }
 
-    void MemMtcTableAutoAdjust(MarikoMtcTable *table) {
-        /* Official Tegra X1 TRM, sign up for nvidia developer program (free) to download:
-         *     https://developer.nvidia.com/embedded/dlc/tegra-x1-technical-reference-manual
-         *     Section 18.11: MC Registers
-         *
-         * Retail Mariko: 200FBGA 16Gb DDP LPDDR4X SDRAM x 2
-         * x16/Ch, 1Ch/die, Double-die, 2Ch, 1CS(rank), 8Gb density per die
-         * 64Mb x 16DQ x 8banks x 2channels = 2048MB (x32DQ) per package
-         *
-         * Devkit Mariko: 200FBGA 32Gb DDP LPDDR4X SDRAM x 2
-         * x16/Ch, 1Ch/die, Quad-die,   2Ch, 2CS(rank), 8Gb density per die
-         * X1+ EMC can R/W to both ranks at the same time, resulting in doubled DQ
-         * 64Mb x 32DQ x 8banks x 2channels = 4096MB (x64DQ) per package
-         *
-         * If you have access to LPDDR4(X) specs or datasheets (from manufacturers or Google),
-         * you'd better calculate timings yourself rather than relying on following algorithm.
-         */
-
-                #define WRITE_PARAM_ALL_REG(TABLE, PARAM, VALUE) \
-            TABLE->burst_regs.PARAM = VALUE;             \
-            TABLE->shadow_regs_ca_train.PARAM   = VALUE; \
+   // void MemMtcTableAutoAdjust(MarikoMtcTable *table) {
+   //     /* Official Tegra X1 TRM, sign up for nvidia developer program (free) to download:
+   //      *     https://developer.nvidia.com/embedded/dlc/tegra-x1-technical-reference-manual
+   //      *     Section 18.11: MC Registers
+   //      *
+   //      * Retail Mariko: 200FBGA 16Gb DDP LPDDR4X SDRAM x 2
+   //      * x16/Ch, 1Ch/die, Double-die, 2Ch, 1CS(rank), 8Gb density per die
+   //      * 64Mb x 16DQ x 8banks x 2channels = 2048MB (x32DQ) per package
+   //      *
+   //      * Devkit Mariko: 200FBGA 32Gb DDP LPDDR4X SDRAM x 2
+   //      * x16/Ch, 1Ch/die, Quad-die,   2Ch, 2CS(rank), 8Gb density per die
+   //      * X1+ EMC can R/W to both ranks at the same time, resulting in doubled DQ
+   //      * 64Mb x 32DQ x 8banks x 2channels = 4096MB (x64DQ) per package
+   //      *
+   //      * If you have access to LPDDR4(X) specs or datasheets (from manufacturers or Google),
+   //      * you'd better calculate timings yourself rather than relying on following algorithm.
+   //      */
+   //
+   /*             #define WRITE_PARAM_ALL_REG(TABLE, PARAM, VALUE) \
+   //         TABLE->burst_regs.PARAM = VALUE;             \
+   //         TABLE->shadow_regs_ca_train.PARAM   = VALUE; \
             TABLE->shadow_regs_rdwr_train.PARAM = VALUE;
-
-        #define GET_CYCLE(PARAM) u32(CEIL(double(PARAM) / tCK_avg))
+   */
+   //     #define GET_CYCLE(PARAM) u32(CEIL(double(PARAM) / tCK_avg))
 
 /* This condition is insane but it's done in eos. */
         /* Need to clean up at some point. */
@@ -807,8 +797,8 @@ namespace ams::ldr::oc::pcv::mariko {
       //  table->dram_timings.t_rfc = tRFCab;
       //  table->emc_cfg_2 = 0x11083d;
 
-        (void) table;
-    }
+       // (void) table;
+   // }
 
     void MemMtcPllmbDivisor(MarikoMtcTable *table) {
         constexpr u32 PllOscInKHz   = 38400;
@@ -891,11 +881,7 @@ namespace ams::ldr::oc::pcv::mariko {
         // Adjust max freq mtc timing parameters with reference to 1331200 table
         /* TODO: Implement mariko */
 
-        if (C.mtcConf == AUTO_ADJ) {
-            MemMtcTableAutoAdjust(table_max);
-        } else {
-            MemMtcTableAutoAdjustBaseLatency(table_max);
-        }
+        MemMtcTableAutoAdjust(table_max);
 
         MemMtcPllmbDivisor(table_max);
         // Overwrite 13312000 table with unmodified 1600000 table copied back
@@ -921,7 +907,7 @@ namespace ams::ldr::oc::pcv::mariko {
 
         int32_t voltAdd = 25 * C.emcDvbShift;
 
-#define DVB_VOLT(zero, one, two) std::min(zero + voltAdd, 1050), std::min(one + voltAdd, 1025), std::min(two + voltAdd, 1000),
+        #define DVB_VOLT(zero, one, two) std::min(zero + voltAdd, 1050), std::min(one + voltAdd, 1025), std::min(two + voltAdd, 1000),
 
         if (C.marikoEmcMaxClock < 1862400) {
             std::memcpy(new_start, default_end, sizeof(emc_dvb_dvfs_table_t));
