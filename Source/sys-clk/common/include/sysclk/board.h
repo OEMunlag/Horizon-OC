@@ -57,6 +57,7 @@ typedef enum {
     HocClkVoltage_GPU,
     HocClkVoltage_EMCVDDQ_MarikoOnly,
     HocClkVoltage_Display,
+    HocClkVoltage_Battery,
     HocClkVoltage_EnumMax,
 } HocClkVoltage;
 
@@ -83,6 +84,8 @@ typedef enum
     SysClkThermalSensor_SOC = 0,
     SysClkThermalSensor_PCB,
     SysClkThermalSensor_Skin,
+    HorizonOCThermalSensor_Battery,
+    HorizonOCThermalSensor_PMIC,
     SysClkThermalSensor_EnumMax
 } SysClkThermalSensor;
 
@@ -99,6 +102,7 @@ typedef enum
     SysClkPartLoad_EMCCpu,
     HocClkPartLoad_GPU,
     HocClkPartLoad_CPUAvg,
+    HocClkPartLoad_BAT,
     SysClkPartLoad_EnumMax
 } SysClkPartLoad;
 

@@ -523,7 +523,6 @@ void ClockManager::SetRNXRTMode(ReverseNXMode mode)
 }
 
 void ClockManager::SetKipData() {
-    std::scoped_lock lock{this->contextMutex};
     CustomizeTable table;
 
     if (!cust_read_and_cache(this->config->GetConfigValue(HocClkConfigValue_KipFileName) ? "sdmc:/atmosphere/kips/loader.kip" : "sdmc:/atmosphere/kips/hoc.kip", &table)) {
@@ -594,8 +593,6 @@ void ClockManager::SetKipData() {
 
 void ClockManager::GetKipData() {
     if(this->config->Refresh()) {
-        std::scoped_lock lock{this->contextMutex};
-
         CustomizeTable table;
 
         if (!cust_read_and_cache(this->config->GetConfigValue(HocClkConfigValue_KipFileName) ? "sdmc:/atmosphere/kips/loader.kip" : "sdmc:/atmosphere/kips/hoc.kip", &table)) {

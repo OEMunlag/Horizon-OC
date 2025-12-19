@@ -67,5 +67,5 @@ class BaseMenuGui : public BaseGui
 
     private:
         char displayStrings[32][32];  // Pre-formatted display strings
-        tsl::Color tempColors[3];     // Pre-computed temperature colors
+        tsl::Color tempColors[7];     // Pre-computed temperature colors
 };
