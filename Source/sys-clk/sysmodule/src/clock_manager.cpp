@@ -81,7 +81,7 @@ ClockManager::ClockManager()
     this->rnxSync = new ReverseNXSync;
 
     if(this->config->GetConfigValue(HocClkConfigValue_KipEditing))
-        this->GetKipData();
+        this->GetKipData();    
 }
 
 ClockManager::~ClockManager()
@@ -512,6 +512,8 @@ bool ClockManager::RefreshContext()
         FileUtils::WriteContextToCsv(this->context);
     }
 
+    this->context->fanLevel = Board::GetFanRotationLevel();
+
     return hasChanged;
 }
 
@@ -632,7 +634,7 @@ void ClockManager::GetKipData() {
         configValues.values[KipConfigValue_marikoCpuLowVmin] = cust_get_mariko_cpu_low_vmin(&table);
         configValues.values[KipConfigValue_marikoCpuHighVmin] = cust_get_mariko_cpu_high_vmin(&table);
         configValues.values[KipConfigValue_marikoCpuMaxVolt] = cust_get_mariko_cpu_max_volt(&table);
-        configValues.values[KipConfigValue_marikoCpuMaxClock] = cust_get_marikoCpuMaxClock(&table) / 1000;
+        configValues.values[KipConfigValue_marikoGpuFullUnlock] = cust_get_marikoCpuMaxClock(&table) / 1000;
         configValues.values[KipConfigValue_eristaCpuBoostClock] = cust_get_erista_cpu_boost(&table) / 1000;
         configValues.values[KipConfigValue_marikoCpuBoostClock] = cust_get_mariko_cpu_boost(&table) / 1000;
 

@@ -43,6 +43,9 @@ typedef struct
     uint32_t PartLoad[SysClkPartLoad_EnumMax];
     uint32_t voltages[HocClkVoltage_EnumMax];
     uint32_t perfConfId;
+    u8 fps;
+    u8 lcdFreq;
+    u8 fanLevel;
 } SysClkContext;
 
 typedef struct
@@ -54,7 +57,5 @@ typedef struct
 } SysClkTitleProfileList;
 
 #define SYSCLK_FREQ_LIST_MAX 32
-#define SYSCLK_GPU_BOOST_HZ 76800000
-#define SYSCLK_CPU_BOOST_HZ 1785000000
 
 #define GLOBAL_PROFILE_ID 0xA111111111111111

@@ -55,6 +55,7 @@ class Board
     static SysClkSocType GetSocType();
     static HorizonOCConsoleType GetConsoleType();
     static std::uint32_t GetVoltage(HocClkVoltage voltage);
+    static u8 GetFanRotationLevel();
 
   protected:
     static void FetchHardwareInfos();

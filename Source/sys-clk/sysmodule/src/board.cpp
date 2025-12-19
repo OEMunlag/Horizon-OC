@@ -49,6 +49,11 @@ Thread cpuCore0Thread;
 Thread cpuCore1Thread;
 Thread cpuCore2Thread;
 Thread cpuCore3Thread;
+Thread MISCThread;
+
+FanController fanController;
+Result fanCheck = 1;
+u8 fanSpeed = 0;
 
 uint32_t GPU_Load_u = 0, fd = 0;
 
@@ -169,6 +174,14 @@ void gpuLoadThread(void*) {
     } while(true);
 }
 
+void miscThread(void*) {
+    float temp;
+    for(;;) {
+        fanControllerGetRotationSpeedLevel(&fanController, &temp);
+        fanSpeed = (u8)temp;
+    }
+}
+
 
 void Board::Initialize()
 {
@@ -205,6 +218,15 @@ void Board::Initialize()
 
     if (R_SUCCEEDED(nvInitialize())) nvCheck = nvOpen(&fd, "/dev/nvhost-ctrl-gpu");
 
+    rc = rgltrInitialize();
+    ASSERT_RESULT_OK(rc, "rgltrInitialize");
+
+    if (R_SUCCEEDED(fanInitialize())) {
+        if (hosversionAtLeast(7,0,0)) fanCheck = fanOpenController(&fanController, 0x3D000001);
+        else fanCheck = fanOpenController(&fanController, 1);
+    }
+
+
     threadCreate(&gpuLThread, gpuLoadThread, NULL, NULL, 0x1000, 0x3F, -2);
 	threadStart(&gpuLThread);
 
@@ -220,8 +242,8 @@ void Board::Initialize()
 	threadCreate(&cpuCore3Thread, CheckCore3, NULL, NULL, 0x1000, 0x10, 3);
 	threadStart(&cpuCore3Thread);
 
-    rc = rgltrInitialize();
-    ASSERT_RESULT_OK(rc, "rgltrInitialize");
+	threadCreate(&MISCThread, miscThread, NULL, NULL, 0x1000, 0x3F, -2);
+	threadStart(&MISCThread);
 
 
     FetchHardwareInfos();
@@ -254,6 +276,8 @@ void Board::Exit()
     threadClose(&cpuCore1Thread);
     threadClose(&cpuCore2Thread);
     threadClose(&cpuCore3Thread);
+    threadClose(&MISCThread);
+    
     rgltrExit();
 }
 
@@ -728,4 +752,8 @@ std::uint32_t Board::GetVoltage(HocClkVoltage voltage)
     }
 
     return out > 0 ? out : 0;
+}
+
+u8 Board::GetFanRotationLevel() {
+    return fanSpeed;
 }

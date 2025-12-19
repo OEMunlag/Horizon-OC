@@ -34,17 +34,17 @@
 
 void MainGui::listUI()
 {
-    this->enabledToggle = new tsl::elm::ToggleListItem("Enable", false);
-    enabledToggle->setStateChangedListener([this](bool state) {
-        Result rc = sysclkIpcSetEnabled(state);
-        if(R_FAILED(rc))
-        {
-            FatalGui::openWithResultCode("sysclkIpcSetEnabled", rc);
-        }
+    // this->enabledToggle = new tsl::elm::ToggleListItem("Enable", false);
+    // enabledToggle->setStateChangedListener([this](bool state) {
+    //     Result rc = sysclkIpcSetEnabled(state);
+    //     if(R_FAILED(rc))
+    //     {
+    //         FatalGui::openWithResultCode("sysclkIpcSetEnabled", rc);
+    //     }
 
-        this->lastContextUpdate = armGetSystemTick();
-        this->context->enabled = state;
-    });
+    //     this->lastContextUpdate = armGetSystemTick();
+    //     this->context->enabled = state;
+    // });
 //    this->listElement->addItem(this->enabledToggle);
 
     tsl::elm::ListItem* appProfileItem = new tsl::elm::ListItem("Edit App Profile");
@@ -59,7 +59,6 @@ void MainGui::listUI()
     });
     this->listElement->addItem(appProfileItem);
 
-    this->listElement->addItem(new tsl::elm::CategoryHeader("Advanced"));
 
     tsl::elm::ListItem* globalProfileItem = new tsl::elm::ListItem("Edit Global Profile");
     globalProfileItem->setClickListener([this](u64 keys) {

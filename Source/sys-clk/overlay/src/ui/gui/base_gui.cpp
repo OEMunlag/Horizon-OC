@@ -126,16 +126,14 @@ static s32 drawDynamicUltraText(
         tsl::Color color(r, g, b, 15);
 
         // ---------------------------------------------
-        // Vertical Water Wobble
+        // Static Position (no vertical wobble)
         // ---------------------------------------------
-        s32 wobbleY = y + sin(phase) * 3;
-
         std::string ls(1, letter);
 
         if (useNotificationMethod)
-            currentX += renderer->drawNotificationString(ls, false, currentX, wobbleY, fontSize, color).first;
+            currentX += renderer->drawNotificationString(ls, false, currentX, y, fontSize, color).first;
         else
-            currentX += renderer->drawString(ls, false, currentX, wobbleY, fontSize, color).first;
+            currentX += renderer->drawString(ls, false, currentX, y, fontSize, color).first;
     }
 
     return currentX;

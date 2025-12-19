@@ -55,8 +55,8 @@ void BaseMenuGui::preDraw(tsl::gfx::Renderer* renderer) {
     if(!this->context) [[unlikely]] return;
     
     // All constants pre-calculated and cached
-    static constexpr const char* const labels[10] = {
-        "App ID", "Profile", "CPU", "GPU", "MEM", "SoC", "Board", "Skin", "Now", "Avg"
+    static constexpr const char* const labels[11] = {
+        "App ID", "Profile", "CPU", "GPU", "MEM", "SoC", "Board", "Skin", "Now", "Avg", "Fan"
     };
 
     static constexpr u32 dataPositions[6] = {63-3+3, 200-1, 344-1-3, 200-1, 342-1, 321-1};
@@ -144,6 +144,13 @@ void BaseMenuGui::preDraw(tsl::gfx::Renderer* renderer) {
     
     renderer->drawString(displayStrings[15], false, dataPositions[3], y, SMALL_TEXT_SIZE, tsl::infoTextColor);  // Power now
     renderer->drawString(displayStrings[16], false, dataPositions[4], y, SMALL_TEXT_SIZE, tsl::infoTextColor);  // Power avg
+    
+    y+=20;
+
+    renderer->drawString(labels[10], false, positions[5], y, SMALL_TEXT_SIZE, tsl::sectionTextColor);
+
+    renderer->drawString(displayStrings[19], false, dataPositions[0], y, SMALL_TEXT_SIZE, tsl::infoTextColor);  // Power now
+
 }
 
 // Optimized refresh - now does all the string formatting once per second
@@ -233,6 +240,7 @@ void BaseMenuGui::refresh()
 
     sprintf(displayStrings[17], "%u%%", context->PartLoad[HocClkPartLoad_GPU] / 10);
     sprintf(displayStrings[18], "%u%%", context->PartLoad[SysClkPartLoad_EMC] / 10);
+    sprintf(displayStrings[19], "%hhu%%", context->fanLevel);
 
 }
 

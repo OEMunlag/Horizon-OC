@@ -124,9 +124,9 @@ void FreqChoiceGui::listUI()
                 this->configList->values[HocClkConfigValue_MarikoMaxCpuClock] < mhz)
                 continue;
 
-            if (moduleName == "gpu" &&
-                this->configList->values[HocClkConfigValue_MarikoMaxGpuClock] < mhz)
-                continue;
+            // if (moduleName == "gpu" &&
+            //     this->configList->values[HocClkConfigValue_MarikoMaxGpuClock] < mhz)
+            //     continue;
 
             // if (moduleName == "mem" &&
             //     this->configList->values[HocClkConfigValue_MarikoMaxMemClock] < mhz)
