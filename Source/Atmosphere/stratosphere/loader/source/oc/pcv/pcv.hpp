@@ -52,16 +52,15 @@ namespace ams::ldr::oc::pcv {
         constexpr u32 CpuVoltOfficial = 1120;
         constexpr u32 CpuVminOfficial = 620;
 
-        static constexpr u32 CpuVoltagePatchValues[]  = { 850, 38, 1120, 1000, 100, 1000, 0 };
-        static constexpr s32 CpuVoltagePatchOffsets[] = {  -2, -1,    5,    6,   7,    8, 9 };
-        static_assert(sizeof(CpuVoltagePatchValues) == sizeof(CpuVoltagePatchOffsets), "Invalid CpuVoltagePatch size");
+        static const u32 cpuVoltagePatchValues[]  = { 850, 38, 1120, 1000, 100, 1000, 0 };
+        static const s32 cpuVoltagePatchOffsets[] = {  -2, -1,    5,    6,   7,    8, 9 };
+        static_assert(sizeof(cpuVoltagePatchValues) == sizeof(cpuVoltagePatchOffsets), "Invalid CpuVoltagePatch size");
 
-        static constexpr u32 CpuVoltageSecondaryPatchValues[] = { 800, 1120, 0, 800, 1120, 0, 620, 1120, 20000, 620, 1120, 70000, 950, 1132, 0, 950 };
-        static constexpr s32 CpuVoltageSecondaryPatchOffsets[] = { -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-        static_assert(sizeof(CpuVoltageSecondaryPatchValues) == sizeof(CpuVoltageSecondaryPatchOffsets), "Invalid secondary CpuVoltagePatch size");
+        static const u32 cpuVoltageSecondaryPatchValues[] = { 800, 1120, 0, 800, 1120, 0, 620, 1120, 20000, 620, 1120, 70000, 950, 1132, 0, 950 };
+        static const s32 cpuVoltageSecondaryPatchOffsets[] = { -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+        static_assert(sizeof(cpuVoltageSecondaryPatchValues) == sizeof(cpuVoltageSecondaryPatchOffsets), "Invalid secondary CpuVoltagePatch size");
 
-        static constexpr u32 AllowedCpuMaxFrequencies[] = { 1'963'000, 2'397'000, 2'499'000, 2'601'000, 2'703'000 /*, 2'805'000 */}; // 2805MHz should NOT be used unless you have a god speedo!
-
+        static const u32 allowedCpuMaxFrequencies[] = { 2'397'000, 2'499'000, 2'601'000, 2'703'000, };
 
         constexpr cvb_entry_t GpuCvbTableDefault[] = {
             // GPUB01_NA_CVB_TABLE
@@ -89,9 +88,9 @@ namespace ams::ldr::oc::pcv {
         constexpr u32 GpuClkPllLimit = 2'600'000;
         constexpr int GpuVminOfficial = 610;
 
-        static constexpr u32 GpuDVFSPattern[] = { 1050, 1000, 100, 1000, 10, };
-        static constexpr u32 GpuVoltThermalPattern[] = { 800, 1120, 0, 610, 1120, 20000, 610, 1120, 30000, 610, 1120, 50000, 610, 1120, 70000, 610, 1120, 90000, };
-        static_assert(sizeof(GpuVoltThermalPattern) == 72, "Invalid GpuVoltThermalPattern");
+        static const u32 gpuDVFSPattern[] = { 1050, 1000, 100, 1000, 10, };
+        static const u32 gpuVoltThermalPattern[] = { 800, 1120, 0, 610, 1120, 20000, 610, 1120, 30000, 610, 1120, 50000, 610, 1120, 70000, 610, 1120, 90000, };
+        static_assert(sizeof(gpuVoltThermalPattern) == 72, "Invalid gpuVoltThermalPattern");
 
         struct SpeedoVminTable {
             u32 speedo;
@@ -103,7 +102,7 @@ namespace ams::ldr::oc::pcv {
             u32 offset;
         };
 
-        static constexpr SpeedoVminTable Table[] {
+        static const SpeedoVminTable vminTable[] {
             {1560,       590},
             {1583,       570},
             {1620,       565},
@@ -114,7 +113,7 @@ namespace ams::ldr::oc::pcv {
             {0xFFFFFFFF, 530},
         };
 
-        static constexpr RamVminOffsetTable RamOffset[] {
+        static const RamVminOffsetTable ramOffset[] {
             {2400000,     5},
             {2533000,    10},
             {2666000,    15},
@@ -136,15 +135,24 @@ namespace ams::ldr::oc::pcv {
          * #31 |30 29|28 27 26 25 24 23|22 21|20 19 18 17 16 15 14 13 12 11 10  9  8  7  6  5 |4  3  2  1  0
          *   0 | 1 1 | 1  0  0  1  0  1| 0  1| 0  0  0  0  0  0  0  0  0  0  0  0  1  1  1  0 |0  1  0  1  1
          */
+
         inline constexpr u32 asm_pattern[] = {0x52820000, 0x72A001C0};
-        inline auto asm_compare_no_rd = [](u32 ins1, u32 ins2)
-        { return ((ins1 ^ ins2) >> 5) == 0; };
-        inline auto asm_get_rd = [](u32 ins)
-        { return ins & ((1 << 5) - 1); };
-        inline auto asm_set_rd = [](u32 ins, u8 rd)
-        { return (ins & 0xFFFFFFE0) | (rd & 0x1F); };
-        inline auto asm_set_imm16 = [](u32 ins, u16 imm)
-        { return (ins & 0xFFE0001F) | ((imm & 0xFFFF) << 5); };
+
+        inline auto asm_compare_no_rd = [](u32 ins1, u32 ins2) {
+            return ((ins1 ^ ins2) >> 5) == 0;
+        };
+
+        inline auto asm_get_rd = [](u32 ins) {
+            return ins & ((1 << 5) - 1);
+        };
+
+        inline auto asm_set_rd = [](u32 ins, u8 rd) {
+            return (ins & 0xFFFFFFE0) | (rd & 0x1F);
+        };
+
+        inline auto asm_set_imm16 = [](u32 ins, u16 imm) {
+            return (ins & 0xFFE0001F) | ((imm & 0xFFFF) << 5);
+        };
 
         inline bool GpuMaxClockPatternFn(u32 *ptr32) {
             return asm_compare_no_rd(*ptr32, asm_pattern[0]);
@@ -194,8 +202,6 @@ namespace ams::ldr::oc::pcv {
 
         constexpr int GpuVminOfficial = 810;
 
-        constexpr int GpuVmaxOfficial = 1200; /* No point in patching this but here's the info if one needs it */
-
         constexpr u32 CpuVoltOfficial = 1235;
 
         constexpr u32 CpuVoltL4T = 1235'000;
@@ -208,8 +214,6 @@ namespace ams::ldr::oc::pcv {
         }
 
         constexpr u32 GpuClkPllLimit = 921'600'000;
-        constexpr u32 GpuClkPllMax = 1300'000'000;  /* No point in patching this but here's the info if one needs it */
-        constexpr u32 GpuClkPllLimit2 = 2'600'000;  /* No point in patching this but here's the info if one needs it */
 
         /* GPU Max Clock asm Pattern:
          *
