@@ -306,7 +306,7 @@ void MiscGui::listUI()
     addConfigButton(
         HocClkConfigValue_KipFileName,
         "KIP File Name",
-        ValueRange(0, 6, 1, "", 0),
+        ValueRange(0, 1, 1, "", 0),
         "KIP File Name",
         &thresholdsDisabled,
         {},
@@ -330,6 +330,17 @@ void MiscGui::listUI()
 
     this->listElement->addItem(new tsl::elm::CategoryHeader("RAM/Memory Settings"));
 
+    addConfigButton(
+        KipConfigValue_emcDvbShift,
+        "DVB Shift",
+        ValueRange(0, 10, 1, "", 1),
+        "DVB Shift",
+        &thresholdsDisabled,
+        {},
+        {},
+        false
+    );
+    
     std::map<uint32_t, std::string> emc_freq_label_e = {
         {133120000, "Handheld"},
         {160000000, "Docked & Safe Max"},

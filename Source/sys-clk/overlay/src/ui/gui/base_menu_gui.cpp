@@ -273,7 +273,7 @@ void BaseMenuGui::refresh()
 tsl::elm::Element* BaseMenuGui::baseUI()
 {
     auto* list = new tsl::elm::List();
-    list->addItem(new tsl::elm::CustomDrawer([](tsl::gfx::Renderer*, s32, s32, s32, s32) {}), 20);
+    list->addItem(new tsl::elm::CustomDrawer([](tsl::gfx::Renderer*, s32, s32, s32, s32) {}), 50); // add a bit of space
     this->listElement = list;
     this->listUI();
 
