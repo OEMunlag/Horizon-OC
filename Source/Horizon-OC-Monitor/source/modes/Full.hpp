@@ -234,10 +234,10 @@ public:
                         renderer->drawString(DeltaRAM_c, false, COMMON_MARGIN +  deltaOffset, height_offset, 15, (settings.textColor));
                     }
                     if (R_SUCCEEDED(sysclkCheck)) {
-                        static std::vector<std::string> ramLoadColoredChars = {"CPU", "GPU"};
+                        static std::vector<std::string> PartLoadColoredChars = {"CPU", "GPU"};
                         //static auto loadLabelWidth = renderer->getTextDimensions("Load: ", false, 15).first;
                         renderer->drawString("Load", false, COMMON_MARGIN, height_offset+15, 15, (settings.catColor2));
-                        renderer->drawStringWithColoredSections(RAM_load_c, false, ramLoadColoredChars, COMMON_MARGIN + valueOffset, height_offset+15, 15, (settings.textColor), settings.catColor2);
+                        renderer->drawStringWithColoredSections(RAM_load_c, false, PartLoadColoredChars, COMMON_MARGIN + valueOffset, height_offset+15, 15, (settings.textColor), settings.catColor2);
                     }
                 }
                 if (R_SUCCEEDED(Hinted)) {
@@ -347,7 +347,7 @@ public:
             renderer->drawString(" to Exit", false, baseX + pressWidth + keyComboWidth, baseY, fontSize, (tsl::bottomTextColor));
         });
         
-        auto rootFrame = new tsl::elm::HeaderOverlayFrame("Status Monitor", APP_VERSION);
+        auto rootFrame = new tsl::elm::HeaderOverlayFrame("Horizon OC Monitor", APP_VERSION);
         rootFrame->setContent(Status);
 
         return rootFrame;
@@ -446,11 +446,11 @@ public:
         );
         
         if (R_SUCCEEDED(sysclkCheck)) {
-            const int RAM_GPU_Load = ramLoad[SysClkPartLoad_EMC] - ramLoad[SysClkPartLoad_EMCCpu];
+            const int RAM_GPU_Load = PartLoad[SysClkPartLoad_EMC] - PartLoad[SysClkPartLoad_EMCCpu];
             snprintf(RAM_load_c, sizeof RAM_load_c, 
                 "%u.%u%%    CPU  %u.%u%%   GPU  %u.%u%%",
-                ramLoad[SysClkPartLoad_EMC] / 10, ramLoad[SysClkPartLoad_EMC] % 10,
-                ramLoad[SysClkPartLoad_EMCCpu] / 10, ramLoad[SysClkPartLoad_EMCCpu] % 10,
+                PartLoad[SysClkPartLoad_EMC] / 10, PartLoad[SysClkPartLoad_EMC] % 10,
+                PartLoad[SysClkPartLoad_EMCCpu] / 10, PartLoad[SysClkPartLoad_EMCCpu] % 10,
                 RAM_GPU_Load / 10, RAM_GPU_Load % 10);
         }
         ///Thermal

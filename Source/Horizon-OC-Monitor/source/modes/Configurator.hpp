@@ -157,7 +157,7 @@ public:
         
         list->jumpToItem("", ult::CHECKMARK_SYMBOL, false);
         
-        tsl::elm::OverlayFrame* rootFrame = new tsl::elm::OverlayFrame("Status Monitor", "Alpha");
+        tsl::elm::OverlayFrame* rootFrame = new tsl::elm::OverlayFrame("Horizon OC Monitor", "Alpha");
         rootFrame->setContent(list);
         return rootFrame;
     }
@@ -262,7 +262,7 @@ public:
         // Jump to currently selected item
         list->jumpToItem("", ult::CHECKMARK_SYMBOL, false);
         
-        tsl::elm::OverlayFrame* rootFrame = new tsl::elm::OverlayFrame("Status Monitor", "DTC Format");
+        tsl::elm::OverlayFrame* rootFrame = new tsl::elm::OverlayFrame("Horizon OC Monitor", "DTC Format");
         rootFrame->setContent(list);
         return rootFrame;
     }
@@ -424,11 +424,11 @@ public:
             list->addItem(socVoltage);
 
             if (isMiniMode) {
-                auto* ramLoadCPUGPU = new tsl::elm::ToggleListItem("RAM Load CPU/GPU", getCurrentShowRAMLoadCPUGPU());
-                ramLoadCPUGPU->setStateChangedListener([this, section](bool state) {
+                auto* PartLoadCPUGPU = new tsl::elm::ToggleListItem("RAM Load CPU/GPU", getCurrentShowRAMLoadCPUGPU());
+                PartLoadCPUGPU->setStateChangedListener([this, section](bool state) {
                     ult::setIniFileValue(configIniPath, section, "show_RAM_load_CPU_GPU", state ? "true" : "false");
                 });
-                list->addItem(ramLoadCPUGPU);
+                list->addItem(PartLoadCPUGPU);
             }
 
             if (isMiniMode || isMicroMode) {
@@ -494,7 +494,7 @@ public:
             jumpItemExactMatch = false;
         }
 
-        tsl::elm::OverlayFrame* rootFrame = new tsl::elm::OverlayFrame("Status Monitor", "Configuration");
+        tsl::elm::OverlayFrame* rootFrame = new tsl::elm::OverlayFrame("Horizon OC Monitor", "Configuration");
         rootFrame->setContent(list);
         return rootFrame;
     }
@@ -745,7 +745,7 @@ public:
         
         list->jumpToItem("", ult::CHECKMARK_SYMBOL, false);
 
-        tsl::elm::OverlayFrame* rootFrame = new tsl::elm::OverlayFrame("Status Monitor", "Configuration");
+        tsl::elm::OverlayFrame* rootFrame = new tsl::elm::OverlayFrame("Horizon OC Monitor", "Configuration");
         rootFrame->setContent(list);
         return rootFrame;
     }
@@ -808,7 +808,7 @@ public:
         
         list->jumpToItem("", ult::CHECKMARK_SYMBOL, false);
 
-        tsl::elm::OverlayFrame* rootFrame = new tsl::elm::OverlayFrame("Status Monitor", "Configuration");
+        tsl::elm::OverlayFrame* rootFrame = new tsl::elm::OverlayFrame("Horizon OC Monitor", "Configuration");
         rootFrame->setContent(list);
         return rootFrame;
     }
@@ -896,7 +896,7 @@ public:
         
         list->jumpToItem("", ult::CHECKMARK_SYMBOL, false);
         
-        tsl::elm::OverlayFrame* rootFrame = new tsl::elm::OverlayFrame("Status Monitor", "Font Sizes");
+        tsl::elm::OverlayFrame* rootFrame = new tsl::elm::OverlayFrame("Horizon OC Monitor", "Font Sizes");
         rootFrame->setContent(list);
         return rootFrame;
     }
@@ -969,7 +969,7 @@ public:
         });
         list->addItem(dockedItem);
         
-        tsl::elm::OverlayFrame* rootFrame = new tsl::elm::OverlayFrame("Status Monitor", "Configuration");
+        tsl::elm::OverlayFrame* rootFrame = new tsl::elm::OverlayFrame("Horizon OC Monitor", "Configuration");
         rootFrame->setContent(list);
         list->jumpToItem(jumpItemName, jumpItemValue, jumpItemExactMatch);
         {
@@ -1181,7 +1181,7 @@ public:
         }
         list->jumpToItem("", _jumpItemValue, false);
         
-        tsl::elm::OverlayFrame* rootFrame = new tsl::elm::OverlayFrame("Status Monitor", "Colors");
+        tsl::elm::OverlayFrame* rootFrame = new tsl::elm::OverlayFrame("Horizon OC Monitor", "Colors");
         rootFrame->setContent(list);
         return rootFrame;
     }
@@ -1587,7 +1587,7 @@ public:
         }
         
         //list->disableCaching();
-        tsl::elm::OverlayFrame* rootFrame = new tsl::elm::OverlayFrame("Status Monitor", "Configuration");
+        tsl::elm::OverlayFrame* rootFrame = new tsl::elm::OverlayFrame("Horizon OC Monitor", "Configuration");
         rootFrame->setContent(list);
         return rootFrame;
     }
@@ -1780,7 +1780,7 @@ public:
             jumpItemExactMatch = false;
         }
         
-        tsl::elm::OverlayFrame* rootFrame = new tsl::elm::OverlayFrame("Status Monitor", "Configuration");
+        tsl::elm::OverlayFrame* rootFrame = new tsl::elm::OverlayFrame("Horizon OC Monitor", "Configuration");
         rootFrame->setContent(list);
         return rootFrame;
     }
@@ -2022,7 +2022,7 @@ public:
             jumpItemExactMatch = false;
         }
         
-        tsl::elm::OverlayFrame* rootFrame = new tsl::elm::OverlayFrame("Status Monitor", modeName);
+        tsl::elm::OverlayFrame* rootFrame = new tsl::elm::OverlayFrame("Horizon OC Monitor", modeName);
         rootFrame->setContent(list);
         return rootFrame;
     }

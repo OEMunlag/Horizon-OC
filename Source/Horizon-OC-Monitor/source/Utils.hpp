@@ -18,12 +18,13 @@
 #include "rgltr_services.h"  // for extern Service g_rgltrSrv, etc.
 
 
-#include "../../sys-clk/common/include/sysclk/client/ipc.h"
 
 #if defined(__cplusplus)
 extern "C"
 {
 #endif
+
+#include <sysclk/client/ipc.h>
 
 #if defined(__cplusplus)
 }
@@ -221,10 +222,11 @@ uint64_t lastFrameNumber = 0;
 uint32_t realCPU_Hz = 0;
 uint32_t realGPU_Hz = 0;
 uint32_t realRAM_Hz = 0;
-uint32_t ramLoad[SysClkPartLoad_EnumMax];
+uint32_t PartLoad[SysClkPartLoad_EnumMax];
 uint32_t realCPU_mV = 0; 
 uint32_t realGPU_mV = 0; 
-uint32_t realRAM_mV = 0; 
+uint32_t realVDD2_mV = 0;
+uint32_t realVDDQ_mV = 0;
 uint32_t realSOC_mV = 0; 
 uint8_t refreshRate = 0;
 
@@ -515,8 +517,10 @@ std::string getVersionString() {
 
 
 bool usingEOS() {
-    return true;
+    const std::string versionString = getVersionString();
+    return versionString.find("eos") != std::string::npos;
 }
+
 
 // === ULTRA-FAST VOLTAGE READING ===
 static constexpr PowerDomainId domains[] = {
@@ -574,12 +578,13 @@ void Misc(void*) {
                 realCPU_Hz = sysclkCTX.realFreqs[SysClkModule_CPU];
                 realGPU_Hz = sysclkCTX.realFreqs[SysClkModule_GPU];
                 realRAM_Hz = sysclkCTX.realFreqs[SysClkModule_MEM];
-                ramLoad[SysClkPartLoad_EMC] = sysclkCTX.PartLoad[SysClkPartLoad_EMC];
-                ramLoad[SysClkPartLoad_EMCCpu] = sysclkCTX.PartLoad[SysClkPartLoad_EMCCpu];
+                PartLoad[SysClkPartLoad_EMC] = sysclkCTX.PartLoad[SysClkPartLoad_EMC];
+                PartLoad[SysClkPartLoad_EMCCpu] = sysclkCTX.PartLoad[SysClkPartLoad_EMCCpu];
                 
                 realCPU_mV = sysclkCTX.voltages[HocClkVoltage_CPU]; 
                 realGPU_mV = sysclkCTX.voltages[HocClkVoltage_GPU]; 
-                realRAM_mV = sysclkCTX.voltages[HocClkVoltage_EMCVDDQ_MarikoOnly]; 
+                realVDD2_mV = sysclkCTX.voltages[HocClkVoltage_EMCVDD2];
+                realVDDQ_mV = sysclkCTX.voltages[HocClkVoltage_EMCVDDQ_MarikoOnly];
                 realSOC_mV = sysclkCTX.voltages[HocClkVoltage_SOC];
             }
         }
@@ -697,19 +702,18 @@ void Misc3(void*) {
         
         // Get sys-clk data
         if (R_SUCCEEDED(sysclkCheck)) {
-            SysClkContext sysclkCTX;
-            if (R_SUCCEEDED(sysclkIpcGetCurrentContext(&sysclkCTX))) {
-                ramLoad[SysClkPartLoad_EMC] = sysclkCTX.PartLoad[SysClkPartLoad_EMC];
-                ramLoad[SysClkPartLoad_EMCCpu] = sysclkCTX.PartLoad[SysClkPartLoad_EMCCpu];
-                
-                // Get voltages from sys-clk if using EOS
+                SysClkContext sysclkCTX;
+                if (R_SUCCEEDED(sysclkIpcGetCurrentContext(&sysclkCTX))) {
+                    PartLoad[SysClkPartLoad_EMC] = sysclkCTX.PartLoad[SysClkPartLoad_EMC];
+                    PartLoad[SysClkPartLoad_EMCCpu] = sysclkCTX.PartLoad[SysClkPartLoad_EMCCpu];
+                    
                     realCPU_mV = sysclkCTX.voltages[HocClkVoltage_CPU]; 
                     realGPU_mV = sysclkCTX.voltages[HocClkVoltage_GPU]; 
-                    realRAM_mV = sysclkCTX.voltages[HocClkVoltage_EMCVDDQ_MarikoOnly]; 
                     realSOC_mV = sysclkCTX.voltages[HocClkVoltage_SOC];
+                    realVDD2_mV = sysclkCTX.voltages[HocClkVoltage_EMCVDD2];
+                    realVDDQ_mV = sysclkCTX.voltages[HocClkVoltage_EMCVDDQ_MarikoOnly];
             }
         }
-        
         // Temperatures
         if (R_SUCCEEDED(i2cCheck)) {
             Tmp451GetSocTemp(&SOC_temperatureF);

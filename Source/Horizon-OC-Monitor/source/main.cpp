@@ -4,8 +4,6 @@
 #include <cstdlib>
 #include <ctime>
 
-#include "../../sys-clk/common/include/sysclk.h"
-
 //static tsl::elm::HeaderOverlayFrame* rootFrame = nullptr;
 static bool skipMain = false;
 static std::string lastSelectedItem;
@@ -53,7 +51,7 @@ static std::string lastSelectedItem;
 //        });
 //        list->addItem(comFPSCounter);
 //
-//        tsl::elm::HeaderOverlayFrame* rootFrame = new tsl::elm::HeaderOverlayFrame("Status Monitor", "Modes");
+//        tsl::elm::HeaderOverlayFrame* rootFrame = new tsl::elm::HeaderOverlayFrame("Horizon OC Monitor", "Modes");
 //        rootFrame->setContent(list);
 //
 //        return rootFrame;
@@ -378,7 +376,7 @@ public:
 
 
         //list->disableCaching();
-        tsl::elm::HeaderOverlayFrame* rootFrame = new tsl::elm::HeaderOverlayFrame("Status Monitor", APP_VERSION);
+        tsl::elm::HeaderOverlayFrame* rootFrame = new tsl::elm::HeaderOverlayFrame("Horizon OC Monitor", APP_VERSION);
         rootFrame->setContent(list);
 
         return rootFrame;
@@ -988,7 +986,7 @@ inline void setupMode(const std::string& modeType = "") {
 // This function gets called on startup to create a new Overlay object
 int main(int argc, char **argv) {
 
-    // load heap settings outside of loop (only Status Monitor directive)
+    // load heap settings outside of loop (only Horizon OC Monitor directive)
     ult::currentHeapSize = ult::getCurrentHeapSize();
     ult::expandedMemory = ult::currentHeapSize >= ult::OverlayHeapSize::Size_8MB;
     ult::limitedMemory = ult::currentHeapSize == ult::OverlayHeapSize::Size_4MB;

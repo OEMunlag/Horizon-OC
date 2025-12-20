@@ -821,13 +821,13 @@ public:
             if (R_SUCCEEDED(sysclkCheck)) {
                 // Use sys-clk's RAM load if available
                 snprintf(MICRO_RAM_all_c, sizeof(MICRO_RAM_all_c), "%hu%%",
-                         ramLoad[SysClkPartLoad_EMC] / 10);
+                         PartLoad[SysClkPartLoad_EMC] / 10);
             } else {
                 // Calculate percentage manually when sys-clk isn't available
                 const uint64_t RAM_Total_all = RAM_Total_application_u + RAM_Total_applet_u + RAM_Total_system_u + RAM_Total_systemunsafe_u;
                 const uint64_t RAM_Used_all = RAM_Used_application_u + RAM_Used_applet_u + RAM_Used_system_u + RAM_Used_systemunsafe_u;
-                const unsigned ramLoadPercent = (RAM_Total_all > 0) ? (unsigned)((RAM_Used_all * 100) / RAM_Total_all) : 0;
-                snprintf(MICRO_RAM_all_c, sizeof(MICRO_RAM_all_c), "%u%%", ramLoadPercent);
+                const unsigned PartLoadPercent = (RAM_Total_all > 0) ? (unsigned)((RAM_Used_all * 100) / RAM_Total_all) : 0;
+                snprintf(MICRO_RAM_all_c, sizeof(MICRO_RAM_all_c), "%u%%", PartLoadPercent);
             }
         }
 
@@ -857,8 +857,8 @@ public:
         if (settings.realVolts && (settings.showVDD2 || settings.showVDDQ)) {
             /* realRAM_mV packs VDD2 | VDDQ in 10-µV units        *
              * → split, convert to mV                           */
-            const float mv_vdd2 = (realRAM_mV / 10000) / 10.0f;   // VDD2
-            const uint32_t mv_vddq = (realRAM_mV % 10000) / 10;   // VDDQ
+            const float mv_vdd2 = realVDD2_mV / 1000;   // VDD2
+            const uint32_t mv_vddq = realVDDQ_mV / 1000;   // VDDQ
         
             // Build voltage string based on settings
             RAM_volt_c[0] = '\0'; // Start with empty string

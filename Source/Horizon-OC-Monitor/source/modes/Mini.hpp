@@ -991,35 +991,35 @@ public:
                              RAM_Hz / 1000000, (RAM_Hz / 100000) % 10);
                 }
             } else {
-                unsigned ramLoadInt;
+                unsigned PartLoadInt;
                 
                 if (R_SUCCEEDED(sysclkCheck)) {
-                    ramLoadInt = ramLoad[SysClkPartLoad_EMC] / 10;
+                    PartLoadInt = PartLoad[SysClkPartLoad_EMC] / 10;
                     
                     if (settings.showRAMLoadCPUGPU) {
-                        unsigned ramCpuLoadInt = ramLoad[SysClkPartLoad_EMCCpu] / 10;
-                        int RAM_GPU_Load = ramLoad[SysClkPartLoad_EMC] - ramLoad[SysClkPartLoad_EMCCpu];
+                        unsigned ramCpuLoadInt = PartLoad[SysClkPartLoad_EMCCpu] / 10;
+                        int RAM_GPU_Load = PartLoad[SysClkPartLoad_EMC] - PartLoad[SysClkPartLoad_EMCCpu];
                         unsigned ramGpuLoadInt = RAM_GPU_Load / 10;
                         
                         if (settings.realFrequencies && realRAM_Hz) {
                             snprintf(MINI_RAM_var_compressed_c, sizeof(MINI_RAM_var_compressed_c),
                                      "%u%%[%u%%,%u%%]@%hu.%hhu",
-                                     ramLoadInt, ramCpuLoadInt, ramGpuLoadInt,
+                                     PartLoadInt, ramCpuLoadInt, ramGpuLoadInt,
                                      realRAM_Hz / 1000000, (realRAM_Hz / 100000) % 10);
                         } else {
                             snprintf(MINI_RAM_var_compressed_c, sizeof(MINI_RAM_var_compressed_c),
                                      "%u%%[%u%%,%u%%]@%hu.%hhu",
-                                     ramLoadInt, ramCpuLoadInt, ramGpuLoadInt,
+                                     PartLoadInt, ramCpuLoadInt, ramGpuLoadInt,
                                      RAM_Hz / 1000000, (RAM_Hz / 100000) % 10);
                         }
                     } else {
                         if (settings.realFrequencies && realRAM_Hz) {
                             snprintf(MINI_RAM_var_compressed_c, sizeof(MINI_RAM_var_compressed_c),
-                                     "%u%%@%hu.%hhu", ramLoadInt,
+                                     "%u%%@%hu.%hhu", PartLoadInt,
                                      realRAM_Hz / 1000000, (realRAM_Hz / 100000) % 10);
                         } else {
                             snprintf(MINI_RAM_var_compressed_c, sizeof(MINI_RAM_var_compressed_c),
-                                     "%u%%@%hu.%hhu", ramLoadInt,
+                                     "%u%%@%hu.%hhu", PartLoadInt,
                                      RAM_Hz / 1000000, (RAM_Hz / 100000) % 10);
                         }
                     }
@@ -1028,24 +1028,24 @@ public:
                                                    RAM_Total_system_u + RAM_Total_systemunsafe_u;
                     const uint64_t RAM_Used_all = RAM_Used_application_u + RAM_Used_applet_u + 
                                                   RAM_Used_system_u + RAM_Used_systemunsafe_u;
-                    ramLoadInt = (RAM_Total_all > 0) ? (unsigned)((RAM_Used_all * 100) / RAM_Total_all) : 0;
+                    PartLoadInt = (RAM_Total_all > 0) ? (unsigned)((RAM_Used_all * 100) / RAM_Total_all) : 0;
                     
                     if (settings.realFrequencies && realRAM_Hz) {
                         snprintf(MINI_RAM_var_compressed_c, sizeof(MINI_RAM_var_compressed_c),
-                                 "%u%%@%hu.%hhu", ramLoadInt,
+                                 "%u%%@%hu.%hhu", PartLoadInt,
                                  realRAM_Hz / 1000000, (realRAM_Hz / 100000) % 10);
                     } else {
                         snprintf(MINI_RAM_var_compressed_c, sizeof(MINI_RAM_var_compressed_c),
-                                 "%u%%@%hu.%hhu", ramLoadInt,
+                                 "%u%%@%hu.%hhu", PartLoadInt,
                                  RAM_Hz / 1000000, (RAM_Hz / 100000) % 10);
                     }
                 }
             }
     
             if (settings.realVolts) {
-                const float mv_vdd2_f = realRAM_mV / 100000.0f;
-                const uint32_t mv_vdd2_i = realRAM_mV / 100000;
-                const uint32_t mv_vddq   = (realRAM_mV % 10000) / 10;
+                const float mv_vdd2_f = realVDD2_mV / 100000.0f;
+                const uint32_t mv_vdd2_i = realVDD2_mV / 1000;
+                const uint32_t mv_vddq   = realVDDQ_mV / 1000;
             
                 if (isMariko) {
                     if (settings.showVDDQ && settings.showVDD2) {

@@ -1,13 +1,13 @@
 # Modes
 
-Status Monitor Overlay from 1.0.0 release contains five modes to choose from Main Menu.<br>
+Horizon OC Monitor Overlay from 1.0.0 release contains five modes to choose from Main Menu.<br>
 For additional functions you need to install:
 - [SaltyNX](https://github.com/masagrator/SaltyNX/releases)
 - [sys-clk 2.0.0_rc4+](https://github.com/retronx-team/sys-clk/releases) (using closed source forks of sys-clk can result in retrieving wrong real clockrates and ram load)
 
 # Full
 
-This mode you can know from older releases of Status Monitor. It contains all informations properly described and supported with high precision.
+This mode you can know from older releases of Horizon OC Monitor. It contains all informations properly described and supported with high precision.
 
 - CPU Usage 
   - Real Frequency: `%.1f` = Real clockrate of all CPU cores in MHz (This shows only when sys-clk 2.0.0_4c+ is installed)
