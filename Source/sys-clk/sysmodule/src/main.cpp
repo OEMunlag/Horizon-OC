@@ -37,7 +37,6 @@
 #include "process_management.h"
 #include "clock_manager.h"
 #include "ipc_service.h"
-#include "fancontrol.h"
 #define INNER_HEAP_SIZE 0x30000
 
 extern "C"

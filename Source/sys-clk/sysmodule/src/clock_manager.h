@@ -35,6 +35,7 @@
 #include "board.h"
 #include <nxExt/cpp/lockable_mutex.h>
 #include "integrations.h"
+void governorThread(void*);
 
 class ReverseNXSync;
 
@@ -60,6 +61,7 @@ class ClockManager
     void SetRNXRTMode(ReverseNXMode mode);
     void SetKipData();
     void GetKipData();
+    static void GovernorThread(void* arg);
     struct {
       std::uint32_t count;
       std::uint32_t list[SYSCLK_FREQ_LIST_MAX];

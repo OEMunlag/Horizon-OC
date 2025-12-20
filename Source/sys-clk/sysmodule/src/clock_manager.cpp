@@ -39,7 +39,7 @@
 #define HOSPPC_HAS_BOOST (hosversionAtLeast(7,0,0))
 
 ClockManager *ClockManager::instance = NULL;
-
+Thread governorTHREAD;
 
 ClockManager *ClockManager::GetInstance()
 {
@@ -84,13 +84,26 @@ ClockManager::ClockManager()
     this->rnxSync = new ReverseNXSync;
 
     if(this->config->GetConfigValue(HocClkConfigValue_KipEditing))
-        this->GetKipData();    
+        this->GetKipData();   
+    threadCreate(
+        &governorTHREAD,
+        ClockManager::GovernorThread,
+        this,
+        NULL,
+        0x2000,
+        0x3F,
+        -2
+    );
+
+	threadStart(&governorTHREAD);
+ 
 }
 
 ClockManager::~ClockManager()
 {
     delete this->config;
     delete this->context;
+    threadClose(&governorTHREAD);
 }
 
 SysClkContext ClockManager::GetCurrentContext()
@@ -249,6 +262,105 @@ u32 findIndexMHz(u32 arr[], u32 size, u32 value) {
     return 0;
 }
 
+void ClockManager::GovernorThread(void* arg)
+{
+    ClockManager* mgr = static_cast<ClockManager*>(arg);
+
+    for (;;)
+    {
+        if (!mgr->running)
+        {
+            svcSleepThread(50'000'000);
+            continue;
+        }
+
+        std::scoped_lock lock{mgr->contextMutex};
+
+        if (!mgr->config->GetConfigValue(HocClkConfigValue_HandheldGovernor))
+        {
+            svcSleepThread(50'000'000);
+            continue;
+        }
+
+        auto& table = mgr->freqTable[SysClkModule_GPU];
+        if (table.count == 0)
+        {
+            svcSleepThread(50'000'000);
+            continue;
+        }
+
+        u32 currentHz = Board::GetHz(SysClkModule_GPU);
+
+        u32 index = 0;
+        for (u32 i = 0; i < table.count; i++)
+        {
+            if (table.list[i] == currentHz)
+            {
+                index = i;
+                break;
+            }
+        }
+
+        u32 targetHz = mgr->context->overrideFreqs[SysClkModule_GPU];
+        if (!targetHz)
+        {
+            targetHz = mgr->config->GetAutoClockHz(
+                mgr->context->applicationId,
+                SysClkModule_GPU,
+                mgr->context->profile
+            );
+
+            if (!targetHz)
+            {
+                targetHz = mgr->config->GetAutoClockHz(
+                    GLOBAL_PROFILE_ID,
+                    SysClkModule_GPU,
+                    mgr->context->profile
+                );
+            }
+        }
+
+        int load = Board::GetPartLoad(HocClkPartLoad_GPU);
+
+        if (load < 600 && index > 0)
+        {
+            index--;
+        }
+        else if (load > 800 && index + 1 < table.count)
+        {
+            index++;
+        }
+
+        if (targetHz)
+        {
+            u32 targetIndex = index;
+            for (u32 i = 0; i < table.count; i++)
+            {
+                if (table.list[i] >= targetHz)
+                {
+                    targetIndex = i;
+                    break;
+                }
+            }
+
+            if (index > targetIndex && index > 0)
+                index--;
+            else if (index < targetIndex && index + 1 < table.count)
+                index++;
+        }
+
+        u32 newHz = table.list[index];
+        if (mgr->IsAssignableHz(SysClkModule_GPU, newHz))
+        {
+            Board::SetHz(SysClkModule_GPU, newHz);
+            mgr->context->freqs[SysClkModule_GPU] = newHz;
+        }
+
+        svcSleepThread(50'000'000);
+    }
+}
+
+
 void ClockManager::Tick()
 {
     std::scoped_lock lock{this->contextMutex};
@@ -279,50 +391,6 @@ void ClockManager::Tick()
     if(((tmp451TempSoc() / 1000) > (int)this->config->GetConfigValue(HocClkConfigValue_ThermalThrottleThreshold)) && this->config->GetConfigValue(HocClkConfigValue_ThermalThrottle)) {
         ResetToStockClocks();
         return;
-    }
-
-    u64 currentFreqIndex = findIndex(freqTable[SysClkModule_GPU].list, SYSCLK_FREQ_LIST_MAX, Board::GetHz(SysClkModule_GPU));
-    if(this->config->GetConfigValue(HocClkConfigValue_HandheldGovernor)) {
-        u64 targetHz = this->context->overrideFreqs[SysClkModule_GPU];
-            if (!targetHz)
-            {
-                targetHz = this->config->GetAutoClockHz(this->context->applicationId, SysClkModule_GPU, this->context->profile);
-                if(!targetHz)
-                    targetHz = this->config->GetAutoClockHz(GLOBAL_PROFILE_ID, SysClkModule_GPU, this->context->profile);
-            }
-        if(Board::GetPartLoad(HocClkPartLoad_GPU) < 600) {
-            currentFreqIndex--;
-            if(currentFreqIndex < 0) {
-                currentFreqIndex = 0;
-            }
-            Board::SetHz(SysClkModule_GPU, freqTable[SysClkModule_GPU].list[currentFreqIndex]);
-        }
-        if(Board::GetPartLoad(HocClkPartLoad_GPU) > 800) {
-            currentFreqIndex++;
-
-            if(!targetHz) {
-                if(IsAssignableHz(SysClkModule_GPU, freqTable[SysClkModule_GPU].list[currentFreqIndex])) {
-                    if(Board::GetSocType() == SysClkSocType_Mariko) {
-                        if(freqTable[SysClkModule_GPU].list[currentFreqIndex] / 1000000 < this->config->GetConfigValue(HocClkConfigValue_MarikoMaxGpuClock))
-                            currentFreqIndex++; // TODO: make this properly go back to target freq if the old target freq is more than one index away
-                        else                    // probably needs the max clocks to be stored in hz instead of mhz to compare easily
-                            currentFreqIndex--;
-                    } else {
-                        if(freqTable[SysClkModule_GPU].list[currentFreqIndex] / 1000000 < this->config->GetConfigValue(HocClkConfigValue_EristaMaxGpuClock))
-                            currentFreqIndex++;
-                        else
-                            currentFreqIndex--;
-                    }
-                } else {
-                    currentFreqIndex--;
-                }
-            } else {
-                if(currentFreqIndex > findIndex(freqTable[SysClkModule_GPU].list, SYSCLK_FREQ_LIST_MAX, targetHz))
-                    currentFreqIndex--;
-            }
-            Board::SetHz(SysClkModule_GPU, freqTable[SysClkModule_GPU].list[currentFreqIndex]);
-
-        }
     }
 
     bool noGPU = false;
