@@ -42,7 +42,7 @@ APP_VERSION	:=	1.3.2+r4-hoc
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
 SOURCES		:=	source
-INCLUDES	:=	include lib/Atmosphere-libs/libstratosphere/source/dmnt lib/Atmosphere-libs/libstratosphere/source
+INCLUDES	:=	include lib/Atmosphere-libs/libstratosphere/source/dmnt lib/Atmosphere-libs/libstratosphere/source ../sys-clk/common/include/
 NO_ICON		:=  1
 #ROMFS       :=  romfs
 
