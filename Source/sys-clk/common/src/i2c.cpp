@@ -1,4 +1,4 @@
-#include "i2c_reg.h"
+#include "i2c.h"
 
 Result I2cSet_U8(I2cDevice dev, u8 reg, u8 val) {
     // ams::fatal::srv::StopSoundTask::StopSound()

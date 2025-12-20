@@ -27,7 +27,6 @@
 
 #pragma once
 
-#include "../../rgltr_services.h"
 #include "../../ipc.h"
 #include "base_gui.h"
 

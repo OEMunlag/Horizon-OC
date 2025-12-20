@@ -103,6 +103,7 @@ typedef enum
     HocClkPartLoad_GPU,
     HocClkPartLoad_CPUAvg,
     HocClkPartLoad_BAT,
+    HocClkPartLoad_FAN,
     SysClkPartLoad_EnumMax
 } SysClkPartLoad;
 

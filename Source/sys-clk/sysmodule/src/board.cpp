@@ -33,7 +33,8 @@
 #include <algorithm> // for std::clamp
 #include <math.h>
 #include <numeric>
-#include "batLib.h"
+#include <battery.h>
+#include <pwm.h>
 
 #define HOSSVC_HAS_CLKRST (hosversionAtLeast(8,0,0))
 #define HOSSVC_HAS_TC (hosversionAtLeast(5,0,0))
@@ -42,7 +43,6 @@
 #define systemtickfrequency 19200000
 #define systemtickfrequencyF 19200000.0f
 #define CPU_TICK_WAIT (1'000'000'000 / 60)
-float fanTemp = 0;
 Result nvCheck = 1;
 
 Thread gpuLThread;
@@ -50,9 +50,14 @@ Thread cpuCore0Thread;
 Thread cpuCore1Thread;
 Thread cpuCore2Thread;
 Thread cpuCore3Thread;
+Thread miscThread;
+double temp = 0;
 
-FanController fanController;
-Result fanCheck = 1;
+PwmChannelSession g_ICon;
+Result pwmCheck = 1;
+Result pwmDutyCycleCheck = 1;
+double Rotation_Duty = 0;
+u8 fanLevel;
 
 uint32_t GPU_Load_u = 0, fd = 0;
 BatteryChargeInfo info;
@@ -142,6 +147,21 @@ void gpuLoadThread(void*) {
     } while(true);
 }
 
+void miscThreadFunc(void*) {
+    for(;;) {
+        if (R_SUCCEEDED(pwmCheck)) {
+            if (R_SUCCEEDED(pwmChannelSessionGetDutyCycle(&g_ICon, &temp))) {
+                temp *= 10;
+                temp = trunc(temp);
+                temp /= 10;
+                Rotation_Duty = 100.0 - temp;
+            }
+        }
+        fanLevel = (u8)Rotation_Duty;
+        svcSleepThread(300'000'000);
+    }
+}
+
 
 void Board::Initialize()
 {
@@ -181,10 +201,10 @@ void Board::Initialize()
     rc = rgltrInitialize();
     ASSERT_RESULT_OK(rc, "rgltrInitialize");
 
-    if (R_SUCCEEDED(fanInitialize())) {
-        if (hosversionAtLeast(7,0,0)) fanCheck = fanOpenController(&fanController, 0x3D000001);
-        else fanCheck = fanOpenController(&fanController, 1);
-    }
+    // if (R_SUCCEEDED(fanInitialize())) {
+    //     if (hosversionAtLeast(7,0,0)) fanCheck = fanOpenController(&fanController, 0x3D000001);
+    //     else fanCheck = fanOpenController(&fanController, 1);
+    // }
 
 
     threadCreate(&gpuLThread, gpuLoadThread, NULL, NULL, 0x1000, 0x3F, -2);
@@ -194,12 +214,19 @@ void Board::Initialize()
     threadCreate(&cpuCore1Thread, CheckCore, &idletick1, NULL, 0x1000, 0x10, 1);
     threadCreate(&cpuCore2Thread, CheckCore, &idletick2, NULL, 0x1000, 0x10, 2);
     threadCreate(&cpuCore3Thread, CheckCore, &idletick3, NULL, 0x1000, 0x10, 3);
+    threadCreate(&miscThread, miscThreadFunc, NULL, NULL, 0x1000, 0x3F, 3);
 
     threadStart(&cpuCore0Thread);
     threadStart(&cpuCore1Thread);
     threadStart(&cpuCore2Thread);
     threadStart(&cpuCore3Thread);
+    threadStart(&miscThread);
     batteryInfoInitialize();
+
+    if (hosversionAtLeast(6,0,0) && R_SUCCEEDED(pwmInitialize())) {
+        pwmCheck = pwmOpenSession2(&g_ICon, 0x3D000001);
+    }
+
     FetchHardwareInfos();
 }
 
@@ -230,8 +257,10 @@ void Board::Exit()
     threadClose(&cpuCore1Thread);
     threadClose(&cpuCore2Thread);
     threadClose(&cpuCore3Thread);
+    threadClose(&miscThread);
 
-    fanExit();
+    pwmChannelSessionClose(&g_ICon);
+	pwmExit();
     rgltrExit();
     batteryInfoExit();
 }
@@ -578,6 +607,8 @@ std::uint32_t Board::GetPartLoad(SysClkPartLoad loadSource)
         case HocClkPartLoad_BAT:
             batteryInfoGetChargeInfo(&info);
             return info.RawBatteryCharge;
+        case HocClkPartLoad_FAN:
+            return GetFanRotationLevel();
         default:
             ASSERT_ENUM_VALID(SysClkPartLoad, loadSource);
     }
@@ -726,6 +757,6 @@ std::uint32_t Board::GetVoltage(HocClkVoltage voltage)
 }
 
 u8 Board::GetFanRotationLevel() {
-    fanControllerGetRotationSpeedLevel(&fanController, &fanTemp);
-    return (u8)fanTemp;
+    return fanLevel;
 }
+

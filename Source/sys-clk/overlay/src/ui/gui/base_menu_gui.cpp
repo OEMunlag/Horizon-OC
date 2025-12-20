@@ -56,7 +56,7 @@ void BaseMenuGui::preDraw(tsl::gfx::Renderer* renderer) {
     
     // All constants pre-calculated and cached
     static constexpr const char* const labels[] = {
-        "App ID", "Profile", "CPU", "GPU", "MEM", "SoC", "Board", "Skin", "Now", "Avg", "BAT", "PMIC"
+        "App ID", "Profile", "CPU", "GPU", "MEM", "SoC", "Board", "Skin", "Now", "Avg", "BAT", "PMIC", "FAN"
     };
 
     static constexpr u32 dataPositions[6] = {63-3+3, 200-1, 344-1-3, 200-1, 342-1, 321-1};
@@ -158,6 +158,10 @@ void BaseMenuGui::preDraw(tsl::gfx::Renderer* renderer) {
 
     renderer->drawString(displayStrings[21], false, dataPositions[0], y, SMALL_TEXT_SIZE, tsl::infoTextColor);   // Bat voltage
     renderer->drawString(displayStrings[23], false, positions[2] - 2, y, SMALL_TEXT_SIZE, tsl::infoTextColor);  // Bat Age
+
+    renderer->drawString(labels[12], false, positions[6], y, SMALL_TEXT_SIZE, tsl::sectionTextColor); // fan label
+
+    renderer->drawString(displayStrings[24], false, dataPositions[1], y, SMALL_TEXT_SIZE, tsl::infoTextColor);   // fan speed
 
 }
 
@@ -261,6 +265,8 @@ void BaseMenuGui::refresh()
     tempColors[HorizonOCThermalSensor_PMIC] = tsl::GradientColor(millis * 0.001f);
 
     sprintf(displayStrings[23], "%u%%", context->PartLoad[HocClkPartLoad_BAT] / 1000);
+
+    sprintf(displayStrings[24], "%u%%", context->PartLoad[HocClkPartLoad_FAN]);
 
 }
 

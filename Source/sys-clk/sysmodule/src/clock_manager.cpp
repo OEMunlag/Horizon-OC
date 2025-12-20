@@ -33,7 +33,7 @@
 #include "errors.h"
 #include "ipc_service.h"
 #include "kip.h"
-#include "i2c_reg.h"
+#include <i2c.h>
 #include "notification.h"
 
 #define HOSPPC_HAS_BOOST (hosversionAtLeast(7,0,0))
@@ -586,8 +586,6 @@ bool ClockManager::RefreshContext()
     {
         FileUtils::WriteContextToCsv(this->context);
     }
-
-    this->context->fanLevel = Board::GetFanRotationLevel();
 
     return hasChanged;
 }
