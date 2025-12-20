@@ -608,7 +608,7 @@ std::uint32_t Board::GetPartLoad(SysClkPartLoad loadSource)
             batteryInfoGetChargeInfo(&info);
             return info.RawBatteryCharge;
         case HocClkPartLoad_FAN:
-            return GetFanRotationLevel();
+            return fanLevel;
         default:
             ASSERT_ENUM_VALID(SysClkPartLoad, loadSource);
     }
@@ -755,8 +755,3 @@ std::uint32_t Board::GetVoltage(HocClkVoltage voltage)
 
     return out > 0 ? out : 0;
 }
-
-u8 Board::GetFanRotationLevel() {
-    return fanLevel;
-}
-
