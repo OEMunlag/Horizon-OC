@@ -19,9 +19,9 @@ cp -r dist/ ../../
 
 cd ../../
 
-cd Source/hoc-monitor/
+cd Source/Horizon-OC-Monitor/
 make -j"$(nproc)"
-cp hoc-monitor.ovl ../../dist/switch/.overlays/hoc-monitor.ovl
+cp Horizon-OC-Monitor.ovl ../../dist/switch/.overlays/Horizon-OC-Monitor.ovl
 
 # cd ../../Source/configurator
 

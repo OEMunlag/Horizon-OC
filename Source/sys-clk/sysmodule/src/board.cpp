@@ -704,6 +704,8 @@ std::uint32_t Board::GetVoltage(HocClkVoltage voltage)
                 ASSERT_RESULT_OK(rc, "rgltrOpenSession")
                 rgltrGetVoltage(&session, &out);
                 rgltrCloseSession(&session);
+            } else {
+                out = Board::GetVoltage(HocClkVoltage_EMCVDD2);
             }
             break;
         case HocClkVoltage_Display:

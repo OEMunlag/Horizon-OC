@@ -994,11 +994,11 @@ public:
                 unsigned ramLoadInt;
                 
                 if (R_SUCCEEDED(sysclkCheck)) {
-                    ramLoadInt = PartLoad[SysClkPartLoad_EMC] / 10;
+                    ramLoadInt = ramLoad[SysClkPartLoad_EMC] / 10;
                     
                     if (settings.showRAMLoadCPUGPU) {
-                        unsigned ramCpuLoadInt = ramLoad[SysClkRamLoad_Cpu] / 10;
-                        int RAM_GPU_Load = ramLoad[SysClkRamLoad_All] - ramLoad[SysClkRamLoad_Cpu];
+                        unsigned ramCpuLoadInt = ramLoad[SysClkPartLoad_EMCCpu] / 10;
+                        int RAM_GPU_Load = ramLoad[SysClkPartLoad_EMC] - ramLoad[SysClkPartLoad_EMCCpu];
                         unsigned ramGpuLoadInt = RAM_GPU_Load / 10;
                         
                         if (settings.realFrequencies && realRAM_Hz) {

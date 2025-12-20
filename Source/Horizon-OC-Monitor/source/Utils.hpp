@@ -221,7 +221,7 @@ uint64_t lastFrameNumber = 0;
 uint32_t realCPU_Hz = 0;
 uint32_t realGPU_Hz = 0;
 uint32_t realRAM_Hz = 0;
-uint32_t ramLoad[SysClkRamLoad_EnumMax];
+uint32_t ramLoad[SysClkPartLoad_EnumMax];
 uint32_t realCPU_mV = 0; 
 uint32_t realGPU_mV = 0; 
 uint32_t realRAM_mV = 0; 
@@ -515,8 +515,7 @@ std::string getVersionString() {
 
 
 bool usingEOS() {
-    const std::string versionString = getVersionString();
-    return versionString.find("eos") != std::string::npos;
+    return true;
 }
 
 // === ULTRA-FAST VOLTAGE READING ===
@@ -576,64 +575,13 @@ void Misc(void*) {
                 realGPU_Hz = sysclkCTX.realFreqs[SysClkModule_GPU];
                 realRAM_Hz = sysclkCTX.realFreqs[SysClkModule_MEM];
                 ramLoad[SysClkPartLoad_EMC] = sysclkCTX.PartLoad[SysClkPartLoad_EMC];
-                ramLoad[SysClkPartLoad_EMCCpu] = sysclkCTX.ramLoad[SysClkPartLoad_EMCCpu];
+                ramLoad[SysClkPartLoad_EMCCpu] = sysclkCTX.PartLoad[SysClkPartLoad_EMCCpu];
                 
                 realCPU_mV = sysclkCTX.voltages[HocClkVoltage_CPU]; 
-                realGPU_mV = sysclkCTX.realVolts[HocClkVoltage_GPU]; 
-                realRAM_mV = sysclkCTX.realVolts[HocClkVoltage_EMCVDD2]; 
-                realSOC_mV = sysclkCTX.realVolts[HocClkVoltage_SOC];
+                realGPU_mV = sysclkCTX.voltages[HocClkVoltage_GPU]; 
+                realRAM_mV = sysclkCTX.voltages[HocClkVoltage_EMCVDDQ_MarikoOnly]; 
+                realSOC_mV = sysclkCTX.voltages[HocClkVoltage_SOC];
             }
-        }
-        
-        // Read voltages directly if not using EOS
-        if (canReadVoltages) {
-            RgltrSession session;
-            u32 vdd2_raw = 0, vddq_raw = 0;
-            
-            // CPU voltage
-            if (R_SUCCEEDED(rgltrOpenSession(&session, PcvPowerDomainId_Max77621_Cpu))) {
-                if (R_FAILED(rgltrGetVoltage(&session, &realCPU_mV))) {
-                    realCPU_mV = 0;
-                }
-                rgltrCloseSession(&session);
-            }
-            
-            // GPU voltage
-            if (R_SUCCEEDED(rgltrOpenSession(&session, PcvPowerDomainId_Max77621_Gpu))) {
-                if (R_FAILED(rgltrGetVoltage(&session, &realGPU_mV))) {
-                    realGPU_mV = 0;
-                }
-                rgltrCloseSession(&session);
-            }
-            
-            // SOC voltage
-            if (R_SUCCEEDED(rgltrOpenSession(&session, PcvPowerDomainId_Max77620_Sd0))) {
-                if (R_FAILED(rgltrGetVoltage(&session, &realSOC_mV))) {
-                    realSOC_mV = 0;
-                }
-                rgltrCloseSession(&session);
-            }
-            
-            // VDD2 (DRAM)
-            if (R_SUCCEEDED(rgltrOpenSession(&session, PcvPowerDomainId_Max77812_Dram))) {
-                if (R_FAILED(rgltrGetVoltage(&session, &vdd2_raw))) {
-                    vdd2_raw = 0;
-                }
-                rgltrCloseSession(&session);
-            }
-            
-            // VDDQ
-            if (R_SUCCEEDED(rgltrOpenSession(&session, PcvPowerDomainId_Max77620_Sd1))) {
-                if (R_FAILED(rgltrGetVoltage(&session, &vddq_raw))) {
-                    vddq_raw = 0;
-                }
-                rgltrCloseSession(&session);
-            }
-            
-            // Pack VDD2 and VDDQ into realRAM_mV in sys-clk format
-            const u32 vdd2_mV = vdd2_raw / 1000;  // µV to mV
-            const u32 vddq_mV = vddq_raw / 1000;  // µV to mV
-            realRAM_mV = vdd2_mV * 100000 + vddq_mV * 10;
         }
         
         // Temperatures
@@ -751,68 +699,15 @@ void Misc3(void*) {
         if (R_SUCCEEDED(sysclkCheck)) {
             SysClkContext sysclkCTX;
             if (R_SUCCEEDED(sysclkIpcGetCurrentContext(&sysclkCTX))) {
-                ramLoad[SysClkRamLoad_All] = sysclkCTX.ramLoad[SysClkRamLoad_All];
-                ramLoad[SysClkRamLoad_Cpu] = sysclkCTX.ramLoad[SysClkRamLoad_Cpu];
+                ramLoad[SysClkPartLoad_EMC] = sysclkCTX.PartLoad[SysClkPartLoad_EMC];
+                ramLoad[SysClkPartLoad_EMCCpu] = sysclkCTX.PartLoad[SysClkPartLoad_EMCCpu];
                 
                 // Get voltages from sys-clk if using EOS
-                if (isUsingEOS && realVoltsPolling) {
-                    realCPU_mV = sysclkCTX.realVolts[0]; 
-                    realGPU_mV = sysclkCTX.realVolts[1]; 
-                    realRAM_mV = sysclkCTX.realVolts[2]; 
-                    realSOC_mV = sysclkCTX.realVolts[3];
-                }
+                    realCPU_mV = sysclkCTX.voltages[HocClkVoltage_CPU]; 
+                    realGPU_mV = sysclkCTX.voltages[HocClkVoltage_GPU]; 
+                    realRAM_mV = sysclkCTX.voltages[HocClkVoltage_EMCVDDQ_MarikoOnly]; 
+                    realSOC_mV = sysclkCTX.voltages[HocClkVoltage_SOC];
             }
-        }
-        
-        // Read voltages directly if not using EOS
-        if (canReadVoltages) {
-            RgltrSession session;
-            u32 vdd2_raw = 0, vddq_raw = 0;
-            
-            // CPU voltage
-            if (R_SUCCEEDED(rgltrOpenSession(&session, domains[0]))) {
-                if (R_FAILED(rgltrGetVoltage(&session, &realCPU_mV))) {
-                    realCPU_mV = 0;
-                }
-                rgltrCloseSession(&session);
-            }
-            
-            // GPU voltage
-            if (R_SUCCEEDED(rgltrOpenSession(&session, domains[1]))) {
-                if (R_FAILED(rgltrGetVoltage(&session, &realGPU_mV))) {
-                    realGPU_mV = 0;
-                }
-                rgltrCloseSession(&session);
-            }
-            
-            // VDD2 (DRAM)
-            if (R_SUCCEEDED(rgltrOpenSession(&session, domains[2]))) {
-                if (R_FAILED(rgltrGetVoltage(&session, &vdd2_raw))) {
-                    vdd2_raw = 0;
-                }
-                rgltrCloseSession(&session);
-            }
-            
-            // SOC voltage
-            if (R_SUCCEEDED(rgltrOpenSession(&session, domains[3]))) {
-                if (R_FAILED(rgltrGetVoltage(&session, &realSOC_mV))) {
-                    realSOC_mV = 0;
-                }
-                rgltrCloseSession(&session);
-            }
-            
-            // VDDQ
-            if (R_SUCCEEDED(rgltrOpenSession(&session, domains[4]))) {
-                if (R_FAILED(rgltrGetVoltage(&session, &vddq_raw))) {
-                    vddq_raw = 0;
-                }
-                rgltrCloseSession(&session);
-            }
-            
-            // Pack VDD2 and VDDQ into realRAM_mV in sys-clk format
-            const u32 vdd2_mV = vdd2_raw / 1000;  // µV to mV
-            const u32 vddq_mV = vddq_raw / 1000;  // µV to mV
-            realRAM_mV = vdd2_mV * 100000 + vddq_mV * 10;
         }
         
         // Temperatures

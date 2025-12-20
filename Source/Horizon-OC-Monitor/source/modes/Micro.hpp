@@ -821,7 +821,7 @@ public:
             if (R_SUCCEEDED(sysclkCheck)) {
                 // Use sys-clk's RAM load if available
                 snprintf(MICRO_RAM_all_c, sizeof(MICRO_RAM_all_c), "%hu%%",
-                         PartLoad[SysClkPartLoad_EMC] / 10);
+                         ramLoad[SysClkPartLoad_EMC] / 10);
             } else {
                 // Calculate percentage manually when sys-clk isn't available
                 const uint64_t RAM_Total_all = RAM_Total_application_u + RAM_Total_applet_u + RAM_Total_system_u + RAM_Total_systemunsafe_u;

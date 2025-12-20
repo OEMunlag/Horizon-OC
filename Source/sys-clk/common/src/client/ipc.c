@@ -26,10 +26,10 @@
 
 
 #define NX_SERVICE_ASSUME_NON_DOMAIN
-#include <sysclk/client/ipc.h>
 #include <switch.h>
 #include <string.h>
 #include <stdatomic.h>
+#include <sysclk/client/ipc.h>
 
 static Service g_sysclkSrv;
 static atomic_size_t g_refCnt;

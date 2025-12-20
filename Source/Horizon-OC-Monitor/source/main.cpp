@@ -4,6 +4,8 @@
 #include <cstdlib>
 #include <ctime>
 
+#include "../../sys-clk/common/include/sysclk.h"
+
 //static tsl::elm::HeaderOverlayFrame* rootFrame = nullptr;
 static bool skipMain = false;
 static std::string lastSelectedItem;
@@ -128,7 +130,7 @@ public:
         //    list->addItem(Res);
         //}
         //tsl::elm::g_disableMenuCacheOnReturn.store(true, std::memory_order_release);
-        tsl::elm::HeaderOverlayFrame* rootFrame = new tsl::elm::HeaderOverlayFrame("Status Monitor", "Modes");
+        tsl::elm::HeaderOverlayFrame* rootFrame = new tsl::elm::HeaderOverlayFrame("Horizon OC Monitor", "Modes");
         if (!lastSelectedItem.empty()) {
             list->jumpToItem(lastSelectedItem);
         }

@@ -446,11 +446,11 @@ public:
         );
         
         if (R_SUCCEEDED(sysclkCheck)) {
-            const int RAM_GPU_Load = PartLoad[SysClkPartLoad_EMC] - PartLoad[SysClkPartLoad_EMCCpu];
+            const int RAM_GPU_Load = ramLoad[SysClkPartLoad_EMC] - ramLoad[SysClkPartLoad_EMCCpu];
             snprintf(RAM_load_c, sizeof RAM_load_c, 
                 "%u.%u%%    CPU  %u.%u%%   GPU  %u.%u%%",
-                ramLoad[SysClkRamLoad_All] / 10, ramLoad[SysClkRamLoad_All] % 10,
-                ramLoad[SysClkRamLoad_Cpu] / 10, ramLoad[SysClkRamLoad_Cpu] % 10,
+                ramLoad[SysClkPartLoad_EMC] / 10, ramLoad[SysClkPartLoad_EMC] % 10,
+                ramLoad[SysClkPartLoad_EMCCpu] / 10, ramLoad[SysClkPartLoad_EMCCpu] % 10,
                 RAM_GPU_Load / 10, RAM_GPU_Load % 10);
         }
         ///Thermal
