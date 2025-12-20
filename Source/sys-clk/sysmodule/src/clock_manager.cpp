@@ -33,6 +33,8 @@
 #include "errors.h"
 #include "ipc_service.h"
 #include "kip.h"
+#include "i2c_reg.h"
+
 #define HOSPPC_HAS_BOOST (hosversionAtLeast(7,0,0))
 
 ClockManager *ClockManager::instance = NULL;
@@ -253,6 +255,10 @@ void ClockManager::Tick()
     AppletOperationMode opMode = appletGetOperationMode();
     Result rc = apmExtGetCurrentPerformanceConfiguration(&mode);
     ASSERT_RESULT_OK(rc, "apmExtGetCurrentPerformanceConfiguration");
+
+    if(this->config->GetConfigValue(HorizonOCConfigValue_BatteryChargeCurrent)) {
+        I2c_Bq24193_SetFastChargeCurrentLimit(this->config->GetConfigValue(HorizonOCConfigValue_BatteryChargeCurrent));
+    }
 
     if(this->config->GetConfigValue(HocClkConfigValue_HandheldTDP) && opMode == AppletOperationMode_Handheld) {
         if(Board::GetConsoleType() == HorizonOCConsoleType_Lite) {

@@ -63,6 +63,8 @@ typedef enum {
     HocClkConfigValue_KipEditing,
     HocClkConfigValue_KipFileName,
 
+    HorizonOCConfigValue_BatteryChargeCurrent,
+
     KipConfigValue_custRev,
     KipConfigValue_mtcConf,
     KipConfigValue_hpMode,
@@ -230,6 +232,9 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
         
         case HocClkConfigValue_KipFileName:
             return pretty ? "KIP File Name" : "kip_file_name";
+
+        case HorizonOCConfigValue_BatteryChargeCurrent:
+            return pretty ? "Battery Charge Current" : "bat_charge_current";
 
         // KIP config values
         case KipConfigValue_custRev:
@@ -423,6 +428,8 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
             return 8600ULL;
         case HocClkConfigValue_LiteTDPLimit:
             return 6400ULL;
+        case HorizonOCConfigValue_BatteryChargeCurrent:
+            return 0ULL;
         default:
             return 0ULL;
     }
@@ -548,7 +555,8 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case KipConfigValue_g_volt_e_1036800:
         case KipConfigValue_g_volt_e_1075200:
             return true;
-        
+        case HorizonOCConfigValue_BatteryChargeCurrent:
+            return ((input >= 1024) && (input <= 3072)) || !input;
         default:
             return false;
     }

@@ -995,9 +995,35 @@ void MiscGui::listUI()
         addConfigButton(KipConfigValue_g_volt_e_1075200, "GPU Voltage (1075.2MHz)", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts, false);
     }
 
+    std::vector<NamedValue> chargerCurrents = {
+        NamedValue("Disabled", 0),
+        NamedValue("1024mA", 1024),
+        NamedValue("1280mA", 1280),
+        NamedValue("1536mA", 1536),
+        NamedValue("1792mA", 1792),
+        NamedValue("2048mA", 2048),
+        NamedValue("2304mA", 2304),
+        NamedValue("2560mA", 2560),
+        NamedValue("2816mA", 2816),
+        NamedValue("3072mA", 3072),
+    };
+    
+    ValueThresholds chargerThresholds(2048, 2560);
+
     // ========== EXPERIMENTAL CATEGORY (BOTTOM) ==========
     this->listElement->addItem(new tsl::elm::CategoryHeader("Experimental"));
     
+    addConfigButton(
+        HorizonOCConfigValue_BatteryChargeCurrent,
+        "Charge Current Override",
+        ValueRange(0, 0, 1, "", 0),
+        "Charge Current Override",
+        &chargerThresholds,
+        {},
+        chargerCurrents,
+        false
+    );
+
     addConfigToggle(HocClkConfigValue_HandheldGovernor, nullptr);
 }
 
