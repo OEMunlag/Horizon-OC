@@ -353,21 +353,21 @@ void MiscGui::listUI()
     //     addFreqButton(HocClkConfigValue_EristaMaxMemClock, nullptr, SysClkModule_MEM, emc_freq_label_e);
     // }
 
-    std::vector<NamedValue> autoAdjOptions = {
-        NamedValue("AUTO_ADJ", 0),
-        NamedValue("AUTO_ADJ_BL", 1)
-    };
+    // std::vector<NamedValue> autoAdjOptions = {
+    //     NamedValue("AUTO_ADJ", 0),
+    //     NamedValue("AUTO_ADJ_BL", 1)
+    // };
 
-    addConfigButton(
-        KipConfigValue_mtcConf,
-        "MTC Configuration",
-        ValueRange(0, 1, 1, "", 1),
-        "MTC Configuration",
-        &thresholdsDisabled,
-        {},
-        autoAdjOptions,
-        false
-    );
+    // addConfigButton(
+    //     KipConfigValue_mtcConf,
+    //     "MTC Configuration",
+    //     ValueRange(0, 1, 1, "", 1),
+    //     "MTC Configuration",
+    //     &thresholdsDisabled,
+    //     {},
+    //     autoAdjOptions,
+    //     false
+    // );
 
     addConfigToggle(KipConfigValue_hpMode, "HP Mode");
 

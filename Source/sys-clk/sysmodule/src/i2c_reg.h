@@ -38,7 +38,7 @@ const I2c_BuckConverter_Domain I2c_Erista_GPU       = { I2cDevice_Max77621Gpu,  
 const I2c_BuckConverter_Domain I2c_Erista_DRAM      = { I2cDevice_Max77620Pmic, I2c_Max77620_SD1VOLT_REG, 0x7F, 12500, 600000, 1250000, };
 const I2c_BuckConverter_Domain I2c_Mariko_CPU       = { I2cDevice_Max77812_2,   I2c_Max77812_CPUVOLT_REG, 0xFF,  5000, 250000, 1525000, 0x78 };
 const I2c_BuckConverter_Domain I2c_Mariko_GPU       = { I2cDevice_Max77812_2,   I2c_Max77812_GPUVOLT_REG, 0xFF,  5000, 250000, 1525000, 0x78 };
-const I2c_BuckConverter_Domain I2c_Mariko_DRAM_VDDQ = { I2cDevice_Max77812_2,   I2c_Max77812_MEMVOLT_REG, 0xFF,  5000, 250000,  650000, 0x78 };
+const I2c_BuckConverter_Domain I2c_Mariko_DRAM_VDDQ = { I2cDevice_Max77812_2,   I2c_Max77812_MEMVOLT_REG, 0xFF,  5000, 250000,  700000, 0x78 };
 const I2c_BuckConverter_Domain I2c_Mariko_DRAM_VDD2 = { I2cDevice_Max77620Pmic, I2c_Max77620_SD1VOLT_REG, 0x7F, 12500, 600000, 1250000, };
 
 u32 I2c_BuckConverter_GetMvOut(const I2c_BuckConverter_Domain* domain);

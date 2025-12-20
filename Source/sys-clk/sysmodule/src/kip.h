@@ -8,7 +8,7 @@
 #pragma pack(push, 1)
 
 typedef struct {
-    u8  cust[16];
+    u8  cust[4];
     u32 custRev;
     u32 mtcConf;
     u32 hpMode;
@@ -56,8 +56,8 @@ typedef struct {
 
 #pragma pack(pop)
 
-#define CUST_MAGIC "HOCKIPCUST\0\0\0\0"
-#define CUST_MAGIC_LEN 16
+#define CUST_MAGIC "CUST"
+#define CUST_MAGIC_LEN 4
 
 typedef struct {
     FILE* file;

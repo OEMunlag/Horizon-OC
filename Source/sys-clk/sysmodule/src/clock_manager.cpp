@@ -34,6 +34,7 @@
 #include "ipc_service.h"
 #include "kip.h"
 #include "i2c_reg.h"
+#include "notification.h"
 
 #define HOSPPC_HAS_BOOST (hosversionAtLeast(7,0,0))
 
@@ -529,10 +530,18 @@ void ClockManager::SetRNXRTMode(ReverseNXMode mode)
 }
 
 void ClockManager::SetKipData() {
+
+    if(Board::GetSocType() == SysClkSocType_Mariko) {
+        if(I2c_BuckConverter_SetMvOut(&I2c_Mariko_DRAM_VDDQ, this->config->GetConfigValue(KipConfigValue_marikoEmcVddqVolt) / 1000)) {
+            FileUtils::LogLine("[clock_manager] Failed set i2c vddq");
+            writeNotification("Horizon OC\nFailed to write I2C\nwhile setting vddq");
+        }
+    }
     CustomizeTable table;
 
     if (!cust_read_and_cache(this->config->GetConfigValue(HocClkConfigValue_KipFileName) ? "sdmc:/atmosphere/kips/loader.kip" : "sdmc:/atmosphere/kips/hoc.kip", &table)) {
         FileUtils::LogLine("[clock_manager] Failed to read KIP file");
+        writeNotification("Horizon OC\nKip read failed");
         return;
     }
 
@@ -594,6 +603,7 @@ void ClockManager::SetKipData() {
 
     if (!cust_write_table(this->config->GetConfigValue(HocClkConfigValue_KipFileName) ? "sdmc:/atmosphere/kips/loader.kip" : "sdmc:/atmosphere/kips/hoc.kip", &table)) {
         FileUtils::LogLine("[clock_manager] Failed to write KIP file");
+        writeNotification("Horizon OC\nKip write failed");
     }
 }
 
@@ -605,6 +615,7 @@ void ClockManager::GetKipData() {
 
         if (!cust_read_and_cache(this->config->GetConfigValue(HocClkConfigValue_KipFileName) ? "sdmc:/atmosphere/kips/loader.kip" : "sdmc:/atmosphere/kips/hoc.kip", &table)) {
             FileUtils::LogLine("[clock_manager] Failed to read KIP file for GetKipData");
+            writeNotification("Horizon OC\nKip read failed");
             return;
         }
 
@@ -672,11 +683,14 @@ void ClockManager::GetKipData() {
                 FileUtils::LogLine("[clock_manager] Successfully loaded KIP data into config");
             } else {
                 FileUtils::LogLine("[clock_manager] Warning: Failed to set config values from KIP");
+                writeNotification("Horizon OC\nKip config set failed");
             }
         } else {
             FileUtils::LogLine("[clock_manager] Error: Config value list buffer size mismatch");
+            writeNotification("Horizon OC\nConfig Buffer Mismatch");
         }
     } else {
         FileUtils::LogLine("[clock_manager] Config refresh error in GetKipData!");
+        writeNotification("Horizon OC\nConfig refresh failed");
     }
 }
