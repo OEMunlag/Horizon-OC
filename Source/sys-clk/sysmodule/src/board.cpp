@@ -606,7 +606,7 @@ std::uint32_t Board::GetPartLoad(SysClkPartLoad loadSource)
             return idletick0;
         case HocClkPartLoad_BAT:
             batteryInfoGetChargeInfo(&info);
-            return info.RawBatteryCharge;
+            return info.BatteryAge;
         case HocClkPartLoad_FAN:
             return fanLevel;
         default:
