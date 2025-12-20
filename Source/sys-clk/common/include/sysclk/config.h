@@ -87,7 +87,9 @@ typedef enum {
     KipConfigValue_mem_burst_write_latency,
 
     KipConfigValue_eristaCpuUV,
+    KipConfigValue_eristaCpuVmin,
     KipConfigValue_eristaCpuMaxVolt,
+    KipConfigValue_eristaCpuUnlock,
 
     KipConfigValue_marikoCpuUVLow,
     KipConfigValue_marikoCpuUVHigh,
@@ -281,8 +283,12 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
         // CPU – Erista
         case KipConfigValue_eristaCpuUV:
             return pretty ? "Erista CPU Undervolt" : "erista_cpu_uv";
+        case KipConfigValue_eristaCpuVmin:
+            return pretty ? "Erista CPU vMin" : "erista_cpu_vmin";
         case KipConfigValue_eristaCpuMaxVolt:
             return pretty ? "Erista CPU Max Voltage" : "erista_cpu_max_volt";
+        case KipConfigValue_eristaCpuUnlock:
+            return pretty ? "Erista CPU Unlock" : "erista_cpu_unlock";
 
         // CPU – Mariko
         case KipConfigValue_marikoCpuUVLow:
@@ -554,6 +560,8 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case KipConfigValue_g_volt_e_998400:
         case KipConfigValue_g_volt_e_1036800:
         case KipConfigValue_g_volt_e_1075200:
+        case KipConfigValue_eristaCpuVmin:
+        case KipConfigValue_eristaCpuUnlock:
             return true;
         case HorizonOCConfigValue_BatteryChargeCurrent:
             return ((input >= 1024) && (input <= 3072)) || !input;

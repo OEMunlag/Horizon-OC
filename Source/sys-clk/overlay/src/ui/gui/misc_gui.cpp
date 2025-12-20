@@ -588,6 +588,17 @@ void MiscGui::listUI()
             {},
             false
         );
+        addConfigButton(
+            KipConfigValue_eristaCpuVmin,
+            "CPU VMIN",
+            ValueRange(700, 900, 5, "mV", 1),
+            "CPU VMIN",
+            &thresholdsDisabled,
+            {},
+            {},
+            false
+        );
+        addConfigToggle(KipConfigValue_eristaCpuUnlock, "CPU Unlock");
     } else {
         std::vector<NamedValue> marikoTableConf = {
             NamedValue("Auto", 0),
@@ -656,7 +667,30 @@ void MiscGui::listUI()
             maxClkOptions,
             false
         );
+
+        addConfigButton(
+            KipConfigValue_marikoCpuLowVmin,
+            "CPU Low VMIN",
+            ValueRange(550, 750, 5, "mV", 1),
+            "CPU VMIN",
+            &thresholdsDisabled,
+            {},
+            {},
+            false
+        );
+
+        addConfigButton(
+            KipConfigValue_marikoCpuHighVmin,
+            "CPU High VMIN",
+            ValueRange(650, 850, 5, "mV", 1),
+            "CPU VMIN",
+            &thresholdsDisabled,
+            {},
+            {},
+            false
+        );
     }
+    
 
     // ========== GPU CATEGORY ==========
     this->listElement->addItem(new tsl::elm::CategoryHeader("GPU Settings"));

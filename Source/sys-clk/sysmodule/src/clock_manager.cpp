@@ -558,7 +558,9 @@ void ClockManager::SetKipData() {
     CUST_WRITE_FIELD_BATCH(&table, mem_burst_write_latency, this->config->GetConfigValue(KipConfigValue_mem_burst_write_latency));
 
     CUST_WRITE_FIELD_BATCH(&table, eristaCpuUV, this->config->GetConfigValue(KipConfigValue_eristaCpuUV));
+    CUST_WRITE_FIELD_BATCH(&table, eristaCpuVmin, this->config->GetConfigValue(KipConfigValue_eristaCpuVmin));
     CUST_WRITE_FIELD_BATCH(&table, eristaCpuMaxVolt, this->config->GetConfigValue(KipConfigValue_eristaCpuMaxVolt));
+    CUST_WRITE_FIELD_BATCH(&table, eristaCpuUnlock, this->config->GetConfigValue(KipConfigValue_eristaCpuUnlock));
 
     CUST_WRITE_FIELD_BATCH(&table, marikoCpuUVLow, this->config->GetConfigValue(KipConfigValue_marikoCpuUVLow));
     CUST_WRITE_FIELD_BATCH(&table, marikoCpuUVHigh, this->config->GetConfigValue(KipConfigValue_marikoCpuUVHigh));
@@ -630,7 +632,11 @@ void ClockManager::GetKipData() {
         configValues.values[KipConfigValue_mem_burst_write_latency] = cust_get_burst_write_lat(&table);
 
         configValues.values[KipConfigValue_eristaCpuUV] = cust_get_erista_cpu_uv(&table);
+        configValues.values[KipConfigValue_eristaCpuVmin] = cust_get_eristaCpuVmin(&table);
         configValues.values[KipConfigValue_eristaCpuMaxVolt] = cust_get_erista_cpu_max_volt(&table);
+        configValues.values[KipConfigValue_eristaCpuUnlock] = cust_get_eristaCpuUnlock(&table);
+
+
         configValues.values[KipConfigValue_marikoCpuUVLow] = cust_get_mariko_cpu_uv_low(&table);
         configValues.values[KipConfigValue_marikoCpuUVHigh] = cust_get_mariko_cpu_uv_high(&table);
         configValues.values[KipConfigValue_tableConf] = cust_get_table_conf(&table);

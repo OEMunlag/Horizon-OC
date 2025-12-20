@@ -27,8 +27,12 @@ typedef struct {
     u32 t8_tREFI;
     u32 mem_burst_read_latency;
     u32 mem_burst_write_latency;
+
     u32 eristaCpuUV;
+    u32 eristaCpuVmin;
     u32 eristaCpuMaxVolt;
+    u32 eristaCpuUnlock;
+
     u32 marikoCpuUVLow;
     u32 marikoCpuUVHigh;
     u32 tableConf;
@@ -174,7 +178,10 @@ static inline bool cust_set_burst_read_lat(const char* p, u32 v) { CUST_WRITE_FI
 static inline bool cust_set_burst_write_lat(const char* p, u32 v) { CUST_WRITE_FIELD(p, mem_burst_write_latency, v); }
 
 static inline bool cust_set_erista_cpu_uv(const char* p, u32 v) { CUST_WRITE_FIELD(p, eristaCpuUV, v); }
+static inline bool cust_set_eristaCpuVmin(const char* p, u32 v) { CUST_WRITE_FIELD(p, eristaCpuVmin, v); }
 static inline bool cust_set_erista_cpu_max_volt(const char* p, u32 v) { CUST_WRITE_FIELD(p, eristaCpuMaxVolt, v); }
+static inline bool cust_set_eristaCpuUnlock(const char* p, u32 v) { CUST_WRITE_FIELD(p, eristaCpuUnlock, v); }
+
 static inline bool cust_set_mariko_cpu_uv_low(const char* p, u32 v) { CUST_WRITE_FIELD(p, marikoCpuUVLow, v); }
 static inline bool cust_set_mariko_cpu_uv_high(const char* p, u32 v) { CUST_WRITE_FIELD(p, marikoCpuUVHigh, v); }
 static inline bool cust_set_mariko_cpu_low_vmin(const char* p, u32 v) { CUST_WRITE_FIELD(p, marikoCpuLowVmin, v); }
@@ -239,7 +246,10 @@ static inline u32 cust_get_burst_read_lat(const CustomizeTable* t) { return CUST
 static inline u32 cust_get_burst_write_lat(const CustomizeTable* t) { return CUST_GET_FIELD(t, mem_burst_write_latency); }
 
 static inline u32 cust_get_erista_cpu_uv(const CustomizeTable* t) { return CUST_GET_FIELD(t, eristaCpuUV); }
+static inline u32 cust_get_eristaCpuVmin(const CustomizeTable* t) { return CUST_GET_FIELD(t, eristaCpuVmin); }
 static inline u32 cust_get_erista_cpu_max_volt(const CustomizeTable* t) { return CUST_GET_FIELD(t, eristaCpuMaxVolt); }
+static inline u32 cust_get_eristaCpuUnlock(const CustomizeTable* t) { return CUST_GET_FIELD(t, eristaCpuUnlock); }
+
 static inline u32 cust_get_mariko_cpu_uv_low(const CustomizeTable* t) { return CUST_GET_FIELD(t, marikoCpuUVLow); }
 static inline u32 cust_get_mariko_cpu_uv_high(const CustomizeTable* t) { return CUST_GET_FIELD(t, marikoCpuUVHigh); }
 static inline u32 cust_get_mariko_cpu_low_vmin(const CustomizeTable* t) { return CUST_GET_FIELD(t, marikoCpuLowVmin); }
