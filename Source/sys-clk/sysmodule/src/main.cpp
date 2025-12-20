@@ -94,7 +94,7 @@ extern "C"
 
     void __appExit(void)
     {
-        CloseFanControllerThread();
+        // CloseFanControllerThread();
         // fanExit();
         i2cExit();
         fsExit();
