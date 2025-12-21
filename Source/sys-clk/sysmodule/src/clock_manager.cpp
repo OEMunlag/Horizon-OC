@@ -142,7 +142,7 @@ bool ClockManager::IsAssignableHz(SysClkModule module, std::uint32_t hz)
     case SysClkModule_CPU:
         return hz >= 400000000;
     case SysClkModule_MEM:
-        return hz == 204000000 || hz >= 665600000;
+        return hz >= 665600000;
     default:
         return true;
     }
