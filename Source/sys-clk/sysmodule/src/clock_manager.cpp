@@ -333,7 +333,7 @@ void ClockManager::GovernorThread(void* arg)
 
         if (targetHz)
         {
-            u32 targetIndex = index;
+            u32 targetIndex = table.count - 1;
             for (u32 i = 0; i < table.count; i++)
             {
                 if (table.list[i] >= targetHz)
@@ -343,11 +343,12 @@ void ClockManager::GovernorThread(void* arg)
                 }
             }
 
-            if (index > targetIndex && index > 0)
-                index--;
-            else if (index < targetIndex && index + 1 < table.count)
-                index++;
+            if (index > targetIndex)
+            {
+                index = targetIndex;
+            }
         }
+
 
         u32 newHz = table.list[index];
         if (mgr->IsAssignableHz(SysClkModule_GPU, newHz))
