@@ -472,9 +472,9 @@ namespace ams::ldr::oc::pcv::mariko {
         WRITE_PARAM_ALL_REG(table, emc_pdex2rd, pdex2rw);
         WRITE_PARAM_ALL_REG(table, emc_pchg2pden, GET_CYCLE_CEIL(1.75));
         WRITE_PARAM_ALL_REG(table, emc_ar2pden, GET_CYCLE_CEIL(1.75));
-        WRITE_PARAM_ALL_REG(table, emc_pdex2cke, GET_CYCLE_CEIL(1.75));
+        WRITE_PARAM_ALL_REG(table, emc_pdex2cke, GET_CYCLE_CEIL(1.05));
         WRITE_PARAM_ALL_REG(table, emc_act2pden, GET_CYCLE_CEIL(14.0));
-        WRITE_PARAM_ALL_REG(table, emc_cke2pden, /* cke2pden */ GET_CYCLE_CEIL(5.0));
+        WRITE_PARAM_ALL_REG(table, emc_cke2pden, /* cke2pden */ GET_CYCLE_CEIL(8.5));
         (void) cke2pden;
         WRITE_PARAM_ALL_REG(table, emc_pdex2mrr, GET_CYCLE_CEIL(pdex2mrr));
         WRITE_PARAM_ALL_REG(table, emc_rw2pden, tWTPDEN);
@@ -489,9 +489,9 @@ namespace ams::ldr::oc::pcv::mariko {
         WRITE_PARAM_ALL_REG(table, emc_wsv, wsv);
         WRITE_PARAM_ALL_REG(table, emc_wev, wev);
         WRITE_PARAM_ALL_REG(table, emc_qrst, qrst);
-       // WRITE_PARAM_ALL_REG(table, emc_tr_qrst, qrst);
+        WRITE_PARAM_ALL_REG(table, emc_tr_qrst, qrst);
         WRITE_PARAM_ALL_REG(table, emc_qsafe, qsafe);
-       // WRITE_PARAM_ALL_REG(table, emc_tr_qsafe, qsafe);
+        WRITE_PARAM_ALL_REG(table, emc_tr_qsafe, qsafe);
         WRITE_PARAM_ALL_REG(table, emc_tr_qpop, qpop);
         WRITE_PARAM_ALL_REG(table, emc_qpop, qpop);
         WRITE_PARAM_ALL_REG(table, emc_rdv, rdv);
@@ -500,6 +500,10 @@ namespace ams::ldr::oc::pcv::mariko {
         WRITE_PARAM_ALL_REG(table, emc_rdv_early_mask, rdv);
         WRITE_PARAM_ALL_REG(table, emc_rdv_mask, rdv + 2);
         WRITE_PARAM_ALL_REG(table, emc_tr_rdv, rdv);
+        WRITE_PARAM_ALL_REG(table, emc_cmd_brlshft_2, 0x24)
+        WRITE_PARAM_ALL_REG(table, emc_cmd_brlshft_3, 0x24)
+        WRITE_PARAM_ALL_REG(table, emc_mrs_wait_cnt, 0x07FF003C);
+        WRITE_PARAM_ALL_REG(table, emc_mrs_wait_cnt2, 0x02DE002A);
 
         /* This needs some clean up. */
         constexpr double MC_ARB_DIV = 4.0;
