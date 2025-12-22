@@ -502,8 +502,8 @@ namespace ams::ldr::oc::pcv::mariko {
         WRITE_PARAM_ALL_REG(table, emc_tr_rdv, rdv);
         WRITE_PARAM_ALL_REG(table, emc_cmd_brlshft_2, 0x24)
         WRITE_PARAM_ALL_REG(table, emc_cmd_brlshft_3, 0x24)
-        WRITE_PARAM_ALL_REG(table, emc_mrs_wait_cnt, 0x07FF003C);
-        WRITE_PARAM_ALL_REG(table, emc_mrs_wait_cnt2, 0x02DE002A);
+        // WRITE_PARAM_ALL_REG(table, emc_mrs_wait_cnt, 0x07FF003C);
+        // WRITE_PARAM_ALL_REG(table, emc_mrs_wait_cnt2, 0x02DE002A);
 
         /* This needs some clean up. */
         constexpr double MC_ARB_DIV = 4.0;
