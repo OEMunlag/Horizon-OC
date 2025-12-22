@@ -155,6 +155,8 @@ namespace ams::ldr::oc {
         inline u32 pdex2rw;
         inline u32 cke2pden;
 
+        const u32 tCKE = CEIL(1.0827 * CEIL(0.0074944 * (C.marikoEmcMaxClock / 1000.0)));
+
         const double tMMRI = tRCD + (tCK_avg * 3);
         const double pdex2mrr = tMMRI + 10; /* Do this properly? */
     }

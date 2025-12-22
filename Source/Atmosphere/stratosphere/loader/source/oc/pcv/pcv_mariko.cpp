@@ -450,7 +450,7 @@ namespace ams::ldr::oc::pcv::mariko {
         WRITE_PARAM_ALL_REG(table, emc_tfaw, GET_CYCLE_CEIL(tFAW));
         WRITE_PARAM_ALL_REG(table, emc_trpab, MIN(GET_CYCLE_CEIL(tRPab), static_cast<u32>(0x3F)));
         WRITE_PARAM_ALL_REG(table, emc_tckesr, GET_CYCLE_CEIL(tSR));
-        WRITE_PARAM_ALL_REG(table, emc_tcke, GET_CYCLE_CEIL(tXP) + 1);
+        WRITE_PARAM_ALL_REG(table, emc_tcke, tCKE);
         WRITE_PARAM_ALL_REG(table, emc_tpd, GET_CYCLE_CEIL(tXP));
         WRITE_PARAM_ALL_REG(table, emc_tclkstop, GET_CYCLE_CEIL(tXP) + 8);
         WRITE_PARAM_ALL_REG(table, emc_r2p, tR2P);

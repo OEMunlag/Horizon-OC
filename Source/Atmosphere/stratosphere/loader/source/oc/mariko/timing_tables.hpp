@@ -66,7 +66,6 @@ namespace ams::ldr::oc::pcv::mariko {
         u32 rdv_inc;
         u32 einput;
         u32 quse_width;
-        s32 obdly_delta;
     };
 
     extern const MiscTimings g_misc_table[];
