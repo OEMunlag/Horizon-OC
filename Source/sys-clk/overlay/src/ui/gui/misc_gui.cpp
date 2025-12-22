@@ -13,9 +13,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
- 
+
 
 #include "misc_gui.h"
 #include "fatal_gui.h"
@@ -60,8 +60,8 @@ void MiscGui::addConfigToggle(SysClkConfigValue configVal, const char* altName) 
 }
 
 
-void MiscGui::addConfigButton(SysClkConfigValue configVal, 
-    const char* altName, 
+void MiscGui::addConfigButton(SysClkConfigValue configVal,
+    const char* altName,
     const ValueRange& range,
     const std::string& categoryName,
     const ValueThresholds* thresholds,
@@ -86,7 +86,7 @@ void MiscGui::addConfigButton(SysClkConfigValue configVal,
                 break;
             }
         }
-        
+
         if (!foundNamedValue) {
             uint64_t displayValue = currentValue / range.divisor;
             if (!range.suffix.empty()) {
@@ -256,22 +256,22 @@ void MiscGui::listUI()
         {2091000000, "Unsafe Max"},
         {2295000000, "Absolute Max"},
     };
-    
+
     this->listElement->addItem(new tsl::elm::CategoryHeader("Settings"));
-    
+
     addConfigToggle(HocClkConfigValue_UncappedClocks, nullptr);
     addConfigToggle(HocClkConfigValue_OverwriteBoostMode, nullptr);
     addConfigToggle(HocClkConfigValue_KipEditing, nullptr);
     addConfigToggle(HocClkConfigValue_ThermalThrottle, nullptr);
     addConfigToggle(HocClkConfigValue_HandheldTDP, nullptr);
-    
+
     std::map<uint32_t, std::string> labels_pwr_r = {
         {8600, "Official Rating"}
     };
     std::map<uint32_t, std::string> labels_pwr_l = {
         {6400, "Official Rating"}
     };
-    
+
     ValueThresholds tdpThresholds(8600, 9500);
     addConfigButton(
         HocClkConfigValue_HandheldTDPLimit,
@@ -373,7 +373,7 @@ void MiscGui::listUI()
     this->listElement->addItem(gpuSubmenu);
 
     this->listElement->addItem(new tsl::elm::CategoryHeader("Experimental"));
-    
+
     std::vector<NamedValue> chargerCurrents = {
         NamedValue("Disabled", 0),
         NamedValue("1024mA", 1024),
@@ -386,9 +386,9 @@ void MiscGui::listUI()
         NamedValue("2816mA", 2816),
         NamedValue("3072mA", 3072),
     };
-    
+
     ValueThresholds chargerThresholds(2048, 2560);
-    
+
     addConfigButton(
         HorizonOCConfigValue_BatteryChargeCurrent,
         "Charge Current Override",
@@ -407,16 +407,16 @@ void MiscGui::listUI()
 class RamSubmenuGui : public MiscGui {
 public:
     RamSubmenuGui() { }
-    
+
 protected:
     void listUI() override {
         ValueThresholds thresholdsDisabled(0, 0);
         std::vector<NamedValue> noNamedValues = {};
-        
+
         this->listElement->addItem(new tsl::elm::CategoryHeader("RAM Settings"));
-        
+
         addConfigToggle(KipConfigValue_hpMode, "HP Mode");
-        
+
         std::vector<NamedValue> marikoMaxEmcClock = {
             NamedValue("1600MHz", 1600000),
             NamedValue("1633MHz", 1633000),
@@ -507,7 +507,7 @@ protected:
             NamedValue("2366MHz (high power draw!)", 2366000),
             NamedValue("2400MHz (high power draw!)", 2400000),
         };
-        
+
         if(IsErista()) {
             addConfigButton(
                 KipConfigValue_eristaEmcMaxClock,
@@ -531,7 +531,7 @@ protected:
                 false
             );
         }
-        
+
         std::map<uint32_t, std::string> emc_voltage_label = {
             {1100000, "Default (Mariko)"},
             {1125000, "Default (Erista)"},
@@ -552,7 +552,7 @@ protected:
             noNamedValues,
             false
         );
-        
+
         if(IsMariko()) {
             addConfigButton(
                 KipConfigValue_marikoEmcVddqVolt,
@@ -565,7 +565,7 @@ protected:
                 false
             );
         }
-        
+
         addConfigButton(
             KipConfigValue_emcDvbShift,
             "DVB Shift",
@@ -576,7 +576,7 @@ protected:
             {},
             false
         );
-        
+
         tsl::elm::ListItem* timingsSubmenu = new tsl::elm::ListItem("Memory Timings");
         timingsSubmenu->setClickListener([](u64 keys) {
             if (keys & HidNpadButton_A) {
@@ -586,7 +586,7 @@ protected:
             return false;
         });
         this->listElement->addItem(timingsSubmenu);
-        
+
         tsl::elm::ListItem* latenciesSubmenu = new tsl::elm::ListItem("Memory Latencies");
         latenciesSubmenu->setClickListener([](u64 keys) {
             if (keys & HidNpadButton_A) {
@@ -602,13 +602,13 @@ protected:
 class RamTimingsSubmenuGui : public MiscGui {
 public:
     RamTimingsSubmenuGui() { }
-    
+
 protected:
     void listUI() override {
         ValueThresholds thresholdsDisabled(0, 0);
-        
+
         this->listElement->addItem(new tsl::elm::CategoryHeader("Memory Timings"));
-        
+
         addConfigButton(KipConfigValue_t1_tRCD, "t1 tRCD", ValueRange(0, 8, 1, "", 1), "tRCD", &thresholdsDisabled, {}, {}, false);
         addConfigButton(KipConfigValue_t2_tRP, "t2 tRP", ValueRange(0, 8, 1, "", 1), "tRP", &thresholdsDisabled, {}, {}, false);
         addConfigButton(KipConfigValue_t3_tRAS, "t3 tRAS", ValueRange(0, 10, 1, "", 1), "tRAS", &thresholdsDisabled, {}, {}, false);
@@ -623,13 +623,13 @@ protected:
 class RamLatenciesSubmenuGui : public MiscGui {
 public:
     RamLatenciesSubmenuGui() { }
-    
+
 protected:
     void listUI() override {
         ValueThresholds thresholdsDisabled(0, 0);
-        
+
         this->listElement->addItem(new tsl::elm::CategoryHeader("Memory Latencies"));
-        
+
         std::vector<NamedValue> rlLabels = {
             NamedValue("1600BL", 0),
             NamedValue("1866BL", 4),
@@ -669,11 +669,11 @@ protected:
 class CpuSubmenuGui : public MiscGui {
 public:
     CpuSubmenuGui() { }
-    
+
 protected:
     void listUI() override {
         ValueThresholds thresholdsDisabled(0, 0);
-        
+
         this->listElement->addItem(new tsl::elm::CategoryHeader("CPU Settings"));
 
         if(IsErista()) {
@@ -747,7 +747,7 @@ protected:
                 {},
                 false
             );
-            
+
             std::vector<NamedValue> maxClkOptions = {
                 NamedValue("1963MHz", 1963000),
                 NamedValue("2397MHz", 2397000),
@@ -766,7 +766,7 @@ protected:
                 maxClkOptions,
                 false
             );
-            
+
             addConfigButton(
                 KipConfigValue_marikoCpuLowVmin,
                 "CPU Low VMIN",
@@ -781,14 +781,14 @@ protected:
             addConfigButton(
                 KipConfigValue_marikoCpuHighVmin,
                 "CPU High VMIN",
-                ValueRange(650, 850, 5, "mV", 1),
+                ValueRange(650, 900, 5, "mV", 1),
                 "CPU VMIN",
                 &thresholdsDisabled,
                 {},
                 {},
                 false
             );
-            
+
             ValueThresholds mCpuVoltThresholds(1160, 1180);
             addConfigButton(
                 KipConfigValue_marikoCpuMaxVolt,
@@ -807,12 +807,12 @@ protected:
 class GpuSubmenuGui : public MiscGui {
 public:
     GpuSubmenuGui() { }
-    
+
 protected:
     void listUI() override {
         ValueThresholds thresholdsDisabled(0, 0);
         std::vector<NamedValue> noNamedValues = {};
-        
+
         this->listElement->addItem(new tsl::elm::CategoryHeader("GPU Settings"));
 
         std::vector<NamedValue> gpuUvConf = {
@@ -888,7 +888,7 @@ protected:
             {},
             false
         );
-        
+
         tsl::elm::ListItem* customTableSubmenu = new tsl::elm::ListItem("GPU Custom Table");
         customTableSubmenu->setClickListener([](u64 keys) {
             if (keys & HidNpadButton_A) {
@@ -898,7 +898,7 @@ protected:
             return false;
         });
         this->listElement->addItem(customTableSubmenu);
-        
+
         addConfigToggle(KipConfigValue_marikoGpuFullUnlock, "GPU Full Unlock");
         tsl::elm::CustomDrawer* warningText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
             renderer->drawString("\uE150 GPU Full Unlock can cause", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
@@ -915,14 +915,14 @@ protected:
 class GpuCustomTableSubmenuGui : public MiscGui {
 public:
     GpuCustomTableSubmenuGui() { }
-    
+
 protected:
     void listUI() override {
         this->listElement->addItem(new tsl::elm::CategoryHeader("GPU Custom Table (mV)"));
-        
+
         ValueThresholds MgpuVmaxThresholds(800, 850);
         ValueThresholds EgpuVmaxThresholds(950, 975);
-        
+
         std::vector<NamedValue> mGpuVolts = {
             NamedValue("Disabled", 2000),
             NamedValue("Auto", 0),
@@ -1044,18 +1044,18 @@ protected:
 };
 
 
-static std::string getValueDisplayText(uint64_t currentValue, 
+static std::string getValueDisplayText(uint64_t currentValue,
                                        const ValueRange& range,
                                        const std::vector<NamedValue>& namedValues)
 {
     char valueText[32];
-    
+
     for (const auto& namedValue : namedValues) {
         if (currentValue == namedValue.value) {
             return namedValue.name;
         }
     }
-    
+
     if (currentValue == 0) {
         snprintf(valueText, sizeof(valueText), "%s", VALUE_DEFAULT_TEXT);
     } else {
@@ -1082,14 +1082,14 @@ void MiscGui::refresh() {
         for (const auto& [configVal, button] : this->configButtons) {
             uint64_t currentValue = this->configList->values[configVal];
             const ValueRange& range = this->configRanges[configVal];
-            
+
             auto namedValuesIt = this->configNamedValues.find(configVal);
-            const std::vector<NamedValue>& namedValues = (namedValuesIt != this->configNamedValues.end()) 
-                ? namedValuesIt->second 
+            const std::vector<NamedValue>& namedValues = (namedValuesIt != this->configNamedValues.end())
+                ? namedValuesIt->second
                 : std::vector<NamedValue>();
-            
+
             char valueText[32];
-            
+
             bool foundNamedValue = false;
             for (const auto& namedValue : namedValues) {
                 if (currentValue == namedValue.value) {
@@ -1098,7 +1098,7 @@ void MiscGui::refresh() {
                     break;
                 }
             }
-            
+
             if (!foundNamedValue) {
                 uint64_t displayValue = currentValue / range.divisor;
                 if (!range.suffix.empty()) {
@@ -1107,7 +1107,7 @@ void MiscGui::refresh() {
                     snprintf(valueText, sizeof(valueText), "%lu", displayValue);
                 }
             }
-            
+
             button->setValue(valueText);
         }
     }
