@@ -428,7 +428,7 @@ namespace ams::ldr::oc::pcv::mariko {
 
         u32 refresh_raw = 0xFFFF;
         if (C.t8_tREFI != 6) {
-            refresh_raw = std::floor(tREFpb_values[C.t8_tREFI] / tCK_avg) - 0x40;
+            refresh_raw = CEIL(tREFpb_values[C.t8_tREFI] / tCK_avg) - 0x40;
             refresh_raw = MIN(refresh_raw, static_cast<u32>(0xFFFF));
         }
 
