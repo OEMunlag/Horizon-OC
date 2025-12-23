@@ -35,13 +35,13 @@ namespace ams::ldr::oc {
     #define INCREMENT_HIGH_BYTES_BY(x, n) SET_HIGH_BYTES((x), (GET_HIGH_BYTES(x) + (n)))
 
     /* Primary timings. */
-    const std::array<u32,  8> tRCD_values  =  {18, 17, 16, 15, 14, 13, 12, 11};
-    const std::array<u32,  8> tRP_values   =  {18, 17, 16, 15, 14, 13, 12, 11};
-    const std::array<u32, 10> tRAS_values  =  {42, 36, 34, 32, 30, 28, 26, 24, 22, 20};
-    const std::array<double,    7>  tRRD_values   = {/*10.0,*/ 7.5, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0}; /* 10.0 is used for <2133mhz; do we care? */
-    const std::array<u32,      11>  tRFC_values   = {140, 130, 120, 110, 100, 90, 80, 70, 60, 50, 40};
-    const std::array<u32,      10>  tWTR_values   = {10, 9, 8, 7, 6, 5, 4, 3, 3, 1};
-    const std::array<u32,       6>  tREFpb_values = {3900, 5850, 7800, 11700, 15600, 99999};
+    const std::array<u32,  8> tRCD_values  =  { 18, 17, 16, 15, 14, 13, 12, 11 };
+    const std::array<u32,  8> tRP_values   =  { 18, 17, 16, 15, 14, 13, 12, 11 };
+    const std::array<u32, 10> tRAS_values  =  { 42, 36, 34, 32, 30, 28, 26, 24, 22, 20 };
+    const std::array<double,    7>  tRRD_values   = { /*10.0,*/ 7.5, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0 }; /* 10.0 is used for <2133mhz; do we care? */
+    const std::array<u32,      11>  tRFC_values   = { 140, 130, 120, 110, 100, 90, 80, 70, 60, 50, 40 };
+    const std::array<u32,      10>  tWTR_values   = { 10, 9, 8, 7, 6, 5, 4, 3, 3, 1 };
+    const std::array<u32,       6>  tREFpb_values = { 3900, 5850, 7800, 11700, 15600, 99999 };
 
     const u32 BL = 16;
 
@@ -155,7 +155,7 @@ namespace ams::ldr::oc {
         inline u32 pdex2rw;
         inline u32 cke2pden;
 
-        const u32 tCKE = CEIL(1.0827 * CEIL(0.0074944 * (C.marikoEmcMaxClock / 1000.0)));
+        const u32 tCKE = CEIL(1.0795 * CEIL(0.0074472 * (C.marikoEmcMaxClock / 1000.0)));
 
         const double tMMRI = tRCD + (tCK_avg * 3);
         const double pdex2mrr = tMMRI + 10; /* Do this properly? */
