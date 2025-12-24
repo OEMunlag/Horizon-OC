@@ -54,7 +54,7 @@ class Config
     std::uint8_t GetProfileCount(std::uint64_t tid);
     void GetProfiles(std::uint64_t tid, SysClkTitleProfileList* out_profiles);
     bool SetProfiles(std::uint64_t tid, SysClkTitleProfileList* profiles, bool immediate);
-    std::uint32_t GetAutoClockHz(std::uint64_t tid, SysClkModule module, SysClkProfile profile);
+    std::uint32_t GetAutoClockHz(std::uint64_t tid, SysClkModule module, SysClkProfile profile, bool returnRaw);
 
     void SetEnabled(bool enabled);
     bool Enabled();
@@ -76,7 +76,7 @@ class Config
     bool kipOverride[SysClkConfigValue_EnumMax];
     time_t CheckModificationTime();
     std::uint32_t FindClockMHz(std::uint64_t tid, SysClkModule module, SysClkProfile profile);
-    std::uint32_t FindClockHzFromProfiles(std::uint64_t tid, SysClkModule module, std::initializer_list<SysClkProfile> profiles);
+    std::uint32_t FindClockHzFromProfiles(std::uint64_t tid, SysClkModule module, std::initializer_list<SysClkProfile> profiles, u32 mhzMultiplier = 1000000);
     static int BrowseIniFunc(const char* section, const char* key, const char* value, void* userdata);
 
     std::map<std::tuple<std::uint64_t, SysClkProfile, SysClkModule>, std::uint32_t> profileMHzMap;

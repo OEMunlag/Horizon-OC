@@ -77,7 +77,7 @@ typedef enum
     SysClkModule_GPU,
     SysClkModule_MEM,
     HorizonOCModule_Governor,
-    HorizonOCModule_LCD,
+    HorizonOCModule_Display,
     SysClkModule_EnumMax,
 } SysClkModule;
 
@@ -131,6 +131,8 @@ static inline const char* sysclkFormatModule(SysClkModule module, bool pretty)
             return pretty ? "GPU" : "gpu";
         case SysClkModule_MEM:
             return pretty ? "Memory" : "mem";
+        case HorizonOCModule_Display:
+            return pretty ? "Display" : "display";
         case HorizonOCModule_Governor:
             return pretty ? "Governor" : "gov";
         default:
@@ -148,6 +150,11 @@ static inline const char* sysclkFormatThermalSensor(SysClkThermalSensor thermSen
             return pretty ? "PCB" : "pcb";
         case SysClkThermalSensor_Skin:
             return pretty ? "Skin" : "skin";
+        case HorizonOCThermalSensor_Battery:
+            return pretty ? "BAT" : "battery";
+        case HorizonOCThermalSensor_PMIC:
+            return pretty ? "PMIC" : "pmic";
+
         default:
             return NULL;
     }

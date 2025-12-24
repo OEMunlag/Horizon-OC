@@ -138,7 +138,7 @@ std::uint32_t Config::FindClockMHz(std::uint64_t tid, SysClkModule module, SysCl
     return 0;
 }
 
-std::uint32_t Config::FindClockHzFromProfiles(std::uint64_t tid, SysClkModule module, std::initializer_list<SysClkProfile> profiles)
+std::uint32_t Config::FindClockHzFromProfiles(std::uint64_t tid, SysClkModule module, std::initializer_list<SysClkProfile> profiles, u32 mhzMultiplier)
 {
     std::uint32_t mhz = 0;
 
@@ -155,23 +155,23 @@ std::uint32_t Config::FindClockHzFromProfiles(std::uint64_t tid, SysClkModule mo
         }
     }
 
-    return std::max((std::uint32_t)0, mhz * 1000000);
+    return std::max((std::uint32_t)0, mhz * mhzMultiplier);
 }
 
-std::uint32_t Config::GetAutoClockHz(std::uint64_t tid, SysClkModule module, SysClkProfile profile)
+std::uint32_t Config::GetAutoClockHz(std::uint64_t tid, SysClkModule module, SysClkProfile profile, bool returnRaw)
 {
     std::scoped_lock lock{this->configMutex};
     switch(profile)
     {
         case SysClkProfile_Handheld:
-            return FindClockHzFromProfiles(tid, module, {SysClkProfile_Handheld});
+            return FindClockHzFromProfiles(tid, module, {SysClkProfile_Handheld}, returnRaw ? 1 : 1000000);
         case SysClkProfile_HandheldCharging:
         case SysClkProfile_HandheldChargingUSB:
-            return FindClockHzFromProfiles(tid, module, {SysClkProfile_HandheldChargingUSB, SysClkProfile_HandheldCharging, SysClkProfile_Handheld});
+            return FindClockHzFromProfiles(tid, module, {SysClkProfile_HandheldChargingUSB, SysClkProfile_HandheldCharging, SysClkProfile_Handheld}, returnRaw ? 1 : 1000000);
         case SysClkProfile_HandheldChargingOfficial:
-            return FindClockHzFromProfiles(tid, module, {SysClkProfile_HandheldChargingOfficial, SysClkProfile_HandheldCharging, SysClkProfile_Handheld});
+            return FindClockHzFromProfiles(tid, module, {SysClkProfile_HandheldChargingOfficial, SysClkProfile_HandheldCharging, SysClkProfile_Handheld}, returnRaw ? 1 : 1000000);
         case SysClkProfile_Docked:
-            return FindClockHzFromProfiles(tid, module, {SysClkProfile_Docked});
+            return FindClockHzFromProfiles(tid, module, {SysClkProfile_Docked}, returnRaw ? 1 : 1000000);
         default:
             ERROR_THROW("Unhandled SysClkProfile: %u", profile);
     }

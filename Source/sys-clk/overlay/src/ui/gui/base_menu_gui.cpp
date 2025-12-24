@@ -56,7 +56,7 @@ void BaseMenuGui::preDraw(tsl::gfx::Renderer* renderer) {
     
     // All constants pre-calculated and cached
     static constexpr const char* const labels[] = {
-        "App ID", "Profile", "CPU", "GPU", "MEM", "SoC", "Board", "Skin", "Now", "Avg", "BAT", "PMIC", "FAN"
+        "App ID", "Profile", "CPU", "GPU", "MEM", "SoC", "Board", "Skin", "Now", "Avg", "BAT", "PMIC", "FAN", "DISP"
     };
 
     static constexpr u32 dataPositions[6] = {63-3+3, 200-1, 344-1-3, 200-1, 342-1, 321-1};
@@ -163,6 +163,10 @@ void BaseMenuGui::preDraw(tsl::gfx::Renderer* renderer) {
 
     renderer->drawString(displayStrings[24], false, dataPositions[1], y, SMALL_TEXT_SIZE, tsl::infoTextColor);   // fan speed
 
+    renderer->drawString(labels[13], false, positions[7], y, SMALL_TEXT_SIZE, tsl::sectionTextColor); // fan label
+
+    renderer->drawString(displayStrings[25], false, dataPositions[2], y, SMALL_TEXT_SIZE, tsl::infoTextColor);   // fan speed
+
 }
 
 // Optimized refresh - now does all the string formatting once per second
@@ -267,6 +271,8 @@ void BaseMenuGui::refresh()
     sprintf(displayStrings[23], "%u%%", context->PartLoad[HocClkPartLoad_BAT] / 1000);
 
     sprintf(displayStrings[24], "%u%%", context->PartLoad[HocClkPartLoad_FAN]);
+
+    sprintf(displayStrings[25], "%u Hz", context->realFreqs[HorizonOCModule_Display]);
 
 }
 

@@ -229,15 +229,14 @@ void Board::Initialize()
     }
 
     u64 clkVirtAddr, dsiVirtAddr, outsize;
-    Result rc = svcQueryMemoryMapping(&clkVirtAddr, &outsize, 0x60006000, 0x1000);
+    rc = svcQueryMemoryMapping(&clkVirtAddr, &outsize, 0x60006000, 0x1000);
     ASSERT_RESULT_OK(rc, "svcQueryMemoryMapping (clk)");
-    Result rc = svcQueryMemoryMapping(&dsiVirtAddr, &outsize, 0x54300000, 0x40000);
+    rc = svcQueryMemoryMapping(&dsiVirtAddr, &outsize, 0x54300000, 0x40000);
     ASSERT_RESULT_OK(rc, "svcQueryMemoryMapping (dsi)");
 
     DisplayRefreshConfig cfg = {.clkVirtAddr = clkVirtAddr, .dsiVirtAddr = dsiVirtAddr};
 
     DisplayRefresh_Initialize(&cfg);
-
     FetchHardwareInfos();
 }
 
@@ -308,6 +307,11 @@ void Board::SetHz(SysClkModule module, std::uint32_t hz)
 {
     Result rc = 0;
 
+    if(module == HorizonOCModule_Display) {
+        DisplayRefresh_SetRate(hz);
+        return;
+    }
+
     if(HOSSVC_HAS_CLKRST)
     {
         ClkrstSession session = {0};
@@ -332,6 +336,11 @@ std::uint32_t Board::GetHz(SysClkModule module)
     Result rc = 0;
     std::uint32_t hz = 0;
 
+    if(module == HorizonOCModule_Display) {
+        DisplayRefresh_GetRate(&hz, false);
+        return hz;
+    }
+    
     if(HOSSVC_HAS_CLKRST)
     {
         ClkrstSession session = {0};
@@ -355,6 +364,7 @@ std::uint32_t Board::GetHz(SysClkModule module)
 
 std::uint32_t Board::GetRealHz(SysClkModule module)
 {
+    u32 hz = 0;
     switch(module)
     {
         case SysClkModule_CPU:
@@ -363,6 +373,9 @@ std::uint32_t Board::GetRealHz(SysClkModule module)
             return t210ClkGpuFreq();
         case SysClkModule_MEM:
             return t210ClkMemFreq();
+        case HorizonOCModule_Display:
+            DisplayRefresh_GetRate(&hz, false);
+            return hz;
         default:
             ASSERT_ENUM_VALID(SysClkModule, module);
     }
@@ -376,6 +389,8 @@ void Board::GetFreqList(SysClkModule module, std::uint32_t* outList, std::uint32
     PcvClockRatesListType type;
     s32 tmpInMaxCount = maxCount;
     s32 tmpOutCount = 0;
+
+
 
     if(HOSSVC_HAS_CLKRST)
     {
@@ -552,6 +567,11 @@ void Board::ResetToStockGpu()
         ASSERT_RESULT_OK(rc, "apmExtSysRequestPerformanceMode");
     }
 }
+
+void Board::ResetToStockDisplay() {
+    DisplayRefresh_SetRate(60);
+}
+
 std::uint32_t Board::GetTemperatureMilli(SysClkThermalSensor sensor)
 {
     std::int32_t millis = 0;

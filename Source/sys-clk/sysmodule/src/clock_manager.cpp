@@ -312,7 +312,8 @@ void ClockManager::GovernorThread(void* arg)
             targetHz = mgr->config->GetAutoClockHz(
                 mgr->context->applicationId,
                 SysClkModule_GPU,
-                mgr->context->profile
+                mgr->context->profile,
+                false
             );
 
             if (!targetHz)
@@ -320,7 +321,8 @@ void ClockManager::GovernorThread(void* arg)
                 targetHz = mgr->config->GetAutoClockHz(
                     GLOBAL_PROFILE_ID,
                     SysClkModule_GPU,
-                    mgr->context->profile
+                    mgr->context->profile,
+                    false
                 );
             }
         }
@@ -410,15 +412,19 @@ void ClockManager::Tick()
             ResetToStockClocks();
             return;
         }
-
+        bool returnRaw = false;
         for (unsigned int module = 0; module < SysClkModule_EnumMax; module++)
         {
+            if(module > SysClkModule_MEM)
+                returnRaw = true;
+            else
+                returnRaw = false;
             targetHz = this->context->overrideFreqs[module];
             if (!targetHz)
             {
-                targetHz = this->config->GetAutoClockHz(this->context->applicationId, (SysClkModule)module, this->context->profile);
+                targetHz = this->config->GetAutoClockHz(this->context->applicationId, (SysClkModule)module, this->context->profile, returnRaw);
                 if(!targetHz)
-                    targetHz = this->config->GetAutoClockHz(GLOBAL_PROFILE_ID, (SysClkModule)module, this->context->profile);
+                    targetHz = this->config->GetAutoClockHz(GLOBAL_PROFILE_ID, (SysClkModule)module, this->context->profile, returnRaw);
             }
 
             if(module == HorizonOCModule_Governor) {
@@ -427,12 +433,18 @@ void ClockManager::Tick()
                     FileUtils::LogLine("[mgr] Governor state changed: %s", newGovernorState ? "enabled" : "disabled");
                     lastGovernorState = newGovernorState;
 
-                    // Force a "context refresh" like on app/profile change
                     hasChanged = true;
                     this->context->enabled = this->GetConfig()->Enabled();
-                    Board::ResetToStock(); // optional: reset clocks before re-applying
+                    Board::ResetToStock();
                 }
                 isGovernorEnabled = newGovernorState;
+            }
+
+            if(module == HorizonOCModule_Display) {
+                if(targetHz)
+                    Board::SetHz(HorizonOCModule_Display, targetHz);
+                else
+                    Board::ResetToStockDisplay();
             }
 
             // Skip GPU if governor handles it
