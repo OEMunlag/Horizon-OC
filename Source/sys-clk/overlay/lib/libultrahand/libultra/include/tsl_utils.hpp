@@ -18,7 +18,7 @@
  *   altered or removed.
  *
  *  Licensed under both GPLv2 and CC-BY-4.0
- *  Copyright (c) 2024 ppkantorski
+ *  Copyright (c) 2023-2025 ppkantorski
  ********************************************************************************/
 
 
@@ -54,39 +54,39 @@
 #include <map>
 #include <barrier>
 
-#ifndef APPROXIMATE_cos
-// Approximation for cos(x) using Taylor series around 0
-#define APPROXIMATE_cos(x)       (1 - (x) * (x) / 2 + (x) * (x) * (x) * (x) / 24)  // valid for small x
-#endif
-
-
-#ifndef APPROXIMATE_ifloor
-#define APPROXIMATE_ifloor(x)   ((int)((x) >= 0 ? (x) : (x) - 1))  // truncate toward negative infinity
-#define APPROXIMATE_iceil(x)    ((int)((x) == (int)(x) ? (x) : ((x) > 0 ? (int)(x) + 1 : (int)(x))))  // truncate toward positive infinity
-#endif
-
-#ifndef APPROXIMATE_sqrt
-// Fast approximation for sqrt using Newton's method
-#define APPROXIMATE_sqrt(x)     ((x) <= 0 ? 0 : (x) / 2.0 * (3.0 - ((x) * (x) * 0.5)))  // Approximation for x close to 1
-#define APPROXIMATE_pow(x, y)   ((y) == 0 ? 1 : ((y) == 1 ? (x) : APPROXIMATE_sqrt(x))) // limited to approximate sqrt if y=0.5
-#endif
-
-#ifndef APPROXIMATE_fmod
-#define APPROXIMATE_fmod(x, y)    ((x) - ((int)((x) / (y)) * (y)))  // equivalent to x - floor(x/y) * y
-#endif
-
-#ifndef APPROXIMATE_cos
-// Approximation for cos(x) using Taylor series around 0
-#define APPROXIMATE_cos(x)       (1 - (x) * (x) / 2 + (x) * (x) * (x) * (x) / 24)  // valid for small x
-#endif
-
-#ifndef APPROXIMATE_acos
-#define APPROXIMATE_acos(x)      (1.5708 - (x) - (x)*(x)*(x) / 6)  // limited approximation for acos in range [-1, 1]
-#endif
-
-#ifndef APPROXIMATE_fabs
-#define APPROXIMATE_fabs(x)      ((x) < 0 ? -(x) : (x))
-#endif
+//#ifndef APPROXIMATE_cos
+//// Approximation for cos(x) using Taylor series around 0
+//#define APPROXIMATE_cos(x)       (1 - (x) * (x) / 2 + (x) * (x) * (x) * (x) / 24)  // valid for small x
+//#endif
+//
+//
+//#ifndef APPROXIMATE_ifloor
+//#define APPROXIMATE_ifloor(x)   ((int)((x) >= 0 ? (x) : (x) - 1))  // truncate toward negative infinity
+//#define APPROXIMATE_iceil(x)    ((int)((x) == (int)(x) ? (x) : ((x) > 0 ? (int)(x) + 1 : (int)(x))))  // truncate toward positive infinity
+//#endif
+//
+//#ifndef APPROXIMATE_sqrt
+//// Fast approximation for sqrt using Newton's method
+//#define APPROXIMATE_sqrt(x)     ((x) <= 0 ? 0 : (x) / 2.0 * (3.0 - ((x) * (x) * 0.5)))  // Approximation for x close to 1
+//#define APPROXIMATE_pow(x, y)   ((y) == 0 ? 1 : ((y) == 1 ? (x) : APPROXIMATE_sqrt(x))) // limited to approximate sqrt if y=0.5
+//#endif
+//
+//#ifndef APPROXIMATE_fmod
+//#define APPROXIMATE_fmod(x, y)    ((x) - ((int)((x) / (y)) * (y)))  // equivalent to x - floor(x/y) * y
+//#endif
+//
+//#ifndef APPROXIMATE_cos
+//// Approximation for cos(x) using Taylor series around 0
+//#define APPROXIMATE_cos(x)       (1 - (x) * (x) / 2 + (x) * (x) * (x) * (x) / 24)  // valid for small x
+//#endif
+//
+//#ifndef APPROXIMATE_acos
+//#define APPROXIMATE_acos(x)      (1.5708 - (x) - (x)*(x)*(x) / 6)  // limited approximation for acos in range [-1, 1]
+//#endif
+//
+//#ifndef APPROXIMATE_fabs
+//#define APPROXIMATE_fabs(x)      ((x) < 0 ? -(x) : (x))
+//#endif
 
 struct OverlayCombo {
     std::string path;   // full overlay path
@@ -99,6 +99,35 @@ struct SwapDepth {
 };
 
 namespace ult {
+    // math funcs
+    inline double cos(double x) {
+      static constexpr double PI = 3.14159265358979323846;
+      static constexpr double TWO_PI = 6.28318530717958647692;
+      static constexpr double HALF_PI = 1.57079632679489661923;
+      
+      // Fast normalization using multiply instead of divide when possible
+      x = x - TWO_PI * static_cast<int>(x * 0.159154943091895); // 1/(2π)
+      if (x < 0) x += TWO_PI;
+      
+      // Use symmetry to reduce range
+      int sign = 1;
+      if (x > PI) {
+         x -= PI;
+         sign = -1;
+      }
+      if (x > HALF_PI) {
+         x = PI - x;
+         sign = -sign;
+      }
+      
+      // Horner's method for faster polynomial evaluation (fewer operations)
+      // 5-term minimax polynomial for [0, π/2] - accurate to ~10^-8
+      const double x2 = x * x;
+      return sign * (1.0 + x2 * (-0.5 + x2 * (0.04166666666666666 + x2 * (-0.001388888888888889 + x2 * (0.0000248015873015873 - x2 * 0.0000002755731922398589)))));
+   }
+
+    
+
     extern bool correctFrameSize; // for detecting the correct Overlay display size
 
     extern u16 DefaultFramebufferWidth;            ///< Width of the framebuffer
@@ -182,6 +211,9 @@ namespace ult {
     extern std::atomic<float> selectWidth;
     extern std::atomic<float> nextPageWidth;
     extern std::atomic<bool> inMainMenu;
+    extern std::atomic<bool> inHiddenMode;
+    extern std::atomic<bool> inSettingsMenu;
+    extern std::atomic<bool> inSubSettingsMenu;
     extern std::atomic<bool> inOverlaysPage;
     extern std::atomic<bool> inPackagesPage;
     
@@ -200,7 +232,7 @@ namespace ult {
     //bool progressAnimation = false;
     extern bool disableTransparency;
     //bool useCustomWallpaper = false;
-    extern bool useMemoryExpansion;
+    //extern bool useMemoryExpansion;
     extern bool useOpaqueScreenshots;
     
     extern std::atomic<bool> onTrackBar;
@@ -344,6 +376,7 @@ namespace ult {
     extern std::string HIDE_OVERLAY;
     extern std::string HIDE_PACKAGE;
     extern std::string LAUNCH_ARGUMENTS;
+    extern std::string FORCE_AMS110_SUPPORT;
     extern std::string QUICK_LAUNCH;
     extern std::string BOOT_COMMANDS;
     extern std::string EXIT_COMMANDS;
@@ -371,6 +404,8 @@ namespace ult {
     extern std::string USER_GUIDE;
     extern std::string SHOW_HIDDEN;
     extern std::string SHOW_DELETE;
+    extern std::string SHOW_UNSUPPORTED;
+
     extern std::string PAGE_SWAP;
     extern std::string RIGHT_SIDE_MODE;
     extern std::string OVERLAY_VERSIONS;
@@ -379,7 +414,7 @@ namespace ult {
     //extern std::string VERSION_LABELS;
     extern std::string KEY_COMBO;
     extern std::string MODE;
-    extern std::string MODES;
+    extern std::string LAUNCH_MODES;
     extern std::string LANGUAGE;
     extern std::string OVERLAY_INFO;
     extern std::string SOFTWARE_UPDATE;
@@ -394,11 +429,19 @@ namespace ult {
     extern std::string VENDOR;
     extern std::string MODEL;
     extern std::string STORAGE;
-    extern std::string NOTICE;
-    extern std::string UTILIZES;
+    //extern std::string NOTICE;
+    //extern std::string UTILIZES;
 
-    extern std::string MEMORY_EXPANSION;
-    extern std::string REBOOT_REQUIRED;
+    extern std::string OVERLAY_MEMORY;
+    extern std::string NOT_ENOUGH_MEMORY;
+    extern std::string WALLPAPER_SUPPORT_DISABLED;
+    extern std::string SOUND_SUPPORT_DISABLED;
+    extern std::string WALLPAPER_SUPPORT_ENABLED;
+    extern std::string SOUND_SUPPORT_ENABLED;
+    extern std::string EXIT_OVERLAY_SYSTEM;
+
+    //extern std::string MEMORY_EXPANSION;
+    //extern std::string REBOOT_REQUIRED;
     extern std::string LOCAL_IP;
     extern std::string WALLPAPER;
     extern std::string THEME;
@@ -443,9 +486,16 @@ namespace ult {
 
     extern std::string ULTRAHAND_HAS_STARTED;
     extern std::string NEW_UPDATE_IS_AVAILABLE;
-    extern std::string REBOOT_IS_REQUIRED;
-    extern std::string HOLD_A_TO_DELETE;
+    //extern std::string REBOOT_IS_REQUIRED;
+    //extern std::string HOLD_A_TO_DELETE;
+
+    extern std::string DELETE_PACKAGE;
+    extern std::string DELETE_OVERLAY;
     extern std::string SELECTION_IS_EMPTY;
+    extern std::string FORCED_SUPPORT_WARNING;
+
+    extern std::string TASK_IS_COMPLETE;
+    extern std::string TASK_HAS_FAILED;
 
     //extern std::string PACKAGE_VERSIONS;
     //extern std::string PROGRESS_ANIMATION;
@@ -456,6 +506,8 @@ namespace ult {
     extern std::string BOOT_ENTRY;
     #endif
 
+    extern std::string INCOMPATIBLE_WARNING;
+    extern std::string SYSTEM_RAM;
     extern std::string FREE;
 
     extern std::string DEFAULT_CHAR_WIDTH;
@@ -567,7 +619,7 @@ namespace ult {
     
     
     
-    float calculateAmplitude(float x, float peakDurationFactor = 0.25f);
+    //float calculateAmplitude(float x, float peakDurationFactor = 0.25f);
             
     
     extern std::atomic<bool> refreshWallpaperNow;
@@ -685,9 +737,44 @@ namespace ult {
     
     extern bool cleanVersionLabels, hideOverlayVersions, hidePackageVersions, useLibultrahandTitles, useLibultrahandVersions, usePackageTitles, usePackageVersions;
     
+
+
+    // nx-ovlloader settings
+    enum class OverlayHeapSize : u64 {
+        Size_4MB = 0x400000,
+        Size_6MB = 0x600000,
+        Size_8MB = 0x800000
+    };
+    
+    // Static cache
+    static struct {
+        bool initialized = false;
+        OverlayHeapSize cachedSize = OverlayHeapSize::Size_6MB;
+        u64 customSizeMB = 0;  // NEW: store custom size in MB
+    } heapSizeCache;
+    
+
+    // Helper function to convert MB to bytes
+    extern u64 mbToBytes(u32 mb);
+    
+    // Helper function to convert bytes to MB
+    extern u32 bytesToMB(u64 bytes);
+
+    // Implementation
+    OverlayHeapSize getCurrentHeapSize();
+    
+    extern OverlayHeapSize currentHeapSize;
+    
+    bool setOverlayHeapSize(OverlayHeapSize heapSize);
+    
+    // Implementation
+    bool requestOverlayExit();
+
     extern const std::string loaderInfo;
-    extern const std::string loaderTitle;
-    extern const bool expandedMemory;
+    extern std::string loaderTitle;
+    extern bool expandedMemory;
+    extern bool furtherExpandedMemory;
+    extern bool limitedMemory;
     
     extern std::string versionLabel;
     

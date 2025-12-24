@@ -14,7 +14,7 @@
  *   of the project's documentation and must remain intact.
  * 
  *  Licensed under both GPLv2 and CC-BY-4.0
- *  Copyright (c) 2024 ppkantorski
+ *  Copyright (c) 2023-2025 ppkantorski
  ********************************************************************************/
 
 #pragma once
@@ -40,7 +40,7 @@ namespace ult {
     extern int stoi(const std::string& str, std::size_t* pos = nullptr, int base = 10);
     extern float stof(const std::string& str);
 
-    extern bool canConvertToInt(const std::string& str);
+    //extern bool canConvertToInt(const std::string& str);
 
     /**
      * @brief A lightweight string stream class that mimics basic functionality of std::istringstream.
@@ -144,7 +144,7 @@ namespace ult {
      * @param input The input string to process.
      * @return The string with multiple slashes replaced.
      */
-    std::string replaceMultipleSlashes(const std::string& input);
+    //std::string replaceMultipleSlashes(const std::string& input);
     
     
     void resolveDirectoryTraversal(std::string& path);

@@ -37,7 +37,9 @@
 #include "notification.h"
 
 #define HOSPPC_HAS_BOOST (hosversionAtLeast(7,0,0))
-
+bool isGovernorEnabled = false; // to avoid thread messes
+bool lastGovernorState = false;
+bool hasChanged = true;
 ClockManager *ClockManager::instance = NULL;
 Thread governorTHREAD;
 
@@ -276,7 +278,7 @@ void ClockManager::GovernorThread(void* arg)
 
         std::scoped_lock lock{mgr->contextMutex};
 
-        if (!mgr->config->GetConfigValue(HocClkConfigValue_HandheldGovernor))
+        if (!isGovernorEnabled)
         {
             svcSleepThread(50'000'000);
             continue;
@@ -388,7 +390,6 @@ void ClockManager::Tick()
         }
     }
 
-
     if(((tmp451TempSoc() / 1000) > (int)this->config->GetConfigValue(HocClkConfigValue_ThermalThrottleThreshold)) && this->config->GetConfigValue(HocClkConfigValue_ThermalThrottle)) {
         ResetToStockClocks();
         return;
@@ -402,47 +403,66 @@ void ClockManager::Tick()
         std::uint32_t maxHz = 0;
         std::uint32_t nearestHz = 0;
 
-            if(apmExtIsBoostMode(mode) && !this->config->GetConfigValue(HocClkConfigValue_OverwriteBoostMode)) {
-                ResetToStockClocks();
-                return;
-            }
-            for (unsigned int module = 0; module < SysClkModule_EnumMax; module++)
+        if(apmExtIsBoostMode(mode) && !this->config->GetConfigValue(HocClkConfigValue_OverwriteBoostMode)) {
+            ResetToStockClocks();
+            return;
+        }
+
+        for (unsigned int module = 0; module < SysClkModule_EnumMax; module++)
+        {
+            targetHz = this->context->overrideFreqs[module];
+            if (!targetHz)
             {
-                    if(this->config->GetConfigValue(HocClkConfigValue_HandheldGovernor)) {
-                        noGPU = true;
-                    } else {
-                        noGPU = false;
-                    }
-                    if(noGPU && module == SysClkModule_GPU)
-                        continue;
-                    targetHz = this->context->overrideFreqs[module];
-                    if (!targetHz)
-                    {
-                        targetHz = this->config->GetAutoClockHz(this->context->applicationId, (SysClkModule)module, this->context->profile);
-                        if(!targetHz)
-                            targetHz = this->config->GetAutoClockHz(GLOBAL_PROFILE_ID, (SysClkModule)module, this->context->profile);
-                    }
+                targetHz = this->config->GetAutoClockHz(this->context->applicationId, (SysClkModule)module, this->context->profile);
+                if(!targetHz)
+                    targetHz = this->config->GetAutoClockHz(GLOBAL_PROFILE_ID, (SysClkModule)module, this->context->profile);
+            }
 
-                    if (targetHz)
-                    {
+            if(module == HorizonOCModule_Governor) {
+                bool newGovernorState = targetHz;
+                if(newGovernorState != lastGovernorState) {
+                    FileUtils::LogLine("[mgr] Governor state changed: %s", newGovernorState ? "enabled" : "disabled");
+                    lastGovernorState = newGovernorState;
 
-                        maxHz = this->GetMaxAllowedHz((SysClkModule)module, this->context->profile);
-                        nearestHz = this->GetNearestHz((SysClkModule)module, targetHz, maxHz);
-                        if (nearestHz != this->context->freqs[module] && this->context->enabled) {
-                            FileUtils::LogLine(
-                                "[mgr] %s clock set : %u.%u MHz (target = %u.%u MHz)",
-                                Board::GetModuleName((SysClkModule)module, true),
-                                nearestHz / 1000000, nearestHz / 100000 - nearestHz / 1000000 * 10,
-                                targetHz / 1000000, targetHz / 100000 - targetHz / 1000000 * 10);
+                    // Force a "context refresh" like on app/profile change
+                    hasChanged = true;
+                    this->context->enabled = this->GetConfig()->Enabled();
+                    Board::ResetToStock(); // optional: reset clocks before re-applying
+                }
+                isGovernorEnabled = newGovernorState;
+            }
 
-                            Board::SetHz((SysClkModule)module, nearestHz);
-                            this->context->freqs[module] = nearestHz;
-                    }
-                    }
+            // Skip GPU if governor handles it
+            if(module > SysClkModule_MEM) {
+                continue;
+            }
+            if(isGovernorEnabled) {
+                noGPU = true;
+            } else {
+                noGPU = false;
+            }
+            if(noGPU && module == SysClkModule_GPU)
+                continue;
 
+            if (targetHz)
+            {
+                maxHz = this->GetMaxAllowedHz((SysClkModule)module, this->context->profile);
+                nearestHz = this->GetNearestHz((SysClkModule)module, targetHz, maxHz);
+
+                if (nearestHz != this->context->freqs[module] && this->context->enabled) {
+                    FileUtils::LogLine(
+                        "[mgr] %s clock set : %u.%u MHz (target = %u.%u MHz)",
+                        Board::GetModuleName((SysClkModule)module, true),
+                        nearestHz / 1000000, nearestHz / 100000 - nearestHz / 1000000 * 10,
+                        targetHz / 1000000, targetHz / 100000 - targetHz / 1000000 * 10
+                    );
+
+                    Board::SetHz((SysClkModule)module, nearestHz);
+                    this->context->freqs[module] = nearestHz;
+                }
             }
         }
-    
+    }
 }
 
 void ClockManager::ResetToStockClocks() {

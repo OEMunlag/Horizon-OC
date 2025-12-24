@@ -15,7 +15,7 @@
  *   of the project's documentation and must remain intact.
  * 
  *  Licensed under both GPLv2 and CC-BY-4.0
- *  Copyright (c) 2024 ppkantorski
+ *  Copyright (c) 2023-2025 ppkantorski
  ********************************************************************************/
 
 #include "hex_funcs.hpp"
@@ -229,15 +229,16 @@ namespace ult {
         const size_t fileSize = ftell(file);
         fseek(file, 0, SEEK_SET);
     
-        std::vector<unsigned char> binaryData;
         if (hexData.length() % 2 != 0) {
             fclose(file);
             return offsets;
         }
         
-        
         const size_t hexLen = hexData.length();
-        binaryData.resize(hexLen / 2);
+        const size_t patternLen = hexLen / 2;
+        
+        // Use heap allocation for the buffer to avoid stack overflow with large buffer sizes
+        std::unique_ptr<unsigned char[]> binaryData(new unsigned char[patternLen]);
         const unsigned char* hexPtr = reinterpret_cast<const unsigned char*>(hexData.c_str());
         
         // Unrolled hex conversion loop
@@ -252,17 +253,17 @@ namespace ult {
         }
     
         // Optimized search variables
-        const unsigned char* patternPtr = binaryData.data();
-        const size_t patternLen = binaryData.size();
+        const unsigned char* patternPtr = binaryData.get();
         const unsigned char firstByte = patternPtr[0];
         
-        std::vector<unsigned char> buffer(HEX_BUFFER_SIZE);
+        // Use heap allocation for the buffer to avoid stack overflow with large buffer sizes
+        std::unique_ptr<unsigned char[]> buffer(new unsigned char[HEX_BUFFER_SIZE]);
         size_t bytesRead = 0;
         size_t offset = 0;
         
 
-        while ((bytesRead = fread(buffer.data(), 1, HEX_BUFFER_SIZE, file)) > 0) {
-            const unsigned char* bufPtr = buffer.data();
+        while ((bytesRead = fread(buffer.get(), 1, HEX_BUFFER_SIZE, file)) > 0) {
+            const unsigned char* bufPtr = buffer.get();
             
             // Optimized search with first-byte filtering and loop unrolling
             i = 0;
@@ -322,15 +323,16 @@ namespace ult {
         const size_t fileSize = file.tellg();
         file.seekg(0, std::ios::beg);
     
-        std::vector<unsigned char> binaryData;
         if (hexData.length() % 2 != 0) {
             file.close();
             return offsets;
         }
         
-        
         const size_t hexLen = hexData.length();
-        binaryData.resize(hexLen / 2);
+        const size_t patternLen = hexLen / 2;
+        
+        // Use heap allocation for the buffer to avoid stack overflow with large buffer sizes
+        std::unique_ptr<unsigned char[]> binaryData(new unsigned char[patternLen]);
         const unsigned char* hexPtr = reinterpret_cast<const unsigned char*>(hexData.c_str());
         
         size_t i = 0;
@@ -342,17 +344,17 @@ namespace ult {
             binaryData[i/2] = (hexTable[hexPtr[i]] << 4) | hexTable[hexPtr[i + 1]];
         }
     
-        const unsigned char* patternPtr = binaryData.data();
-        const size_t patternLen = binaryData.size();
+        const unsigned char* patternPtr = binaryData.get();
         const unsigned char firstByte = patternPtr[0];
         
-        std::vector<unsigned char> buffer(HEX_BUFFER_SIZE);
+        // Use heap allocation for the buffer to avoid stack overflow with large buffer sizes
+        std::unique_ptr<unsigned char[]> buffer(new unsigned char[HEX_BUFFER_SIZE]);
         size_t bytesRead = 0;
         size_t offset = 0;
     
-        while (file.read(reinterpret_cast<char*>(buffer.data()), HEX_BUFFER_SIZE) || file.gcount() > 0) {
+        while (file.read(reinterpret_cast<char*>(buffer.get()), HEX_BUFFER_SIZE) || file.gcount() > 0) {
             bytesRead = file.gcount();
-            const unsigned char* bufPtr = buffer.data();
+            const unsigned char* bufPtr = buffer.get();
             
             // Same optimized search as FILE* version
             i = 0;
@@ -418,7 +420,6 @@ namespace ult {
     void hexEditByOffset(const std::string& filePath, const std::string& offsetStr, const std::string& hexData) {
         // Lock file writes to prevent concurrent modifications to the same file
         std::lock_guard<std::mutex> fileWriteLock(fileWriteMutex);
-
         const std::streampos offset = std::stoll(offsetStr);
     
     #if !USING_FSTREAM_DIRECTIVE
@@ -435,7 +436,6 @@ namespace ult {
         // Retrieve the file size
         fseek(file, 0, SEEK_END);
         const std::streampos fileSize = ftell(file);
-        fseek(file, 0, SEEK_SET);
     
         if (offset >= fileSize) {
             #if USING_LOGGING_DIRECTIVE
@@ -446,18 +446,37 @@ namespace ult {
             return;
         }
     
-        // Convert the hex string to binary data
-        std::vector<unsigned char> binaryData(hexData.length() / 2);
-        std::string byteString;
-        for (size_t i = 0, j = 0; i < hexData.length(); i += 2, ++j) {
-            byteString = hexData.substr(i, 2);
-            binaryData[j] = static_cast<unsigned char>(ult::stoi(byteString, nullptr, 16));
+        // Validate hex data length
+        const size_t hexLen = hexData.length();
+        if (hexLen % 2 != 0) {
+            #if USING_LOGGING_DIRECTIVE
+            if (!disableLogging)
+                logMessage("Invalid hex data length.");
+            #endif
+            fclose(file);
+            return;
+        }
+    
+        // Convert the hex string to binary data using optimized lookup table
+        const size_t dataLen = hexLen / 2;
+        std::unique_ptr<unsigned char[]> binaryData(new unsigned char[dataLen]);
+        const unsigned char* hexPtr = reinterpret_cast<const unsigned char*>(hexData.c_str());
+        
+        // Unrolled hex conversion loop (same as findHexDataOffsets)
+        size_t i = 0;
+        for (; i + 4 <= hexLen; i += 4) {
+            binaryData[i/2] = (hexTable[hexPtr[i]] << 4) | hexTable[hexPtr[i + 1]];
+            binaryData[i/2 + 1] = (hexTable[hexPtr[i + 2]] << 4) | hexTable[hexPtr[i + 3]];
+        }
+        // Handle remaining bytes
+        for (; i < hexLen; i += 2) {
+            binaryData[i/2] = (hexTable[hexPtr[i]] << 4) | hexTable[hexPtr[i + 1]];
         }
     
         // Move to the specified offset and write the binary data directly to the file
         fseek(file, offset, SEEK_SET);
-        const size_t bytesWritten = fwrite(binaryData.data(), sizeof(unsigned char), binaryData.size(), file);
-        if (bytesWritten != binaryData.size()) {
+        const size_t bytesWritten = fwrite(binaryData.get(), sizeof(unsigned char), dataLen, file);
+        if (bytesWritten != dataLen) {
             #if USING_LOGGING_DIRECTIVE
             if (!disableLogging)
                 logMessage("Failed to write data to the file.");
@@ -481,7 +500,6 @@ namespace ult {
         // Retrieve the file size
         file.seekg(0, std::ios::end);
         const std::streampos fileSize = file.tellg();
-        file.seekg(0, std::ios::beg);
     
         if (offset >= fileSize) {
             #if USING_LOGGING_DIRECTIVE
@@ -491,17 +509,34 @@ namespace ult {
             return;
         }
     
-        // Convert the hex string to binary data
-        std::vector<unsigned char> binaryData(hexData.length() / 2);
-        std::string byteString;
-        for (size_t i = 0, j = 0; i < hexData.length(); i += 2, ++j) {
-            byteString = hexData.substr(i, 2);
-            binaryData[j] = static_cast<unsigned char>(ult::stoi(byteString, nullptr, 16));
+        // Validate hex data length
+        const size_t hexLen = hexData.length();
+        if (hexLen % 2 != 0) {
+            #if USING_LOGGING_DIRECTIVE
+            if (!disableLogging)
+                logMessage("Invalid hex data length.");
+            #endif
+            return;
+        }
+    
+        // Convert the hex string to binary data using optimized lookup table
+        const size_t dataLen = hexLen / 2;
+        std::unique_ptr<unsigned char[]> binaryData(new unsigned char[dataLen]);
+        const unsigned char* hexPtr = reinterpret_cast<const unsigned char*>(hexData.c_str());
+        
+        // Unrolled hex conversion loop
+        size_t i = 0;
+        for (; i + 4 <= hexLen; i += 4) {
+            binaryData[i/2] = (hexTable[hexPtr[i]] << 4) | hexTable[hexPtr[i + 1]];
+            binaryData[i/2 + 1] = (hexTable[hexPtr[i + 2]] << 4) | hexTable[hexPtr[i + 3]];
+        }
+        for (; i < hexLen; i += 2) {
+            binaryData[i/2] = (hexTable[hexPtr[i]] << 4) | hexTable[hexPtr[i + 1]];
         }
     
         // Move to the specified offset and write the binary data directly to the file
         file.seekp(offset);
-        file.write(reinterpret_cast<const char*>(binaryData.data()), binaryData.size());
+        file.write(reinterpret_cast<const char*>(binaryData.get()), dataLen);
         if (!file) {
             #if USING_LOGGING_DIRECTIVE
             if (!disableLogging)
@@ -676,8 +711,10 @@ namespace ult {
         }
 
         const std::streampos totalOffset = hexSum + std::stoll(offsetStr);
-        std::vector<char> hexBuffer(length);
-        std::vector<char> hexStream(length * 2);
+        
+        // Pre-allocate final string size to avoid reallocation
+        std::string result;
+        result.reserve(length * 2);
 
     #if !USING_FSTREAM_DIRECTIVE
         FILE* file = fopen(filePath.c_str(), "rb");
@@ -698,23 +735,41 @@ namespace ult {
             return "";
         }
 
-        const size_t bytesRead = fread(hexBuffer.data(), sizeof(char), length, file);
-        if (bytesRead == length) {
-            static constexpr char hexDigits[] = "0123456789ABCDEF";
-            for (size_t i = 0; i < length; ++i) {
-                hexStream[i * 2] = hexDigits[(hexBuffer[i] >> 4) & 0xF];
-                hexStream[i * 2 + 1] = hexDigits[hexBuffer[i] & 0xF];
-            }
-        } else {
+        // Use heap allocation for the buffer to avoid stack overflow with large buffer sizes
+        std::unique_ptr<unsigned char[]> buffer(new unsigned char[length]);
+        const size_t bytesRead = fread(buffer.get(), 1, length, file);
+        fclose(file);
+        
+        if (bytesRead != length) {
             #if USING_LOGGING_DIRECTIVE
             if (!disableLogging)
                 logMessage("Error reading data from file or end of file reached.");
             #endif
-            fclose(file);
             return "";
         }
 
-        fclose(file);
+        // Optimized hex conversion - directly build uppercase string
+        static constexpr char hexDigits[] = "0123456789ABCDEF";
+        result.resize(length * 2);
+        
+        // Unrolled loop for better performance
+        size_t i = 0;
+        for (; i + 4 <= length; i += 4) {
+            result[i * 2]     = hexDigits[(buffer[i] >> 4) & 0xF];
+            result[i * 2 + 1] = hexDigits[buffer[i] & 0xF];
+            result[i * 2 + 2] = hexDigits[(buffer[i + 1] >> 4) & 0xF];
+            result[i * 2 + 3] = hexDigits[buffer[i + 1] & 0xF];
+            result[i * 2 + 4] = hexDigits[(buffer[i + 2] >> 4) & 0xF];
+            result[i * 2 + 5] = hexDigits[buffer[i + 2] & 0xF];
+            result[i * 2 + 6] = hexDigits[(buffer[i + 3] >> 4) & 0xF];
+            result[i * 2 + 7] = hexDigits[buffer[i + 3] & 0xF];
+        }
+        // Handle remaining bytes
+        for (; i < length; ++i) {
+            result[i * 2]     = hexDigits[(buffer[i] >> 4) & 0xF];
+            result[i * 2 + 1] = hexDigits[buffer[i] & 0xF];
+        }
+        
     #else
         std::ifstream file(filePath, std::ios::binary);
         if (!file) {
@@ -734,14 +789,12 @@ namespace ult {
             return "";
         }
 
-        file.read(hexBuffer.data(), length);
-        if (file.gcount() == static_cast<std::streamsize>(length)) {
-            static constexpr char hexDigits[] = "0123456789ABCDEF";
-            for (size_t i = 0; i < length; ++i) {
-                hexStream[i * 2] = hexDigits[(hexBuffer[i] >> 4) & 0xF];
-                hexStream[i * 2 + 1] = hexDigits[hexBuffer[i] & 0xF];
-            }
-        } else {
+        // Use heap allocation for the buffer to avoid stack overflow with large buffer sizes
+        std::unique_ptr<unsigned char[]> buffer(new unsigned char[length]);
+        file.read(reinterpret_cast<char*>(buffer.get()), length);
+        file.close();
+        
+        if (file.gcount() != static_cast<std::streamsize>(length)) {
             #if USING_LOGGING_DIRECTIVE
             if (!disableLogging)
                 logMessage("Error reading data from file or end of file reached.");
@@ -749,11 +802,28 @@ namespace ult {
             return "";
         }
 
-        file.close();
+        // Optimized hex conversion - directly build uppercase string
+        static constexpr char hexDigits[] = "0123456789ABCDEF";
+        result.resize(length * 2);
+        
+        // Unrolled loop for better performance
+        size_t i = 0;
+        for (; i + 4 <= length; i += 4) {
+            result[i * 2]     = hexDigits[(buffer[i] >> 4) & 0xF];
+            result[i * 2 + 1] = hexDigits[buffer[i] & 0xF];
+            result[i * 2 + 2] = hexDigits[(buffer[i + 1] >> 4) & 0xF];
+            result[i * 2 + 3] = hexDigits[buffer[i + 1] & 0xF];
+            result[i * 2 + 4] = hexDigits[(buffer[i + 2] >> 4) & 0xF];
+            result[i * 2 + 5] = hexDigits[buffer[i + 2] & 0xF];
+            result[i * 2 + 6] = hexDigits[(buffer[i + 3] >> 4) & 0xF];
+            result[i * 2 + 7] = hexDigits[buffer[i + 3] & 0xF];
+        }
+        // Handle remaining bytes
+        for (; i < length; ++i) {
+            result[i * 2]     = hexDigits[(buffer[i] >> 4) & 0xF];
+            result[i * 2 + 1] = hexDigits[buffer[i] & 0xF];
+        }
     #endif
-
-        std::string result(hexStream.begin(), hexStream.end());
-        result = stringToUppercase(result);
 
         return result;
     }
@@ -877,5 +947,72 @@ namespace ult {
         }
     
         return "";  // Return empty string if no match is found
+    }
+
+    // 1. Table optimization: Mark as constexpr for compile-time evaluation
+    static constexpr uint8_t b64_table[256] = {
+        0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+        0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+        0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,62,  0xFF,0xFF,0xFF,63,
+        52,53,54,55,56,57,58,59,60,61,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+        0xFF,0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
+        15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 0xFF,0xFF,0xFF,0xFF,0xFF,
+        0xFF,26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+        41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 0xFF,0xFF,0xFF,0xFF,0xFF,
+        0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+        0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+        0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+        0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+        0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+        0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+        0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+        0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+    };
+    
+    // 2. Optimized decode: Pre-calculate output size, reduce bounds checking
+    static size_t base64_decode(const char* src, uint8_t* out) {
+        size_t outLen = 0;
+        const char* p = src;
+        
+        // Process 4 chars at a time (unrolled loop for better instruction pipelining)
+        while (*p) {
+            uint8_t a = b64_table[static_cast<uint8_t>(*p++)];
+            if (a == 0xFF) break;
+            
+            uint8_t b = b64_table[static_cast<uint8_t>(*p++)];
+            if (b == 0xFF) break;
+            
+            out[outLen++] = (a << 2) | (b >> 4);
+            
+            uint8_t cChar = *p++;
+            if (cChar == '=' || cChar == '\0') break;
+            
+            uint8_t c = b64_table[cChar];
+            if (c == 0xFF) break;
+            
+            out[outLen++] = (b << 4) | (c >> 2);
+            
+            uint8_t dChar = *p++;
+            if (dChar == '=' || dChar == '\0') break;
+            
+            uint8_t d = b64_table[dChar];
+            if (d == 0xFF) break;
+            
+            out[outLen++] = (c << 6) | d;
+        }
+        
+        return outLen;
+    }
+    
+    // 3. Optimized wrapper: Pre-calculate exact output size, avoid vector overhead
+    std::string decodeBase64ToString(const std::string& b64) {
+        // Base64 decodes to ~3/4 original size
+        const size_t maxOutSize = (b64.size() * 3) / 4 + 3;
+        std::string result(maxOutSize, '\0');
+        
+        const size_t len = base64_decode(b64.c_str(), reinterpret_cast<uint8_t*>(result.data()));
+        result.resize(len);
+        
+        return result;
     }
 }

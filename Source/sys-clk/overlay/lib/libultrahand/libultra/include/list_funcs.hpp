@@ -14,7 +14,7 @@
  *   of the project's documentation and must remain intact.
  * 
  *  Licensed under both GPLv2 and CC-BY-4.0
- *  Copyright (c) 2024 ppkantorski
+ *  Copyright (c) 2023-2025 ppkantorski
  ********************************************************************************/
 
 
@@ -70,7 +70,7 @@ namespace ult {
     
     
     // Function to read file into a vector of strings
-    std::vector<std::string> readListFromFile(const std::string& filePath, size_t maxLines=0);
+    std::vector<std::string> readListFromFile(const std::string& filePath, size_t maxLines=0, bool preserveNewlines = false);
 
     
     // Function to get an entry from the list based on the index
@@ -89,7 +89,7 @@ namespace ult {
     
     
     // Function to read file into a set of strings
-    std::unordered_set<std::string> readSetFromFile(const std::string& filePath);
+    std::unordered_set<std::string> readSetFromFile(const std::string& filePath, const std::string& packagePath = "");
 
     
     // Function to write a set to a file

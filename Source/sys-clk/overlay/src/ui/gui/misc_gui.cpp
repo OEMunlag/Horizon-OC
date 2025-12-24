@@ -399,8 +399,6 @@ void MiscGui::listUI()
         chargerCurrents,
         false
     );
-
-    addConfigToggle(HocClkConfigValue_HandheldGovernor, nullptr);
 }
 
 

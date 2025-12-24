@@ -50,9 +50,6 @@ typedef enum {
     HocClkConfigValue_ThermalThrottle,
     HocClkConfigValue_ThermalThrottleThreshold,
 
-    HocClkConfigValue_HandheldGovernor,
-    HocClkConfigValue_DockedGovernor,
-
     HocClkConfigValue_HandheldTDP,
     HocClkConfigValue_HandheldTDPLimit,
 
@@ -211,11 +208,6 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
 
         case HocClkConfigValue_ThermalThrottleThreshold:
             return pretty ? "Thermal Throttle Threshold" : "thermal_throttle_threshold";
-
-        case HocClkConfigValue_HandheldGovernor:
-            return pretty ? "Handheld Governor" : "governor";
-        case HocClkConfigValue_DockedGovernor:
-            return pretty ? "Docked Governor" : "governor_docked";
 
         case HocClkConfigValue_HandheldTDP:
             return pretty ? "Handheld TDP" : "handheld_tdp";
@@ -422,8 +414,6 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
             return 1862ULL;
 
         case HocClkConfigValue_ThermalThrottle:
-        case HocClkConfigValue_DockedGovernor:
-        case HocClkConfigValue_HandheldGovernor:
         case HocClkConfigValue_HandheldTDP:
         case HocClkConfigValue_EnforceBoardLimit:
         case HocClkConfigValue_KipEditing:
@@ -464,8 +454,6 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case HocClkConfigValue_UncappedClocks:
         case HocClkConfigValue_OverwriteBoostMode:
         case HocClkConfigValue_ThermalThrottle:
-        case HocClkConfigValue_DockedGovernor:
-        case HocClkConfigValue_HandheldGovernor:
         case HocClkConfigValue_HandheldTDP:
         case HocClkConfigValue_EnforceBoardLimit:
         case HocClkConfigValue_KipEditing:

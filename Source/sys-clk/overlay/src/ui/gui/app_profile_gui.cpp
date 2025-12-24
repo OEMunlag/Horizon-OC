@@ -97,12 +97,33 @@ void AppProfileGui::addModuleListItem(SysClkProfile profile, SysClkModule module
     this->listElement->addItem(listItem);
 }
 
+void AppProfileGui::addModuleListItemToggle(SysClkProfile profile, SysClkModule module)
+{
+    const char* moduleName = sysclkFormatModule(module, true);
+    std::uint32_t currentValue = this->profileList->mhzMap[profile][module];
+    
+    tsl::elm::ToggleListItem* toggle = new tsl::elm::ToggleListItem(moduleName, currentValue != 0);
+    
+    toggle->setStateChangedListener([this, profile, module](bool state) {
+        this->profileList->mhzMap[profile][module] = state ? 1 : 0;
+        
+        Result rc = sysclkIpcSetProfiles(this->applicationId, this->profileList);
+        if(R_FAILED(rc))
+        {
+            FatalGui::openWithResultCode("sysclkIpcSetProfiles", rc);
+        }
+    });
+    
+    this->listElement->addItem(toggle);
+}
+
 void AppProfileGui::addProfileUI(SysClkProfile profile)
 {
     this->listElement->addItem(new tsl::elm::CategoryHeader(sysclkFormatProfile(profile, true) + std::string(" ") + ult::DIVIDER_SYMBOL + "  Reset"));
     this->addModuleListItem(profile, SysClkModule_CPU);
     this->addModuleListItem(profile, SysClkModule_GPU);
     this->addModuleListItem(profile, SysClkModule_MEM);
+    this->addModuleListItemToggle(profile, HorizonOCModule_Governor);
 }
 
 void AppProfileGui::listUI()

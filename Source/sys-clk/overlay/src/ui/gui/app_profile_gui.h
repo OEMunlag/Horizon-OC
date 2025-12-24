@@ -40,6 +40,7 @@ class AppProfileGui : public BaseMenuGui
 
         void openFreqChoiceGui(tsl::elm::ListItem* listItem, SysClkProfile profile, SysClkModule module);
         void addModuleListItem(SysClkProfile profile, SysClkModule module);
+        void addModuleListItemToggle(SysClkProfile profile, SysClkModule module);
         void addProfileUI(SysClkProfile profile);
 
     public:

@@ -39,7 +39,7 @@ class GlobalOverrideGui : public BaseMenuGui
 
         void openFreqChoiceGui(SysClkModule module);
         void addModuleListItem(SysClkModule module);
-
+        void addModuleToggleItem(SysClkModule module);
     public:
         GlobalOverrideGui();
         ~GlobalOverrideGui() {}

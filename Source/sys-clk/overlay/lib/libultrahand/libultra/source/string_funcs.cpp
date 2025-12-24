@@ -15,7 +15,7 @@
  *   of the project's documentation and must remain intact.
  * 
  *  Licensed under both GPLv2 and CC-BY-4.0
- *  Copyright (c) 2024 ppkantorski
+ *  Copyright (c) 2023-2025 ppkantorski
  ********************************************************************************/
 
 #include "string_funcs.hpp"
@@ -226,12 +226,14 @@ namespace ult {
      * @return The string with quotes removed.
      */
     void removeQuotes(std::string& str) {
-        if (str.size() >= 2) {
+        const size_t len = str.size();
+        if (len >= 2) {
             const char front = str[0];
-            const char back = str[str.size() - 1];
+            const char back = str[len - 1];
+            
             if ((front == '\'' && back == '\'') || (front == '"' && back == '"')) {
-                str.erase(0, 1);
-                str.pop_back();
+                std::memmove(&str[0], &str[1], len - 2);
+                str.resize(len - 2);
             }
         }
     }
@@ -245,25 +247,25 @@ namespace ult {
      * @param input The input string to process.
      * @return The string with multiple slashes replaced.
      */
-    std::string replaceMultipleSlashes(const std::string& input) {
-        std::string output;
-        output.reserve(input.size()); // Reserve space for the output string
-        
-        bool previousSlash = false;
-        for (char c : input) {
-            if (c == '/') {
-                if (!previousSlash) {
-                    output.push_back(c);
-                }
-                previousSlash = true;
-            } else {
-                output.push_back(c);
-                previousSlash = false;
-            }
-        }
-        
-        return output;
-    }
+    //std::string replaceMultipleSlashes(const std::string& input) {
+    //    std::string output;
+    //    output.reserve(input.size()); // Reserve space for the output string
+    //    
+    //    bool previousSlash = false;
+    //    for (char c : input) {
+    //        if (c == '/') {
+    //            if (!previousSlash) {
+    //                output.push_back(c);
+    //            }
+    //            previousSlash = true;
+    //        } else {
+    //            output.push_back(c);
+    //            previousSlash = false;
+    //        }
+    //    }
+    //    
+    //    return output;
+    //}
     
     
     
@@ -366,7 +368,7 @@ namespace ult {
      * @param filename The input filename from which to drop the extension, passed by reference and modified in-place.
      */
     void dropExtension(std::string& filename) {
-        const size_t lastDotPos = filename.find_last_of('.');  // Single char instead of string
+        const size_t lastDotPos = filename.rfind('.');
         if (lastDotPos != std::string::npos) {
             filename.resize(lastDotPos);
         }
@@ -510,9 +512,12 @@ namespace ult {
      * @param input The input string from which to remove the tag, passed by reference and modified in-place.
      */
     void removeTag(std::string &input) {
-        const size_t pos = input.find('?');
-        if (pos != std::string::npos) {
-            input.resize(pos); // Modify the string in-place to remove everything after the '?'
+        const char* pos = static_cast<const char*>(
+            std::memchr(input.data(), '?', input.size())
+        );
+        
+        if (pos) {
+            input.resize(pos - input.data());
         }
     }
     

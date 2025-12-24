@@ -15,7 +15,7 @@
  *   altered or removed.
  *
  *  Licensed under both GPLv2 and CC-BY-4.0
- *  Copyright (c) 2024 ppkantorski
+ *  Copyright (c) 2023-2025 ppkantorski
  ********************************************************************************/
 
 #include <tsl_utils.hpp>
@@ -28,6 +28,7 @@ extern "C" { // assertion override
 }
 
 namespace ult {
+
     bool correctFrameSize; // for detecting the correct Overlay display size
 
     u16 DefaultFramebufferWidth = 448;            ///< Width of the framebuffer
@@ -67,7 +68,7 @@ namespace ult {
             content.assign(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
             file.close();
         #endif
-    
+        
         return true;
     }
     
@@ -76,7 +77,7 @@ namespace ult {
         size_t pos = 0;
         size_t keyStart, keyEnd, colonPos, valueStart, valueEnd;
         std::string key, value;
-    
+        
         auto normalizeNewlines = [](std::string &s) {
             size_t n = 0;
             while ((n = s.find("\\n", n)) != std::string::npos) {
@@ -84,28 +85,28 @@ namespace ult {
                 n += 1;
             }
         };
-    
+        
         while ((pos = content.find('"', pos)) != std::string::npos) {
             keyStart = pos + 1;
             keyEnd = content.find('"', keyStart);
             if (keyEnd == std::string::npos) break;
-    
+            
             key = content.substr(keyStart, keyEnd - keyStart);
             colonPos = content.find(':', keyEnd);
             if (colonPos == std::string::npos) break;
-    
+            
             valueStart = content.find('"', colonPos);
             valueEnd = content.find('"', valueStart + 1);
             if (valueStart == std::string::npos || valueEnd == std::string::npos) break;
-    
+            
             value = content.substr(valueStart + 1, valueEnd - valueStart - 1);
-    
-            // 🔹 Convert escaped newlines (\\n) into real ones
+            
+            // Convert escaped newlines (\\n) into real ones
             normalizeNewlines(key);
             normalizeNewlines(value);
-    
+            
             result[key] = value;
-    
+            
             key.clear();
             value.clear();
             pos = valueEnd + 1; // Move to next pair
@@ -132,29 +133,14 @@ namespace ult {
     u16 activeHeaderHeight = 97;
 
     bool consoleIsDocked() {
-        Result rc;
+        Result rc = apmInitialize();
+        if (R_FAILED(rc)) return false;
+        
         ApmPerformanceMode perfMode = ApmPerformanceMode_Invalid;
-    
-        // Initialize the APM service
-        rc = apmInitialize();
-        if (R_FAILED(rc)) {
-            return false;  // Fail early if initialization fails
-        }
-    
-        // Get the current performance mode
         rc = apmGetPerformanceMode(&perfMode);
-        apmExit();  // Clean up the APM service
-    
-        if (R_FAILED(rc)) {
-            return false;  // Fail early if performance mode check fails
-        }
-    
-        // Check if the performance mode indicates docked state
-        if (perfMode == ApmPerformanceMode_Boost) {
-            return true;  // System is docked (boost mode active)
-        }
-    
-        return false;  // Not docked (normal mode or handheld)
+        apmExit();
+        
+        return R_SUCCEEDED(rc) && (perfMode == ApmPerformanceMode_Boost);
     }
     
     //static bool pminfoInitialized = false;
@@ -314,6 +300,9 @@ namespace ult {
     std::atomic<float> selectWidth;
     std::atomic<float> nextPageWidth;
     std::atomic<bool> inMainMenu{false};
+    std::atomic<bool> inHiddenMode{false};
+    std::atomic<bool> inSettingsMenu{false};
+    std::atomic<bool> inSubSettingsMenu{false};
     std::atomic<bool> inOverlaysPage{false};
     std::atomic<bool> inPackagesPage{false};
     
@@ -332,7 +321,7 @@ namespace ult {
     //bool progressAnimation = false;
     bool disableTransparency = false;
     //bool useCustomWallpaper = false;
-    bool useMemoryExpansion = false;
+    //bool useMemoryExpansion = false;
     bool useOpaqueScreenshots = false;
     
     std::atomic<bool> onTrackBar(false);
@@ -394,7 +383,7 @@ namespace ult {
         if (combo.find(' ') != std::string::npos) {
             return;  // Spaces found, return without modifying
         }
-    
+        
         std::string unicodeCombo;
         bool modified = false;
         size_t start = 0;
@@ -402,7 +391,7 @@ namespace ult {
         size_t end = 0;  // Moved outside the loop
         std::string token;  // Moved outside the loop
         auto it = buttonCharMap.end();  // Initialize iterator once outside the loop
-    
+        
         // Iterate through the combo string and split by '+'
         for (size_t i = 0; i <= length; ++i) {
             if (i == length || combo[i] == '+') {
@@ -410,25 +399,25 @@ namespace ult {
                 end = i;  // Reuse the end variable
                 while (start < end && std::isspace(combo[start])) start++;  // Trim leading spaces
                 while (end > start && std::isspace(combo[end - 1])) end--;  // Trim trailing spaces
-    
+                
                 token = combo.substr(start, end - start);  // Reuse the token variable
                 it = buttonCharMap.find(token);  // Reuse the iterator
-    
+                
                 if (it != buttonCharMap.end()) {
                     unicodeCombo += it->second;  // Append the mapped Unicode value
                     modified = true;
                 } else {
                     unicodeCombo += token;  // Append the original token if not found
                 }
-    
+                
                 if (i != length) {
                     unicodeCombo += "+";  // Only append '+' if we're not at the end
                 }
-    
+                
                 start = i + 1;  // Move to the next token
             }
         }
-    
+        
         // If a modification was made, update the original combo
         if (modified) {
             combo = unicodeCombo;
@@ -468,6 +457,7 @@ namespace ult {
     std::string HIDE_OVERLAY = "Hide Overlay";
     std::string HIDE_PACKAGE = "Hide Package";
     std::string LAUNCH_ARGUMENTS = "Launch Arguments";
+    std::string FORCE_AMS110_SUPPORT = "Force AMS110+ Support";
     std::string QUICK_LAUNCH = "Quick Launch";
     std::string BOOT_COMMANDS = "Boot Commands";
     std::string EXIT_COMMANDS = "Exit Commands";
@@ -495,6 +485,7 @@ namespace ult {
     std::string USER_GUIDE = "User Guide";
     std::string SHOW_HIDDEN = "Show Hidden";
     std::string SHOW_DELETE = "Show Delete";
+    std::string SHOW_UNSUPPORTED = "Show Unsupported";
     std::string PAGE_SWAP = "Page Swap";
     std::string RIGHT_SIDE_MODE = "Right-side Mode";
     std::string OVERLAY_VERSIONS = "Overlay Versions";
@@ -503,7 +494,7 @@ namespace ult {
     //std::string VERSION_LABELS = "Version Labels";
     std::string KEY_COMBO = "Key Combo";
     std::string MODE = "Mode";
-    std::string MODES = "Modes";
+    std::string LAUNCH_MODES = "Launch Modes";
     std::string LANGUAGE = "Language";
     std::string OVERLAY_INFO = "Overlay Info";
     std::string SOFTWARE_UPDATE = "Software Update";
@@ -518,11 +509,20 @@ namespace ult {
     std::string VENDOR = "Vendor";
     std::string MODEL = "Model";
     std::string STORAGE = "Storage";
-    std::string NOTICE = "Notice";
-    std::string UTILIZES = "Utilizes";
+    //std::string NOTICE = "Notice";
+    //std::string UTILIZES = "Utilizes";
 
-    std::string MEMORY_EXPANSION = "Memory Expansion";
-    std::string REBOOT_REQUIRED = "*Reboot required.";
+
+    std::string OVERLAY_MEMORY = "Overlay Memory";
+    std::string NOT_ENOUGH_MEMORY = "Not enough memory.";
+    std::string WALLPAPER_SUPPORT_DISABLED = "Wallpaper support disabled.";
+    std::string SOUND_SUPPORT_DISABLED = "Sound support disabled.";
+    std::string WALLPAPER_SUPPORT_ENABLED = "Wallpaper support enabled.";
+    std::string SOUND_SUPPORT_ENABLED = "Sound support enabled.";
+    std::string EXIT_OVERLAY_SYSTEM = "Exit Overlay System";
+
+    //std::string MEMORY_EXPANSION = "Memory Expansion";
+    //std::string REBOOT_REQUIRED = "*Reboot required.";
     std::string LOCAL_IP = "Local IP";
     std::string WALLPAPER = "Wallpaper";
     std::string THEME = "Theme";
@@ -566,10 +566,15 @@ namespace ult {
 
     std::string ULTRAHAND_HAS_STARTED = "Ultrahand has started.";
     std::string NEW_UPDATE_IS_AVAILABLE = "New update is available!";
-    std::string REBOOT_IS_REQUIRED = "Reboot is required.";
-    std::string HOLD_A_TO_DELETE = "Hold \uE0E0 to Delete";
+    //std::string REBOOT_IS_REQUIRED = "Reboot is required.";
+    //std::string HOLD_A_TO_DELETE = "Hold \uE0E0 to Delete";
+    std::string DELETE_PACKAGE = "Delete Package";
+    std::string DELETE_OVERLAY = "Delete Overlay";
     std::string SELECTION_IS_EMPTY = "Selection is empty!";
-
+    std::string FORCED_SUPPORT_WARNING = "Forcing support can be dangerous.";
+    
+    std::string TASK_IS_COMPLETE = "Task is complete!";
+    std::string TASK_HAS_FAILED = "Task has failed.";
 
     //std::string PACKAGE_VERSIONS = "Package Versions";
 
@@ -581,6 +586,8 @@ namespace ult {
     std::string BOOT_ENTRY = "Boot Entry";
     #endif
 
+    std::string INCOMPATIBLE_WARNING = "Incompatible on AMS v1.10+";
+    std::string SYSTEM_RAM = "System RAM";
     std::string FREE = "free";
 
     std::string DEFAULT_CHAR_WIDTH = "0.33";
@@ -678,6 +685,7 @@ namespace ult {
         HIDE_OVERLAY = "Hide Overlay";
         HIDE_PACKAGE = "Hide Package";
         LAUNCH_ARGUMENTS = "Launch Arguments";
+        FORCE_AMS110_SUPPORT = "Force AMS110+ Support";
         QUICK_LAUNCH = "Quick Launch";
         BOOT_COMMANDS = "Boot Commands";
         EXIT_COMMANDS = "Exit Commands";
@@ -704,6 +712,7 @@ namespace ult {
         USER_GUIDE = "User Guide";
         SHOW_HIDDEN = "Show Hidden";
         SHOW_DELETE = "Show Delete";
+        SHOW_UNSUPPORTED = "Show Unsupported";
         PAGE_SWAP = "Page Swap";
         RIGHT_SIDE_MODE = "Right-side Mode";
         OVERLAY_VERSIONS = "Overlay Versions";
@@ -712,7 +721,7 @@ namespace ult {
         //VERSION_LABELS = "Version Labels";
         KEY_COMBO = "Key Combo";
         MODE = "Mode";
-        MODES = "Modes";
+        LAUNCH_MODES = "Launch Modes";
         LANGUAGE = "Language";
         OVERLAY_INFO = "Overlay Info";
         SOFTWARE_UPDATE = "Software Update";
@@ -727,11 +736,21 @@ namespace ult {
         VENDOR = "Vendor";
         MODEL = "Model";
         STORAGE = "Storage";
-        NOTICE = "Notice";
-        UTILIZES = "Utilizes";
+        //NOTICE = "Notice";
+        //UTILIZES = "Utilizes";
+        SYSTEM_RAM = "System RAM";
         FREE = "free";
-        MEMORY_EXPANSION = "Memory Expansion";
-        REBOOT_REQUIRED = "*Reboot required.";
+        
+        OVERLAY_MEMORY = "Overlay Memory";
+        NOT_ENOUGH_MEMORY = "Not enough memory.";
+        WALLPAPER_SUPPORT_DISABLED = "Wallpaper support disabled.";
+        SOUND_SUPPORT_DISABLED = "Sound support disabled.";
+        WALLPAPER_SUPPORT_ENABLED = "Wallpaper support enabled.";
+        SOUND_SUPPORT_ENABLED = "Sound support enabled.";
+        EXIT_OVERLAY_SYSTEM = "Exit Overlay System";
+
+        //MEMORY_EXPANSION = "Memory Expansion";
+        //REBOOT_REQUIRED = "*Reboot required.";
         LOCAL_IP = "Local IP";
         WALLPAPER = "Wallpaper";
         THEME = "Theme";
@@ -790,9 +809,15 @@ namespace ult {
 
         ULTRAHAND_HAS_STARTED = "Ultrahand has started.";
         NEW_UPDATE_IS_AVAILABLE = "New update is available!";
-        REBOOT_IS_REQUIRED = "Reboot is required.";
-        HOLD_A_TO_DELETE = "Hold  to Delete";
+        //REBOOT_IS_REQUIRED = "Reboot is required.";
+        //HOLD_A_TO_DELETE = "Hold  to Delete";
+        DELETE_PACKAGE = "Delete Package";
+        DELETE_OVERLAY = "Delete Overlay";
         SELECTION_IS_EMPTY = "Selection is empty!";
+        FORCED_SUPPORT_WARNING = "Forcing support can be dangerous.";
+        INCOMPATIBLE_WARNING = "Incompatible on AMS v1.10+";
+        TASK_IS_COMPLETE = "Task is complete!";
+        TASK_HAS_FAILED = "Task has failed.";
 
         //EMPTY = "Empty";
     
@@ -860,7 +885,7 @@ namespace ult {
         }
 
         
-        static std::unordered_map<std::string, std::string*> configMap = {
+        std::unordered_map<std::string, std::string*> configMap = {
             #if IS_LAUNCHER_DIRECTIVE
             {"ENGLISH", &ENGLISH},
             {"SPANISH", &SPANISH},
@@ -887,6 +912,7 @@ namespace ult {
             {"HIDE_PACKAGE", &HIDE_PACKAGE},
             {"HIDE_OVERLAY", &HIDE_OVERLAY},
             {"LAUNCH_ARGUMENTS", &LAUNCH_ARGUMENTS},
+            {"FORCE_AMS110_SUPPORT", &FORCE_AMS110_SUPPORT},
             {"QUICK_LAUNCH", &QUICK_LAUNCH},
             {"BOOT_COMMANDS", &BOOT_COMMANDS},
             {"EXIT_COMMANDS", &EXIT_COMMANDS},
@@ -914,6 +940,7 @@ namespace ult {
             {"USER_GUIDE", &USER_GUIDE},
             {"SHOW_HIDDEN", &SHOW_HIDDEN},
             {"SHOW_DELETE", &SHOW_DELETE},
+            {"SHOW_UNSUPPORTED", &SHOW_UNSUPPORTED},
             {"PAGE_SWAP", &PAGE_SWAP},
             {"RIGHT_SIDE_MODE", &RIGHT_SIDE_MODE},
             {"OVERLAY_VERSIONS", &OVERLAY_VERSIONS},
@@ -922,7 +949,7 @@ namespace ult {
             //{"VERSION_LABELS", &VERSION_LABELS},
             {"KEY_COMBO", &KEY_COMBO},
             {"MODE", &MODE},
-            {"MODES", &MODES},
+            {"LAUNCH_MODES", &LAUNCH_MODES},
             {"LANGUAGE", &LANGUAGE},
             {"OVERLAY_INFO", &OVERLAY_INFO},
             {"SOFTWARE_UPDATE", &SOFTWARE_UPDATE},
@@ -937,11 +964,19 @@ namespace ult {
             {"VENDOR", &VENDOR},
             {"MODEL", &MODEL},
             {"STORAGE", &STORAGE},
-            {"NOTICE", &NOTICE},
-            {"UTILIZES", &UTILIZES},
+            //{"NOTICE", &NOTICE},
+            //{"UTILIZES", &UTILIZES},
 
-            {"MEMORY_EXPANSION", &MEMORY_EXPANSION},
-            {"REBOOT_REQUIRED", &REBOOT_REQUIRED},
+            {"OVERLAY_MEMORY", &OVERLAY_MEMORY},
+            {"NOT_ENOUGH_MEMORY", &NOT_ENOUGH_MEMORY},
+            {"WALLPAPER_SUPPORT_DISABLED", &WALLPAPER_SUPPORT_DISABLED},
+            {"SOUND_SUPPORT_DISABLED", &SOUND_SUPPORT_DISABLED},
+            {"WALLPAPER_SUPPORT_ENABLED", &WALLPAPER_SUPPORT_ENABLED},
+            {"SOUND_SUPPORT_ENABLED", &SOUND_SUPPORT_ENABLED},
+            {"EXIT_OVERLAY_SYSTEM", &EXIT_OVERLAY_SYSTEM},
+
+            //{"MEMORY_EXPANSION", &MEMORY_EXPANSION},
+            //{"REBOOT_REQUIRED", &REBOOT_REQUIRED},
             {"LOCAL_IP", &LOCAL_IP},
             {"WALLPAPER", &WALLPAPER},
             {"THEME", &THEME},
@@ -986,9 +1021,15 @@ namespace ult {
 
             {"ULTRAHAND_HAS_STARTED", &ULTRAHAND_HAS_STARTED},
             {"NEW_UPDATE_IS_AVAILABLE", &NEW_UPDATE_IS_AVAILABLE},
-            {"REBOOT_IS_REQUIRED", &REBOOT_IS_REQUIRED},
-            {"HOLD_A_TO_DELETE", &HOLD_A_TO_DELETE},
+            //{"REBOOT_IS_REQUIRED", &REBOOT_IS_REQUIRED},
+            //{"HOLD_A_TO_DELETE", &HOLD_A_TO_DELETE},
+            {"DELETE_PACKAGE", &DELETE_PACKAGE},
+            {"DELETE_OVERLAY", &DELETE_OVERLAY},
             {"SELECTION_IS_EMPTY", &SELECTION_IS_EMPTY},
+            {"FORCED_SUPPORT_WARNING", &FORCED_SUPPORT_WARNING},
+            {"INCOMPATIBLE_WARNING", &INCOMPATIBLE_WARNING},
+            {"TASK_IS_COMPLETE", &TASK_IS_COMPLETE},
+            {"TASK_HAS_FAILED", &TASK_HAS_FAILED},
 
             //{"PACKAGE_VERSIONS", &PACKAGE_VERSIONS},
             //{"PROGRESS_ANIMATION", &PROGRESS_ANIMATION},
@@ -999,6 +1040,7 @@ namespace ult {
             {"BOOT_ENTRY", &BOOT_ENTRY},
             #endif
 
+            {"SYSTEM_RAM", &SYSTEM_RAM},
             {"FREE", &FREE},
             
             {"DEFAULT_CHAR_WIDTH", &DEFAULT_CHAR_WIDTH},
@@ -1058,7 +1100,7 @@ namespace ult {
             {"DEC", &DEC}
             #endif
         };
-    
+        
         // Iterate over the map to update global variables
         for (auto& kv : configMap) {
             auto it = jsonMap.find(kv.first);
@@ -1124,9 +1166,9 @@ namespace ult {
             {"November", &NOVEMBER},
             {"December", &DECEMBER}
         };
-    
+        
         std::string timeStrCopy = timeStr; // Convert the char array to a string for processing
-    
+        
         // Apply day and month replacements
         size_t pos;
         for (const auto& mapping : mappings) {
@@ -1136,7 +1178,7 @@ namespace ult {
                 pos = timeStrCopy.find(mapping.first, pos + mapping.second->length());
             }
         }
-    
+        
         // Copy the modified string back to the character array
         strcpy(timeStr, timeStrCopy.c_str());
     }
@@ -1144,41 +1186,47 @@ namespace ult {
 
     // Unified function to apply replacements
     void applyLangReplacements(std::string& text, bool isValue) {
-        // Static maps for replacements
-        #if IS_LAUNCHER_DIRECTIVE
-        const std::unordered_map<std::string, std::string*> launcherReplacements = {
-            {"Reboot To", &REBOOT_TO},
-            {"Boot Entry", &BOOT_ENTRY},
-            {"Reboot", &REBOOT},
-            {"Shutdown", &SHUTDOWN}
-        };
-        #endif
-    
-        const std::unordered_map<std::string, std::string*> valueReplacements = {
-            {"On", &ON},
-            {"Off", &OFF}
-        };
-    
-        // Determine which map to use
-        const std::unordered_map<std::string, std::string*>* replacements = nullptr;
-    
-        if (!isValue) {
-            #if IS_LAUNCHER_DIRECTIVE
-            replacements = &launcherReplacements;
-            #else
-            return;
-            #endif
-        } else {
-            replacements = &valueReplacements;
-        }
-    
-        // Perform the direct replacement
-        if (replacements) {
-            auto it = replacements->find(text);
-            if (it != replacements->end()) {
-                text = *(it->second);
+        if (isValue) {
+            // Direct comparison for value replacements
+            if (text.length() == 2) {
+                if (text[0] == 'O') {
+                    if (text[1] == 'n') {
+                        text = ON;
+                        return;
+                    } else if (text[1] == 'f' && text == "Off") {
+                        text = OFF;
+                        return;
+                    }
+                }
             }
         }
+        #if IS_LAUNCHER_DIRECTIVE
+        else {
+            // Direct comparison for launcher replacements
+            switch (text.length()) {
+                case 6:
+                    if (text == "Reboot") {
+                        text = REBOOT;
+                    }
+                    break;
+                case 8:
+                    if (text == "Shutdown") {
+                        text = SHUTDOWN;
+                    }
+                    break;
+                case 9:
+                    if (text == "Reboot To") {
+                        text = REBOOT_TO;
+                    }
+                    break;
+                case 10:
+                    if (text == "Boot Entry") {
+                        text = BOOT_ENTRY;
+                    }
+                    break;
+            }
+        }
+        #endif
     }
     
     
@@ -1252,7 +1300,8 @@ namespace ult {
         {"selection_value_text_color", "FF7777"},
         {"selection_bg_color", blackColor},
         {"selection_bg_alpha", "11"},
-        {"trackbar_color", "555555"},
+        {"scrollbar_color", "555555"},
+        {"scrollbar_wall_color", "AAAAAA"},
         {"highlight_color_1", "2288CC"},
         {"highlight_color_2", "88FFFF"},
         {"highlight_color_3", "FFFF45"},
@@ -1292,23 +1341,6 @@ namespace ult {
     }
     
     
-    
-    float calculateAmplitude(float x, float peakDurationFactor) {
-        //const float phasePeriod = 360.0f * peakDurationFactor;  // One full phase period
-    
-        // Convert x from radians to degrees and calculate phase within the period
-        const int phase = static_cast<int>(x * RAD_TO_DEG) % static_cast<int>(360.0f * peakDurationFactor);
-    
-        // Check if the phase is odd using bitwise operation
-        if (phase & 1) {
-            return 1.0f;  // Flat amplitude (maximum positive)
-        } else {
-            // Calculate the sinusoidal amplitude for the remaining period
-            return (APPROXIMATE_cos(x) + 1.0f) / 2.0f;  // Cosine function expects radians
-        }
-    }
-            
-    
     std::atomic<bool> refreshWallpaperNow(false);
     std::atomic<bool> refreshWallpaper(false);
     std::vector<u8> wallpaperData; 
@@ -1318,176 +1350,65 @@ namespace ult {
     std::condition_variable cv;
     
     
-    // Function to load the RGBA file into memory and modify wallpaperData directly
-    //void loadWallpaperFile(const std::string& filePath, s32 width, s32 height) {
-    //    const size_t originalDataSize = width * height * 4; // Original size in bytes (4 bytes per pixel)
-    //    const size_t compressedDataSize = originalDataSize / 2; // RGBA4444 uses half the space
-    //    
-    //    wallpaperData.resize(compressedDataSize);
-    //    
-    //    if (!isFileOrDirectory(filePath)) {
-    //        wallpaperData.clear();
-    //        return;
-    //    }
-    //    
-    //    #if !USING_FSTREAM_DIRECTIVE
-    //        FILE* file = fopen(filePath.c_str(), "rb");
-    //        if (!file) {
-    //            wallpaperData.clear();
-    //            return;
-    //        }
-    //        
-    //        std::vector<uint8_t> buffer;
-    //        //if (reducedMemory) {
-    //        //    // Reuse wallpaperData to avoid double allocation
-    //        //    buffer.swap(wallpaperData);
-    //        //    buffer.resize(originalDataSize);
-    //        //} else {
-    //        buffer.resize(originalDataSize);
-    //        //}
-    //        
-    //        const size_t bytesRead = fread(buffer.data(), 1, originalDataSize, file);
-    //        fclose(file);
-    //        
-    //        if (bytesRead != originalDataSize) {
-    //            wallpaperData.clear();
-    //            return;
-    //        }
-    //        
-    //    #else
-    //        std::ifstream file(filePath, std::ios::binary);
-    //        if (!file) {
-    //            wallpaperData.clear();
-    //            return;
-    //        }
-    //        
-    //        std::vector<uint8_t> buffer;
-    //        //if (reducedMemory) {
-    //        //    buffer.swap(wallpaperData);
-    //        //    buffer.resize(originalDataSize);
-    //        //} else {
-    //        buffer.resize(originalDataSize);
-    //        //}
-    //        
-    //        file.read(reinterpret_cast<char*>(buffer.data()), originalDataSize);
-    //        if (!file) {
-    //            wallpaperData.clear();
-    //            return;
-    //        }
-    //    #endif
-    //    
-    //    // Compress RGBA8888 to RGBA4444
-    //    //if (reducedMemory) {
-    //    //    // In-place compression to save memory
-    //    //    size_t writeIndex = 0;
-    //    //    for (size_t i = 0; i < originalDataSize; i += 8, writeIndex += 4) {
-    //    //        uint8_t r1 = buffer[i] >> 4;
-    //    //        uint8_t g1 = buffer[i + 1] >> 4;
-    //    //        uint8_t b1 = buffer[i + 2] >> 4;
-    //    //        uint8_t a1 = buffer[i + 3] >> 4;
-    //    //
-    //    //        uint8_t r2 = buffer[i + 4] >> 4;
-    //    //        uint8_t g2 = buffer[i + 5] >> 4;
-    //    //        uint8_t b2 = buffer[i + 6] >> 4;
-    //    //        uint8_t a2 = buffer[i + 7] >> 4;
-    //    //
-    //    //        buffer[writeIndex]     = (r1 << 4) | g1;
-    //    //        buffer[writeIndex + 1] = (b1 << 4) | a1;
-    //    //        buffer[writeIndex + 2] = (r2 << 4) | g2;
-    //    //        buffer[writeIndex + 3] = (b2 << 4) | a2;
-    //    //    }
-    //    //    buffer.resize(compressedDataSize);
-    //    //    wallpaperData.swap(buffer);
-    //    //} else {
-    //    uint8_t* input = buffer.data();
-    //    uint8_t* output = wallpaperData.data();
-    //    //uint8_t r1, g1, b1, a1;
-    //    //uint8_t r2, g2, b2, a2;
-    //    
-    //    //for (size_t i = 0, j = 0; i < originalDataSize; i += 8, j += 4) {
-    //    //    // Read 2 RGBA pixels (8 bytes)
-    //    //    const uint8_t r1 = input[i] >> 4;
-    //    //    const uint8_t g1 = input[i + 1] >> 4;
-    //    //    const uint8_t b1 = input[i + 2] >> 4;
-    //    //    const uint8_t a1 = input[i + 3] >> 4;
-    //    //    
-    //    //    const uint8_t r2 = input[i + 4] >> 4;
-    //    //    const uint8_t g2 = input[i + 5] >> 4;
-    //    //    const uint8_t b2 = input[i + 6] >> 4;
-    //    //    const uint8_t a2 = input[i + 7] >> 4;
-    //    //    
-    //    //    // Pack them into 4 bytes (2 bytes per pixel)
-    //    //    output[j]     = (r1 << 4) | g1;
-    //    //    output[j + 1] = (b1 << 4) | a1;
-    //    //    output[j + 2] = (r2 << 4) | g2;
-    //    //    output[j + 3] = (b2 << 4) | a2;
-    //    //}
-    //    
-    //    for (size_t i = 0, j = 0; i < originalDataSize; i += 16, j += 8) {
-    //        output[j]     = ((input[i]     >> 4) << 4) | (input[i + 1] >> 4);
-    //        output[j + 1] = ((input[i + 2] >> 4) << 4) | (input[i + 3] >> 4);
-    //        output[j + 2] = ((input[i + 4] >> 4) << 4) | (input[i + 5] >> 4);
-    //        output[j + 3] = ((input[i + 6] >> 4) << 4) | (input[i + 7] >> 4);
-    //        output[j + 4] = ((input[i + 8] >> 4) << 4) | (input[i + 9] >> 4);
-    //        output[j + 5] = ((input[i + 10] >> 4) << 4) | (input[i + 11] >> 4);
-    //        output[j + 6] = ((input[i + 12] >> 4) << 4) | (input[i + 13] >> 4);
-    //        output[j + 7] = ((input[i + 14] >> 4) << 4) | (input[i + 15] >> 4);
-    //    }
-    //    //}
-    //}
-
-
     void loadWallpaperFile(const std::string& filePath, s32 width, s32 height) {
-        const size_t originalDataSize   = width * height * 4;
+        const size_t originalDataSize = width * height * 4;
         const size_t compressedDataSize = originalDataSize / 2;
-    
+        
         wallpaperData.resize(compressedDataSize);
-    
+        
         if (!isFileOrDirectory(filePath)) {
             wallpaperData.clear();
             return;
         }
-    
+        
         FILE* file = fopen(filePath.c_str(), "rb");
         if (!file) {
             wallpaperData.clear();
             return;
         }
-    
-        constexpr size_t chunkBytes = 64 * 1024; // 64 KB chunks
-        uint8_t chunkBuffer[chunkBytes];
-    
-        size_t totalRead = 0;
-        size_t writeIndex = 0;
-        
-        size_t remaining, toRead, bytesRead;
 
+        setvbuf(file, nullptr, _IOFBF, 256 * 1024);
+        
+        constexpr size_t chunkBytes = 128 * 1024;
+        uint8_t chunkBuffer[chunkBytes];
+        
+        size_t totalRead = 0;
+        uint8_t* dst = wallpaperData.data();
+        const uint8x8_t mask = vdup_n_u8(0xF0);
+        
         while (totalRead < originalDataSize) {
-            // Determine how much to read this iteration
-            remaining = originalDataSize - totalRead;
-            toRead = remaining < chunkBytes ? remaining : chunkBytes;
-    
-            bytesRead = fread(chunkBuffer, 1, toRead, file);
-            if (bytesRead == 0 || bytesRead % 8 != 0) { // must be multiple of 2 pixels
+            const size_t remaining = originalDataSize - totalRead;
+            const size_t toRead = remaining < chunkBytes ? remaining : chunkBytes;
+            
+            const size_t bytesRead = fread(chunkBuffer, 1, toRead, file);
+            if (bytesRead == 0) {
                 fclose(file);
                 wallpaperData.clear();
                 return;
             }
-    
-            // Compress each 2-pixel group in the chunk
-            for (size_t i = 0; i < bytesRead; i += 8, writeIndex += 4) {
-                wallpaperData[writeIndex]     = (chunkBuffer[i]     & 0xF0) | (chunkBuffer[i + 1] >> 4);
-                wallpaperData[writeIndex + 1] = (chunkBuffer[i + 2] & 0xF0) | (chunkBuffer[i + 3] >> 4);
-                wallpaperData[writeIndex + 2] = (chunkBuffer[i + 4] & 0xF0) | (chunkBuffer[i + 5] >> 4);
-                wallpaperData[writeIndex + 3] = (chunkBuffer[i + 6] & 0xF0) | (chunkBuffer[i + 7] >> 4);
+            
+            const uint8_t* src = chunkBuffer;
+            size_t i = 0;
+            
+            // NEON: Process 16 bytes -> 8 bytes
+            for (; i + 16 <= bytesRead; i += 16) {
+                uint8x16_t data = vld1q_u8(src + i);
+                uint8x8x2_t sep = vuzp_u8(vget_low_u8(data), vget_high_u8(data));
+                vst1_u8(dst, vorr_u8(vand_u8(sep.val[0], mask), vshr_n_u8(sep.val[1], 4)));
+                dst += 8;
             }
-    
+            
+            // Scalar fallback
+            for (; i + 1 < bytesRead; i += 2) {
+                *dst++ = (src[i] & 0xF0) | (src[i + 1] >> 4);
+            }
+            
             totalRead += bytesRead;
         }
-    
+        
         fclose(file);
     }
-
+    
 
     void loadWallpaperFileWhenSafe() {
         if (expandedMemory && !inPlot.load(std::memory_order_acquire) && !refreshWallpaper.load(std::memory_order_acquire)) {
@@ -1503,21 +1424,21 @@ namespace ult {
     void reloadWallpaper() {
         // Signal that wallpaper is being refreshed
         refreshWallpaper.store(true, std::memory_order_release);
-    
+        
         // Lock the mutex for condition waiting
         std::unique_lock<std::mutex> lock(wallpaperMutex);
-    
+        
         // Wait for inPlot to be false before reloading the wallpaper
         cv.wait(lock, [] { return !inPlot.load(std::memory_order_acquire); });
-    
+        
         // Clear the current wallpaper data
         wallpaperData.clear();
-    
+        
         // Reload the wallpaper file
         if (isFileOrDirectory(WALLPAPER_PATH)) {
             loadWallpaperFile(WALLPAPER_PATH);
         }
-    
+        
         // Signal that wallpaper has finished refreshing
         refreshWallpaper.store(false, std::memory_order_release);
         
@@ -1595,12 +1516,12 @@ namespace ult {
             PsmChargerType charger = PsmChargerType_Unconnected;
             Result rc = psmGetBatteryChargePercentage(_batteryCharge);
             bool hwReadsSucceeded = R_SUCCEEDED(rc);
-    
+            
             if (hwReadsSucceeded) {
                 rc = psmGetChargerType(&charger);
                 hwReadsSucceeded &= R_SUCCEEDED(rc);
                 *_isCharging = (charger != PsmChargerType_Unconnected);
-    
+                
                 if (hwReadsSucceeded) {
                     // Update cache
                     powerCacheCharge = *_batteryCharge;
@@ -1610,18 +1531,18 @@ namespace ult {
                     return true;
                 }
             }
-    
+            
             // Use cached values if the hardware read fails
             if (powerCacheInitialized) {
                 *_batteryCharge = powerCacheCharge;
                 *_isCharging = powerCacheIsCharging;
                 return hwReadsSucceeded; // Return false if hardware read failed but cache is valid
             }
-    
+            
             // Return false if cache is not initialized and hardware read failed
             return false;
         }
-    
+        
         // Use cached values if not enough time has passed
         *_batteryCharge = powerCacheCharge;
         *_isCharging = powerCacheIsCharging;
@@ -1632,19 +1553,19 @@ namespace ult {
     void powerInit(void) {
         uint32_t charge = 0;
         bool charging = false;
-    
+        
         powerCacheInitialized = false;
         powerCacheCharge = 0;
         powerCacheIsCharging = false;
-    
+        
         if (!powerInitialized) {
             Result rc = psmInitialize();
             if (R_SUCCEEDED(rc)) {
                 rc = psmBindStateChangeEvent(&powerSession, 1, 1, 1);
-    
+                
                 if (R_FAILED(rc))
                     psmExit();
-    
+                
                 if (R_SUCCEEDED(rc)) {
                     powerInitialized = true;
                     ult::powerGetDetails(&charge, &charging);
@@ -1684,15 +1605,15 @@ namespace ult {
             u8 receive;
             u8 receiveLength;
         };
-    
+        
         I2cSession _session;
-    
+        
         Result res = i2cOpenSession(&_session, dev);
         if (res)
             return res;
-    
+        
         u16 val;
-    
+        
         struct readReg readRegister = {
             .send = 0 | (I2cTransactionOption_Start << 6),
             .sendLength = sizeof(reg),
@@ -1700,13 +1621,13 @@ namespace ult {
             .receive = 1 | (I2cTransactionOption_All << 6),
             .receiveLength = sizeof(val),
         };
-    
+        
         res = i2csessionExecuteCommandList(&_session, &val, sizeof(val), &readRegister, sizeof(readRegister));
         if (res) {
             i2csessionClose(&_session);
             return res;
         }
-    
+        
         *out = val;
         i2csessionClose(&_session);
         return 0;
@@ -1719,31 +1640,31 @@ namespace ult {
         u8 val;
         s32 integerPart = 0;
         float fractionalPart = 0.0f;  // Change this to a float to retain fractional precision
-    
+        
         // Read the integer part of the temperature
         Result res = I2cReadRegHandler(integerReg, I2cDevice_Tmp451, &rawValue);
         if (R_FAILED(res)) {
             return res;  // Error during I2C read
         }
-    
+        
         val = (u8)rawValue;  // Cast the value to an 8-bit unsigned integer
         integerPart = val;    // Integer part of temperature in Celsius
-    
+        
         if (integerOnly)
         {
             *temperature = static_cast<float>(integerPart);  // Ensure it's treated as a float
             return 0;  // Return only integer part if requested
         }
-    
+        
         // Read the fractional part of the temperature
         res = I2cReadRegHandler(fractionalReg, I2cDevice_Tmp451, &rawValue);
         if (R_FAILED(res)) {
             return res;  // Error during I2C read
         }
-    
+        
         val = (u8)rawValue;  // Cast the value to an 8-bit unsigned integer
         fractionalPart = static_cast<float>(val >> 4) * 0.0625f;  // Convert upper 4 bits into fractional part
-    
+        
         // Combine integer and fractional parts
         *temperature = static_cast<float>(integerPart) + fractionalPart;
         
@@ -1762,8 +1683,8 @@ namespace ult {
     
     
     // Time implementation
-    CONSTEXPR_STRING std::string DEFAULT_DT_FORMAT = "'%a %T'";
-    std::string datetimeFormat = "%a %T";
+    CONSTEXPR_STRING std::string DEFAULT_DT_FORMAT = "%a %T";
+    std::string datetimeFormat = DEFAULT_DT_FORMAT;
     
     
     // Widget settings
@@ -1798,9 +1719,114 @@ namespace ult {
     
     bool cleanVersionLabels, hideOverlayVersions, hidePackageVersions, useLibultrahandTitles, useLibultrahandVersions, usePackageTitles, usePackageVersions;
     
+
+
+    
+    // Helper function to convert MB to bytes
+    u64 mbToBytes(u32 mb) {
+        return static_cast<u64>(mb) * 0x100000;
+    }
+    
+    // Helper function to convert bytes to MB
+    u32 bytesToMB(u64 bytes) {
+        return static_cast<u32>(bytes / 0x100000);
+    }
+    
+
+    // Helper function to get version-appropriate default heap size
+    static OverlayHeapSize getDefaultHeapSize() {
+        if (hosversionAtLeast(21, 0, 0)) {
+            return OverlayHeapSize::Size_4MB;  // HOS 21.0.0+
+        } else if (hosversionAtLeast(20, 0, 0)) {
+            return OverlayHeapSize::Size_6MB;  // HOS 20.0.0+
+        } else {
+            return OverlayHeapSize::Size_8MB;  // Older versions
+        }
+    }
+    
+    // Implementation
+    OverlayHeapSize getCurrentHeapSize() {
+        // Fast path: return cached value if already loaded
+        if (heapSizeCache.initialized) {
+            return heapSizeCache.cachedSize;
+        }
+        
+        // Slow path: read from file (only happens once)
+        FILE* f = fopen(ult::OVL_HEAP_CONFIG_PATH.c_str(), "rb");
+        if (!f) {
+            // No config file - use version-specific default
+            heapSizeCache.cachedSize = getDefaultHeapSize();
+            heapSizeCache.initialized = true;
+            return heapSizeCache.cachedSize;
+        }
+        
+        u64 size;
+        if (fread(&size, sizeof(size), 1, f) == 1) {
+            constexpr u64 twoMB = 0x200000;
+            // Only accept multiples of 2MB, excluding 2MB itself
+            if (size != twoMB && size % twoMB == 0) {
+                heapSizeCache.cachedSize = static_cast<OverlayHeapSize>(size);
+                fclose(f);
+                heapSizeCache.initialized = true;
+                return heapSizeCache.cachedSize;
+            }
+        }
+        
+        // Invalid or no data in config - use version-specific default
+        fclose(f);
+        heapSizeCache.cachedSize = getDefaultHeapSize();
+        heapSizeCache.initialized = true;
+        return heapSizeCache.cachedSize;
+    }
+    
+    // Update the global default too
+    OverlayHeapSize currentHeapSize = getDefaultHeapSize();
+    
+    bool setOverlayHeapSize(OverlayHeapSize heapSize) {
+        ult::createDirectory(ult::NX_OVLLOADER_PATH);
+        
+        FILE* f = fopen(ult::OVL_HEAP_CONFIG_PATH.c_str(), "wb");
+        if (!f) return false;
+        
+        const u64 size = static_cast<u64>(heapSize);
+        const bool success = (fwrite(&size, sizeof(size), 1, f) == 1);
+        fclose(f);
+        
+        // Update cache on successful write
+        if (success) {
+            heapSizeCache.cachedSize = heapSize;
+            heapSizeCache.initialized = true;
+        }
+        
+        return success;
+    }
+    
+    
+    // Implementation
+    bool requestOverlayExit() {
+        ult::createDirectory(ult::NX_OVLLOADER_PATH);
+        
+        FILE* f = fopen(ult::OVL_EXIT_FLAG_PATH.c_str(), "wb");
+        if (!f) return false;
+        
+        // Write a single byte (flag file just needs to exist)
+        u8 flag = 1;
+        bool success = (fwrite(&flag, 1, 1, f) == 1);
+        fclose(f);
+
+
+        deleteFileOrDirectory(NOTIFICATIONS_FLAG_FILEPATH);
+        
+        return success;
+    }
+
+
     const std::string loaderInfo = envGetLoaderInfo();
-    const std::string loaderTitle = extractTitle(loaderInfo);
-    const bool expandedMemory = (loaderTitle == "nx-ovlloader+");
+    std::string loaderTitle = extractTitle(loaderInfo);
+
+    bool expandedMemory = false;
+    bool furtherExpandedMemory = false;
+    bool limitedMemory = false;
     
     std::string versionLabel;
     
@@ -1834,9 +1860,10 @@ namespace ult {
     
     
     // Number of renderer threads to use
-    const unsigned numThreads = expandedMemory ? 4 : 0;
+    const unsigned numThreads = 4;//expandedMemory ? 4 : 0;
     std::vector<std::thread> renderThreads(numThreads);
-    const s32 bmpChunkSize = (numThreads > 0) ? ((720 + numThreads - 1) / numThreads) : 0;
+
+    const s32 bmpChunkSize = ((720 + numThreads - 1) / numThreads);
     std::atomic<s32> currentRow;
     
     //std::atomic<unsigned int> barrierCounter{0};

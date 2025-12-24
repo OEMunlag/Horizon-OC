@@ -27,7 +27,6 @@
 #include "base_gui.h"
 
 #include "../elements/base_frame.h"
-#include "logo_rgba_bin.h"
 
 #include <tesla.hpp>
 #include <math.h>

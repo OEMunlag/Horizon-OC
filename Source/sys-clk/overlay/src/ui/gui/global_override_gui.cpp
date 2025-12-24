@@ -96,8 +96,31 @@ void GlobalOverrideGui::addModuleListItem(SysClkModule module)
         }
         return false;
     });
+
+    
     this->listElement->addItem(listItem);
     this->listItems[module] = listItem;
+}
+
+void GlobalOverrideGui::addModuleToggleItem(SysClkModule module)
+{
+    const char* moduleName = sysclkFormatModule(module, true);
+    bool isOn = this->listHz[module];
+    
+    // Create a ToggleListItem
+    tsl::elm::ToggleListItem* toggle = new tsl::elm::ToggleListItem(moduleName, isOn);
+    
+    toggle->setStateChangedListener([this, module, toggle](bool state) {
+
+        Result rc = sysclkIpcSetOverride(module, state ? 1 : 0);
+        if(R_FAILED(rc))
+        {
+            FatalGui::openWithResultCode("sysclkIpcSetProfiles", rc);
+        }
+    });
+    // Add to list and track
+    this->listElement->addItem(toggle);
+    this->listItems[module] = toggle;
 }
 
 void GlobalOverrideGui::listUI()
@@ -106,6 +129,7 @@ void GlobalOverrideGui::listUI()
     this->addModuleListItem(SysClkModule_CPU);
     this->addModuleListItem(SysClkModule_GPU);
     this->addModuleListItem(SysClkModule_MEM);
+    this->addModuleToggleItem(HorizonOCModule_Governor);
 }
 
 void GlobalOverrideGui::refresh()
@@ -115,6 +139,8 @@ void GlobalOverrideGui::refresh()
     {
         for(std::uint16_t m = 0; m < SysClkModule_EnumMax; m++)
         {
+            if(m > SysClkModule_MEM)
+                continue;
             if(this->listItems[m] != nullptr && this->listHz[m] != this->context->overrideFreqs[m])
             {
                 this->listItems[m]->setValue(formatListFreqHz(this->context->overrideFreqs[m]));
