@@ -36,7 +36,7 @@ class GlobalOverrideGui : public BaseMenuGui
     protected:
         tsl::elm::ListItem* listItems[SysClkModule_EnumMax];
         std::uint32_t listHz[SysClkModule_EnumMax];
-
+        bool isGovernorEnabled;
         void openFreqChoiceGui(SysClkModule module);
         void addModuleListItem(SysClkModule module);
         void addModuleToggleItem(SysClkModule module);

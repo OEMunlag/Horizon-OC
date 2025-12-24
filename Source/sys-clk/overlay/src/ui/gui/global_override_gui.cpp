@@ -117,6 +117,10 @@ void GlobalOverrideGui::addModuleToggleItem(SysClkModule module)
         {
             FatalGui::openWithResultCode("sysclkIpcSetProfiles", rc);
         }
+        this->lastContextUpdate = armGetSystemTick();
+        this->context->overrideFreqs[module] = 0;
+        this->listHz[module] = 0;
+
     });
     // Add to list and track
     this->listElement->addItem(toggle);
@@ -135,17 +139,35 @@ void GlobalOverrideGui::listUI()
 void GlobalOverrideGui::refresh()
 {
     BaseMenuGui::refresh();
-    if(this->context)
+
+    if (!this->context)
+        return;
+
+    for (std::uint16_t m = 0; m < SysClkModule_EnumMax; m++)
     {
-        for(std::uint16_t m = 0; m < SysClkModule_EnumMax; m++)
+        if (m == HorizonOCModule_Governor)
         {
-            if(m > SysClkModule_MEM)
+            auto* toggle = static_cast<tsl::elm::ToggleListItem*>(this->listItems[m]);
+            if (!toggle)
                 continue;
-            if(this->listItems[m] != nullptr && this->listHz[m] != this->context->overrideFreqs[m])
+
+            bool newState = this->context->overrideFreqs[m] != 0;
+
+            if (toggle->getState() != newState)
             {
-                this->listItems[m]->setValue(formatListFreqHz(this->context->overrideFreqs[m]));
-                this->listHz[m] = this->context->overrideFreqs[m];
+                toggle->setState(newState);
             }
+
+            continue;
+        }
+
+        if (this->listItems[m] != nullptr &&
+            this->listHz[m] != this->context->overrideFreqs[m])
+        {
+            this->listItems[m]->setValue(
+                formatListFreqHz(this->context->overrideFreqs[m])
+            );
+            this->listHz[m] = this->context->overrideFreqs[m];
         }
     }
 }
