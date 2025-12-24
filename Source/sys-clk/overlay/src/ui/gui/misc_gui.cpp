@@ -31,6 +31,25 @@ class CpuSubmenuGui;
 class GpuSubmenuGui;
 class GpuCustomTableSubmenuGui;
 
+std::map<uint32_t, std::string> cpu_freq_label_m = {
+    {612000000, "Sleep Mode"},
+    {1020000000, "Stock"},
+    {1224000000, "Dev OC"},
+    {1785000000, "Boost Mode"},
+    {1963000000, "Safe Max"},
+    {2397000000, "Unsafe Max"},
+    {2805000000, "Absolute Max"},
+};
+
+std::map<uint32_t, std::string> cpu_freq_label_e = {
+    {612000000, "Sleep Mode"},
+    {1020000000, "Stock"},
+    {1224000000, "Dev OC"},
+    {1785000000, "Boost Mode & Safe Max"},
+    {2091000000, "Unsafe Max"},
+    {2295000000, "Absolute Max"},
+};
+
 MiscGui::MiscGui()
 {
     this->configList = new SysClkConfigValueList {};
@@ -238,30 +257,12 @@ void MiscGui::listUI()
     ValueThresholds thresholdsDisabled(0, 0);
     std::vector<NamedValue> noNamedValues = {};
 
-    std::map<uint32_t, std::string> cpu_freq_label_m = {
-        {612000000, "Sleep Mode"},
-        {1020000000, "Stock"},
-        {1224000000, "Dev OC"},
-        {1785000000, "Boost Mode"},
-        {1963000000, "Safe Max"},
-        {2397000000, "Unsafe Max"},
-        {2805000000, "Absolute Max"},
-    };
 
-    std::map<uint32_t, std::string> cpu_freq_label_e = {
-        {612000000, "Sleep Mode"},
-        {1020000000, "Stock"},
-        {1224000000, "Dev OC"},
-        {1785000000, "Boost Mode & Safe Max"},
-        {2091000000, "Unsafe Max"},
-        {2295000000, "Absolute Max"},
-    };
 
     this->listElement->addItem(new tsl::elm::CategoryHeader("Settings"));
 
     addConfigToggle(HocClkConfigValue_UncappedClocks, nullptr);
     addConfigToggle(HocClkConfigValue_OverwriteBoostMode, nullptr);
-    addConfigToggle(HocClkConfigValue_KipEditing, nullptr);
     addConfigToggle(HocClkConfigValue_ThermalThrottle, nullptr);
     addConfigToggle(HocClkConfigValue_HandheldTDP, nullptr);
 
@@ -307,10 +308,8 @@ void MiscGui::listUI()
         addFreqButton(HocClkConfigValue_EristaMaxCpuClock, nullptr, SysClkModule_CPU, cpu_freq_label_e);
     }
 
-    if(IsMariko())
-        addFreqButton(KipConfigValue_marikoCpuBoostClock, nullptr, SysClkModule_CPU, cpu_freq_label_m);
-    else
-        addFreqButton(KipConfigValue_eristaCpuBoostClock, nullptr, SysClkModule_CPU, cpu_freq_label_e);
+    this->listElement->addItem(new tsl::elm::CategoryHeader("KIP"));
+    addConfigToggle(HocClkConfigValue_KipEditing, nullptr);
 
     std::vector<NamedValue> kipNameLabels = {
         NamedValue("hoc.kip", 0),
@@ -673,6 +672,10 @@ protected:
         ValueThresholds thresholdsDisabled(0, 0);
 
         this->listElement->addItem(new tsl::elm::CategoryHeader("CPU Settings"));
+        if(IsMariko())
+            addFreqButton(KipConfigValue_marikoCpuBoostClock, nullptr, SysClkModule_CPU, cpu_freq_label_m);
+        else
+            addFreqButton(KipConfigValue_eristaCpuBoostClock, nullptr, SysClkModule_CPU, cpu_freq_label_e);
 
         if(IsErista()) {
             addConfigButton(
