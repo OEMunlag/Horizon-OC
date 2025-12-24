@@ -35,6 +35,7 @@
 #include "kip.h"
 #include <i2c.h>
 #include "notification.h"
+#include <display_refresh_rate.h>
 
 #define HOSPPC_HAS_BOOST (hosversionAtLeast(7,0,0))
 bool isGovernorEnabled = false; // to avoid thread messes
@@ -96,7 +97,9 @@ ClockManager::ClockManager()
         0x3F,
         -2
     );
+    
 
+        
 	threadStart(&governorTHREAD);
  
 }

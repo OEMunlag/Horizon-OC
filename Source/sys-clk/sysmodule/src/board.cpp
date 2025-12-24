@@ -35,6 +35,7 @@
 #include <numeric>
 #include <battery.h>
 #include <pwm.h>
+#include <display_refresh_rate.h>
 
 #define HOSSVC_HAS_CLKRST (hosversionAtLeast(8,0,0))
 #define HOSSVC_HAS_TC (hosversionAtLeast(5,0,0))
@@ -226,6 +227,16 @@ void Board::Initialize()
     if (hosversionAtLeast(6,0,0) && R_SUCCEEDED(pwmInitialize())) {
         pwmCheck = pwmOpenSession2(&g_ICon, 0x3D000001);
     }
+
+    u64 clkVirtAddr, dsiVirtAddr, outsize;
+    Result rc = svcQueryMemoryMapping(&clkVirtAddr, &outsize, 0x60006000, 0x1000);
+    ASSERT_RESULT_OK(rc, "svcQueryMemoryMapping (clk)");
+    Result rc = svcQueryMemoryMapping(&dsiVirtAddr, &outsize, 0x54300000, 0x40000);
+    ASSERT_RESULT_OK(rc, "svcQueryMemoryMapping (dsi)");
+
+    DisplayRefreshConfig cfg = {.clkVirtAddr = clkVirtAddr, .dsiVirtAddr = dsiVirtAddr};
+
+    DisplayRefresh_Initialize(&cfg);
 
     FetchHardwareInfos();
 }

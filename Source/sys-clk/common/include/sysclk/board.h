@@ -77,6 +77,7 @@ typedef enum
     SysClkModule_GPU,
     SysClkModule_MEM,
     HorizonOCModule_Governor,
+    HorizonOCModule_LCD,
     SysClkModule_EnumMax,
 } SysClkModule;
 
