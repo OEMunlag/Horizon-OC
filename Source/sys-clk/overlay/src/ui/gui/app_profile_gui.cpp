@@ -272,7 +272,7 @@ void AppProfileGui::addProfileUI(SysClkProfile profile)
     this->addModuleListItem(profile, SysClkModule_CPU);
     this->addModuleListItem(profile, SysClkModule_GPU);
     this->addModuleListItem(profile, SysClkModule_MEM);
-    this->addModuleListItemValue(profile, HorizonOCModule_Display, "Display", 40, 60, 5, " Hz", 1, 0);
+    this->addModuleListItemValue(profile, HorizonOCModule_Display, "Display", 40, 72, 5, " Hz", 1, 0);
     this->addModuleListItemToggle(profile, HorizonOCModule_Governor);
 }
 

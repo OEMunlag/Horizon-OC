@@ -255,7 +255,7 @@ void GlobalOverrideGui::listUI()
     this->addModuleListItem(SysClkModule_CPU);
     this->addModuleListItem(SysClkModule_GPU);
     this->addModuleListItem(SysClkModule_MEM);
-    this->addModuleListItemValue(HorizonOCModule_Display, "Display", 40, 60, 5, " Hz", 1, 0);
+    this->addModuleListItemValue(HorizonOCModule_Display, "Display", 40, 72, 1, " Hz", 1, 0);
     this->addModuleToggleItem(HorizonOCModule_Governor);
 }
 
