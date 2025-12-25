@@ -31,7 +31,7 @@
 #include "app_profile_gui.h"
 #include "global_override_gui.h"
 #include "misc_gui.h"
-
+#include "info_gui.h"
 void MainGui::listUI()
 {
     // this->enabledToggle = new tsl::elm::ToggleListItem("Enable", false);
@@ -97,7 +97,19 @@ void MainGui::listUI()
         return false;
     });
     this->listElement->addItem(miscItem);
-    }
+
+    tsl::elm::ListItem* infoItem = new tsl::elm::ListItem("Information");
+    infoItem->setClickListener([this](u64 keys) {
+        if((keys & HidNpadButton_A) == HidNpadButton_A)
+        {
+            tsl::changeTo<InfoGui>();
+            return true;
+        }
+
+        return false;
+    });
+    this->listElement->addItem(infoItem);
+}
 
 void MainGui::refresh()
 {

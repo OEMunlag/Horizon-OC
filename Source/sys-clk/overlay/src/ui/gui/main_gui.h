@@ -32,6 +32,7 @@
 class MainGui : public BaseMenuGui
 {
     protected:
+        SysClkContext* context;
         tsl::elm::ToggleListItem* enabledToggle;
 
     public:
