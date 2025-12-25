@@ -16,6 +16,7 @@ public:
     void refresh() override;
     
 protected:
+    SysClkConfigValueList* configList;
     std::map<SysClkConfigValue, tsl::elm::ListItem*> configButtons;
     std::map<SysClkConfigValue, ValueRange> configRanges;
     std::map<SysClkConfigValue, std::vector<NamedValue>> configNamedValues;

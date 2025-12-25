@@ -194,7 +194,6 @@ void BaseMenuGui::refresh()
         FatalGui::openWithResultCode("sysclkIpcGetCurrentContext", rc);
         return;
     }
-    sysclkIpcGetConfigValues(this->configList);
     // dockedHighestAllowedRefreshRate = this->context->maxDisplayFreq;
 
     // === FORMAT ALL DISPLAY STRINGS (once per second) ===

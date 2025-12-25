@@ -1078,7 +1078,7 @@ void MiscGui::refresh() {
     if (this->context && ++frameCounter >= 60) {
         frameCounter = 0;
 
-        // sysclkIpcGetConfigValues(this->configList);
+        sysclkIpcGetConfigValues(this->configList);
 
         updateConfigToggles();
 
