@@ -84,12 +84,14 @@ Refer to COMPILATION.md
 ## Credits
 
 * **Lightos** – loader patches development
+* **Lightos's Cat** - Cat
 * **SciresM** - Atmosphere CFW
 * **KazushiMe** – Switch OC Suite
-* **Meha** – Switch OC Suite, EOS, sys-clk-eos
-* **Naga** – OC-kernel
-* **B3711** – EOS
+* **hanai3bi** – Switch OC Suite, EOS, sys-clk-eos
+* **NaGaa95** – L4T-OC-kernel
+* **B3711 (halop)** – EOS
 * **sys-clk team** – sys-clk
-* **b0rd2death** – Ultrahand sys-clk fork
+* **b0rd2death** – Ultrahand sys-clk & Status Monitor fork
 * **MasaGratoR and ZachyCatGames** - General help
-* **Dom, Samybigio, Arcdelta, Miki, Algie, Happy, Flopsider, Winnerboi77, Blaise, Alvise, TDRR, agjeococh and Xenshen** - Testing
+* **MasaGratoR** - Status Monitor & Display Refresh Rate Driver
+* **Dom, Samybigio, Arcdelta, Miki, Happy, Flopsider, Winnerboi77, Blaise, Alvise, TDRR, agjeococh and Xenshen** - Testing
