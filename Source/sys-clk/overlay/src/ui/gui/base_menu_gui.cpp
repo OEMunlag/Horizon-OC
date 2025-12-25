@@ -154,6 +154,10 @@ void BaseMenuGui::preDraw(tsl::gfx::Renderer* renderer) {
     renderer->drawString(displayStrings[20], false, dataPositions[0], y, SMALL_TEXT_SIZE, tempColors[HorizonOCThermalSensor_Battery]);  // Battery
     renderer->drawString(displayStrings[22], false, dataPositions[1], y, SMALL_TEXT_SIZE, tempColors[HorizonOCThermalSensor_PMIC]);  // PMIC
 
+    renderer->drawString(labels[13], false, positions[7], y, SMALL_TEXT_SIZE, tsl::sectionTextColor); // disp label
+
+    renderer->drawString(displayStrings[25], false, dataPositions[2], y, SMALL_TEXT_SIZE, tsl::infoTextColor);   // disp freq
+
     y+=20;
 
     renderer->drawString(displayStrings[21], false, dataPositions[0], y, SMALL_TEXT_SIZE, tsl::infoTextColor);   // Bat voltage
@@ -163,9 +167,8 @@ void BaseMenuGui::preDraw(tsl::gfx::Renderer* renderer) {
 
     renderer->drawString(displayStrings[24], false, dataPositions[1], y, SMALL_TEXT_SIZE, tsl::infoTextColor);   // fan speed
 
-    renderer->drawString(labels[13], false, positions[7], y, SMALL_TEXT_SIZE, tsl::sectionTextColor); // fan label
+    renderer->drawString(displayStrings[26], false, dataPositions[2], y, SMALL_TEXT_SIZE, tsl::infoTextColor);   // disp volt
 
-    renderer->drawString(displayStrings[25], false, dataPositions[2], y, SMALL_TEXT_SIZE, tsl::infoTextColor);   // fan speed
 
 }
 
@@ -186,12 +189,14 @@ void BaseMenuGui::refresh()
     }
 
     // === SYSCLK CONTEXT UPDATE ===
-    const Result rc = sysclkIpcGetCurrentContext(this->context);
+    Result rc = sysclkIpcGetCurrentContext(this->context);
     if (R_FAILED(rc)) [[unlikely]] {
         FatalGui::openWithResultCode("sysclkIpcGetCurrentContext", rc);
         return;
     }
-    
+    sysclkIpcGetConfigValues(this->configList);
+    // dockedHighestAllowedRefreshRate = this->context->maxDisplayFreq;
+
     // === FORMAT ALL DISPLAY STRINGS (once per second) ===
     // App ID (hex conversion)
     sprintf(displayStrings[0], "%016lX", context->applicationId);
@@ -273,6 +278,8 @@ void BaseMenuGui::refresh()
     sprintf(displayStrings[24], "%u%%", context->PartLoad[HocClkPartLoad_FAN]);
 
     sprintf(displayStrings[25], "%u Hz", context->realFreqs[HorizonOCModule_Display]);
+
+    sprintf(displayStrings[26], "%u.%u mV", context->voltages[HocClkVoltage_Display] / 1000U, context->voltages[HocClkVoltage_Display] % 1000U);
 
 }
 

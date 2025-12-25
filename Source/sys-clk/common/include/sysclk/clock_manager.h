@@ -43,9 +43,8 @@ typedef struct
     uint32_t PartLoad[SysClkPartLoad_EnumMax];
     uint32_t voltages[HocClkVoltage_EnumMax];
     uint32_t perfConfId;
+    u8 maxDisplayFreq;
     u8 fps;
-    u8 lcdFreq;
-    u8 fanLevel;
 } SysClkContext;
 
 typedef struct

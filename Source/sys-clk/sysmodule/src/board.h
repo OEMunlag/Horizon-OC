@@ -44,7 +44,7 @@ class Board
     static void ResetToStockMem();
     static void ResetToStockGpu();
     static void ResetToStockDisplay();
-
+    static u8 GetHighestDockedDisplayRate();
     static SysClkProfile GetProfile();
     static void SetHz(SysClkModule module, std::uint32_t hz);
     static std::uint32_t GetHz(SysClkModule module);

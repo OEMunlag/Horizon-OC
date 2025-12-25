@@ -440,7 +440,7 @@ void ClockManager::Tick()
                 isGovernorEnabled = newGovernorState;
             }
 
-            if(module == HorizonOCModule_Display) {
+            if(module == HorizonOCModule_Display && this->config->GetConfigValue(HorizonOCConfigValue_OverwriteRefreshRate)) {
                 if(targetHz)
                     Board::SetHz(HorizonOCModule_Display, targetHz);
                 else
@@ -487,7 +487,10 @@ void ClockManager::ResetToStockClocks() {
 
 void ClockManager::WaitForNextTick()
 {
-    svcSleepThread(this->GetConfig()->GetConfigValue(SysClkConfigValue_PollingIntervalMs) * 1000000ULL);
+    if(!(Board::GetHz(SysClkModule_MEM) < 665000000))
+        svcSleepThread(this->GetConfig()->GetConfigValue(SysClkConfigValue_PollingIntervalMs) * 1000000ULL);
+    else 
+        svcSleepThread(5000 * 1000000ULL); // 5 seconds in sleep mode
 }
 
 bool ClockManager::RefreshContext()
@@ -622,6 +625,11 @@ bool ClockManager::RefreshContext()
     {
         FileUtils::WriteContextToCsv(this->context);
     }
+
+    if(this->context->profile == SysClkProfile_Docked)
+        this->context->maxDisplayFreq = Board::GetHighestDockedDisplayRate();
+    else
+        this->context->maxDisplayFreq = 60;
 
     return hasChanged;
 }

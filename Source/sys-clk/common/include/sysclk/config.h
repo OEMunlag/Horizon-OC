@@ -62,6 +62,8 @@ typedef enum {
 
     HorizonOCConfigValue_BatteryChargeCurrent,
 
+    HorizonOCConfigValue_OverwriteRefreshRate,
+
     KipConfigValue_custRev,
     KipConfigValue_mtcConf,
     KipConfigValue_hpMode,
@@ -229,6 +231,9 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
 
         case HorizonOCConfigValue_BatteryChargeCurrent:
             return pretty ? "Battery Charge Current" : "bat_charge_current";
+
+        case HorizonOCConfigValue_OverwriteRefreshRate:
+            return pretty ? "Display Refresh Rate Changing" : "drr_changing";
 
         // KIP config values
         case KipConfigValue_custRev:
@@ -425,6 +430,7 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
         case HocClkConfigValue_LiteTDPLimit:
             return 6400ULL;
         case HorizonOCConfigValue_BatteryChargeCurrent:
+        case HorizonOCConfigValue_OverwriteRefreshRate:
             return 0ULL;
         default:
             return 0ULL;
@@ -458,6 +464,7 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case HocClkConfigValue_EnforceBoardLimit:
         case HocClkConfigValue_KipEditing:
         case HocClkConfigValue_KipFileName:
+        case HorizonOCConfigValue_OverwriteRefreshRate:
             return (input & 0x1) == input;
         
         case KipConfigValue_custRev:

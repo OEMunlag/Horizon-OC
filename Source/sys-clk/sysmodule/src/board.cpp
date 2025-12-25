@@ -572,6 +572,10 @@ void Board::ResetToStockDisplay() {
     DisplayRefresh_SetRate(60);
 }
 
+u8 Board::GetHighestDockedDisplayRate() {
+    return DisplayRefresh_GetDockedHighestAllowed();
+}
+
 std::uint32_t Board::GetTemperatureMilli(SysClkThermalSensor sensor)
 {
     std::int32_t millis = 0;

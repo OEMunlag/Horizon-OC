@@ -33,10 +33,12 @@
 class BaseMenuGui : public BaseGui
 {
     protected:
-        SysClkContext* context;
-        std::uint64_t lastContextUpdate;
 
     public:
+        // u8 dockedHighestAllowedRefreshRate = 60;
+        SysClkContext* context;
+        std::uint64_t lastContextUpdate;
+        SysClkConfigValueList* configList;
         bool g_hardwareModelCached = false;
         bool g_isMariko = false;
 

@@ -19,7 +19,6 @@ protected:
     std::map<SysClkConfigValue, tsl::elm::ListItem*> configButtons;
     std::map<SysClkConfigValue, ValueRange> configRanges;
     std::map<SysClkConfigValue, std::vector<NamedValue>> configNamedValues;
-    SysClkConfigValueList* configList;
     std::map<SysClkConfigValue, tsl::elm::ToggleListItem*> configToggles;
     std::map<SysClkConfigValue, std::tuple<tsl::elm::TrackBar*, tsl::elm::ListItem*, std::vector<uint64_t>>> configTrackbars;
     

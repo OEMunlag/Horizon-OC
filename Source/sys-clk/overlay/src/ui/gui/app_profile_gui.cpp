@@ -29,7 +29,6 @@
 
 #include "../format.h"
 #include "fatal_gui.h"
-
 AppProfileGui::AppProfileGui(std::uint64_t applicationId, SysClkTitleProfileList* profileList)
 {
     this->applicationId = applicationId;
@@ -272,7 +271,10 @@ void AppProfileGui::addProfileUI(SysClkProfile profile)
     this->addModuleListItem(profile, SysClkModule_CPU);
     this->addModuleListItem(profile, SysClkModule_GPU);
     this->addModuleListItem(profile, SysClkModule_MEM);
-    this->addModuleListItemValue(profile, HorizonOCModule_Display, "Display", 40, 72, 5, " Hz", 1, 0);
+    if(profile != SysClkProfile_Docked)
+        this->addModuleListItemValue(profile, HorizonOCModule_Display, "Display", 40, 72, 1, " Hz", 1, 0);
+    else
+        this->addModuleListItemValue(profile, HorizonOCModule_Display, "Display", 50, 120, 5, " Hz", 1, 0);
     this->addModuleListItemToggle(profile, HorizonOCModule_Governor);
 }
 
