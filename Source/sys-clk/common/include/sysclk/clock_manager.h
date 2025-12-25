@@ -45,6 +45,7 @@ typedef struct
     uint32_t perfConfId;
     u8 maxDisplayFreq;
     u8 fps;
+    u16 speedos[HorizonOCSpeedo_EnumMax];
 } SysClkContext;
 
 typedef struct

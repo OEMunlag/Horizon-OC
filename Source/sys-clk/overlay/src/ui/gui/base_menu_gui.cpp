@@ -279,6 +279,7 @@ void BaseMenuGui::refresh()
     sprintf(displayStrings[25], "%u Hz", context->realFreqs[HorizonOCModule_Display]);
 
     sprintf(displayStrings[26], "%u.%u mV", context->voltages[HocClkVoltage_Display] / 1000U, context->voltages[HocClkVoltage_Display] % 1000U);
+    //sprintf(displayStrings[26], "%u", context->speedos[HorizonOCSpeedo_CPU]);
 
 }
 

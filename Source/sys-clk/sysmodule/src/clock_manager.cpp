@@ -101,7 +101,11 @@ ClockManager::ClockManager()
 
         
 	threadStart(&governorTHREAD);
- 
+
+    this->context->speedos[HorizonOCSpeedo_CPU] = Board::getCPUSpeedo();
+    this->context->speedos[HorizonOCSpeedo_GPU] = Board::getGPUSpeedo();
+    this->context->speedos[HorizonOCSpeedo_SOC] = Board::getSOCSpeedo();
+
 }
 
 ClockManager::~ClockManager()
@@ -439,7 +443,7 @@ void ClockManager::Tick()
                 }
                 isGovernorEnabled = newGovernorState;
             }
-
+            
             if(module == HorizonOCModule_Display && this->config->GetConfigValue(HorizonOCConfigValue_OverwriteRefreshRate)) {
                 if(targetHz)
                     Board::SetHz(HorizonOCModule_Display, targetHz);

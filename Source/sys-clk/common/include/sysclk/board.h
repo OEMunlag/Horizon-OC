@@ -119,6 +119,14 @@ typedef enum
 } ReverseNXMode;
 
 
+typedef enum {
+    HorizonOCSpeedo_CPU = 0,
+    HorizonOCSpeedo_GPU,
+    HorizonOCSpeedo_SOC,
+    HorizonOCSpeedo_EnumMax,
+} HorizonOCSpeedo;
+
+
 #define SYSCLK_ENUM_VALID(n, v) ((v) < n##_EnumMax)
 
 static inline const char* sysclkFormatModule(SysClkModule module, bool pretty)

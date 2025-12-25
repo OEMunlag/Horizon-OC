@@ -33,6 +33,10 @@
 class Board
 {
   public:
+    static void fuseReadSpeedos();
+    static u16 getCPUSpeedo();
+    static u16 getGPUSpeedo();
+    static u16 getSOCSpeedo();
     static const char* GetProfileName(SysClkProfile profile, bool pretty);
     static const char* GetModuleName(SysClkModule module, bool pretty);
     static const char* GetThermalSensorName(SysClkThermalSensor sensor, bool pretty);

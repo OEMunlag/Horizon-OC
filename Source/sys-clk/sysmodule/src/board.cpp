@@ -36,6 +36,20 @@
 #include <battery.h>
 #include <pwm.h>
 #include <display_refresh_rate.h>
+#include <stdio.h>
+#include <cstring>
+
+#define FUSE_CPU_SPEEDO_0_CALIB 0x114
+//#define FUSE_CPU_SPEEDO_1_CALIB 0x12C
+#define FUSE_CPU_SPEEDO_2_CALIB 0x130
+
+#define FUSE_SOC_SPEEDO_0_CALIB 0x134
+//#define FUSE_SOC_SPEEDO_1_CALIB 0x138
+//#define FUSE_SOC_SPEEDO_2_CALIB 0x13C
+
+#define FUSE_CPU_IDDQ_CALIB 0x118
+#define FUSE_SOC_IDDQ_CALIB 0x140
+#define FUSE_GPU_IDDQ_CALIB 0x228
 
 #define HOSSVC_HAS_CLKRST (hosversionAtLeast(8,0,0))
 #define HOSSVC_HAS_TC (hosversionAtLeast(5,0,0))
@@ -71,6 +85,9 @@ std::atomic<uint64_t> idletick1{systemtickfrequency};
 std::atomic<uint64_t> idletick2{systemtickfrequency};
 std::atomic<uint64_t> idletick3{systemtickfrequency};
 u32 cpu0, cpu1, cpu2, cpu3, cpuAvg;
+u16 cpuSpeedo0, cpuSpeedo2, socSpeedo0; // CPU, GPU, SOC
+u16 cpuIDDQ, gpuIDDQ, socIDDQ;
+
 
 const char* Board::GetModuleName(SysClkModule module, bool pretty)
 {
@@ -167,7 +184,6 @@ void miscThreadFunc(void*) {
 void Board::Initialize()
 {
     Result rc = 0;
-
     if(HOSSVC_HAS_CLKRST)
     {
         rc = clkrstInitialize();
@@ -207,6 +223,8 @@ void Board::Initialize()
     //     else fanCheck = fanOpenController(&fanController, 1);
     // }
 
+    rc = pmdmntInitialize();
+    ASSERT_RESULT_OK(rc, "pmdmntInitialize");
 
     threadCreate(&gpuLThread, gpuLoadThread, NULL, NULL, 0x1000, 0x3F, -2);
 	threadStart(&gpuLThread);
@@ -238,6 +256,71 @@ void Board::Initialize()
 
     DisplayRefresh_Initialize(&cfg);
     FetchHardwareInfos();
+}
+
+void Board::fuseReadSpeedos() {
+
+    u64 pid = 0;
+    if (R_FAILED(pmdmntGetProcessId(&pid, 0x0100000000000006))) {
+        return;
+    }
+
+    Handle debug;
+    if (R_FAILED(svcDebugActiveProcess(&debug, pid))) {
+        return;
+    }
+
+    MemoryInfo mem_info = {0};
+    u32 pageinfo = 0;
+    u64 addr = 0;
+
+    char stack[0x10] = {0};
+    const char compare[0x10] = {0};
+    char dump[0x400] = {0};
+
+    while (true) {
+        if (R_FAILED(svcQueryDebugProcessMemory(&mem_info, &pageinfo, debug, addr)) || mem_info.addr < addr) {
+            break;
+        }
+
+        if (mem_info.type == MemType_Io && mem_info.size == 0x1000) {
+            if (R_FAILED(svcReadDebugProcessMemory(stack, debug, mem_info.addr, sizeof(stack)))) {
+                break;
+            }
+
+            if (memcmp(stack, compare, sizeof(stack)) == 0) {
+                if (R_FAILED(svcReadDebugProcessMemory(dump, debug, mem_info.addr + 0x800, sizeof(dump)))) {
+                    break;
+                }
+
+                cpuSpeedo0 = *reinterpret_cast<const u16*>(dump + FUSE_CPU_SPEEDO_0_CALIB);
+                cpuSpeedo2 = *reinterpret_cast<const u16*>(dump + FUSE_CPU_SPEEDO_2_CALIB);
+                socSpeedo0 = *reinterpret_cast<const u16*>(dump + FUSE_SOC_SPEEDO_0_CALIB);
+                cpuIDDQ = *reinterpret_cast<const u16*>(dump + FUSE_CPU_IDDQ_CALIB);
+                gpuIDDQ = *reinterpret_cast<const u16*>(dump + FUSE_SOC_IDDQ_CALIB);
+                socIDDQ = *reinterpret_cast<const u16*>(dump + FUSE_GPU_IDDQ_CALIB);
+                
+                svcCloseHandle(debug);
+                return;
+            }
+        }
+
+        addr = mem_info.addr + mem_info.size;
+    }
+
+    svcCloseHandle(debug);
+}
+
+u16 Board::getCPUSpeedo() {
+    return cpuSpeedo0;
+}
+
+u16 Board::getGPUSpeedo() {
+    return cpuSpeedo2;
+}
+
+u16 Board::getSOCSpeedo() {
+    return socSpeedo0;
 }
 
 void Board::Exit()
@@ -273,6 +356,7 @@ void Board::Exit()
 	pwmExit();
     rgltrExit();
     batteryInfoExit();
+    pmdmntExit();
 }
 
 SysClkProfile Board::GetProfile()
@@ -662,6 +746,7 @@ HorizonOCConsoleType Board::GetConsoleType() {
 
 void Board::FetchHardwareInfos()
 {
+    fuseReadSpeedos();
     u64 sku = 0;
     Result rc = splInitialize();
     ASSERT_RESULT_OK(rc, "splInitialize");
