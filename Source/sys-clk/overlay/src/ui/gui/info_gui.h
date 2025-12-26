@@ -13,7 +13,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #pragma once
 #include "../../ipc.h"
 #include "base_menu_gui.h"
@@ -26,7 +25,8 @@
 class InfoGui : public BaseMenuGui
 {
 protected:
-    SysClkContext* Currentcontext;
+    char speedoStrings[3][16];  // Pre-formatted speedo strings
+    
 public:
     InfoGui();
     ~InfoGui();
@@ -34,5 +34,4 @@ public:
     void listUI() override;
     void update() override;
     void refresh() override;
-
 };

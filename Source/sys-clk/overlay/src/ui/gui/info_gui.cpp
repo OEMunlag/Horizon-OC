@@ -13,63 +13,57 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #include "info_gui.h"
 #include "../format.h"
 #include <tesla.hpp>
 #include <string>
+tsl::elm::ListItem* cpuSpeedoItem;
+tsl::elm::ListItem* gpuSpeedoItem;
+tsl::elm::ListItem* socSpeedoItem;
 
 InfoGui::InfoGui()
 {
-    if (!this->Currentcontext) [[unlikely]] {
-        this->Currentcontext = new SysClkContext;
-    }
-    Result rc = sysclkIpcGetCurrentContext(this->Currentcontext);
-    if (R_FAILED(rc)) [[unlikely]] {
-        FatalGui::openWithResultCode("sysclkIpcGetCurrentContext", rc);
-        return;
-    }
-
+    // Initialize display strings
+    memset(speedoStrings, 0, sizeof(speedoStrings));
 }
 
 InfoGui::~InfoGui()
 {
-
 }
-
 
 void InfoGui::listUI()
 {
-    tsl::elm::ListItem* cpuSpeedoItem =
+    cpuSpeedoItem =
         new tsl::elm::ListItem("CPU Speedo");
-    cpuSpeedoItem->setValue(std::to_string(this->Currentcontext->speedos[HorizonOCSpeedo_CPU]));
     this->listElement->addItem(cpuSpeedoItem);
-
-    tsl::elm::ListItem* gpuSpeedoItem =
+    
+    gpuSpeedoItem =
         new tsl::elm::ListItem("GPU Speedo");
-    gpuSpeedoItem->setValue(std::to_string(this->Currentcontext->speedos[HorizonOCSpeedo_GPU]));
     this->listElement->addItem(gpuSpeedoItem);
-
-    tsl::elm::ListItem* socSpeedoItem =
-        new tsl::elm::ListItem("GPU Speedo");
-    socSpeedoItem->setValue(std::to_string(this->Currentcontext->speedos[HorizonOCSpeedo_SOC]));
+    
+    socSpeedoItem =
+        new tsl::elm::ListItem("SOC Speedo");
     this->listElement->addItem(socSpeedoItem);
 }
 
 void InfoGui::update()
 {
     BaseMenuGui::update();
-    
 }
 
 void InfoGui::refresh()
 {
     BaseMenuGui::refresh();
     
-    static int frameCounter = 0;
+    if (!this->context)
+        return;
     
-    if (this->context && ++frameCounter >= 60) {
-        frameCounter = 0;
-        
-    }
+    // Format speedo strings once per refresh
+    sprintf(speedoStrings[0], "%u", this->context->speedos[HorizonOCSpeedo_CPU]);
+    sprintf(speedoStrings[1], "%u", this->context->speedos[HorizonOCSpeedo_GPU]);
+    sprintf(speedoStrings[2], "%u", this->context->speedos[HorizonOCSpeedo_SOC]);
+    cpuSpeedoItem->setValue(speedoStrings[HorizonOCSpeedo_CPU]); // this is SO hacky but it works i guess
+    gpuSpeedoItem->setValue(speedoStrings[HorizonOCSpeedo_GPU]);
+    socSpeedoItem->setValue(speedoStrings[HorizonOCSpeedo_SOC]);
+
 }

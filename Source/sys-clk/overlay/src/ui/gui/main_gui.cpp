@@ -74,7 +74,7 @@ void MainGui::listUI()
 
     tsl::elm::ListItem* globalOverrideItem = new tsl::elm::ListItem("Temporary Overrides");
     globalOverrideItem->setClickListener([this](u64 keys) {
-        if((keys & HidNpadButton_A) == HidNpadButton_A)
+        if((keys & HidNpadButton_A) == HidNpadButton_A && this->context)
         {
             tsl::changeTo<GlobalOverrideGui>();
             return true;
@@ -100,7 +100,7 @@ void MainGui::listUI()
 
     tsl::elm::ListItem* infoItem = new tsl::elm::ListItem("Information");
     infoItem->setClickListener([this](u64 keys) {
-        if((keys & HidNpadButton_A) == HidNpadButton_A)
+        if((keys & HidNpadButton_A) == HidNpadButton_A && this->context)
         {
             tsl::changeTo<InfoGui>();
             return true;
