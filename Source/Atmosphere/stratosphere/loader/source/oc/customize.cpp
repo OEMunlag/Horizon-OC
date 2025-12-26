@@ -52,8 +52,8 @@ volatile CustomizeTable C = {
 .t7_tWTR  = 0,
 .t8_tREFI = 0,
 
-/* Set to 4 read and 2 write for 1866bl. */
-/* For 2131bl: 8 read and 4 write. */
+/* Set to 4 read and 2 write for 1866b tWRL. */
+/* For 2133 tWRL: 8 read and 4 write. */
 .mem_burst_read_latency = 8,
 .mem_burst_write_latency = 4,
 
