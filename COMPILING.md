@@ -11,4 +11,11 @@ Horizon OC Zeus Compilation Instructions
 9. Grab a copy of libultrahand (https://github.com/ppkantorski/libultrahand) and place it into Source/sys-clk/overlay/lib/libultrahand
 10. Run ./build.sh in the root directory
 
+
 The files from the build are in the dist directory
+
+To build the secmon patch 
+1. Extract atmosphere source into Source/Atmosphere-MTC-Unlock
+2. cd into Source
+3. Run ams_patch.bat
+4. Compile Atmosphere
