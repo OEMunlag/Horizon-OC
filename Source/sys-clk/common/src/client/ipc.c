@@ -170,3 +170,9 @@ Result hocClkIpcGetKipData()
     u32 temp = 0;
     return serviceDispatchIn(&g_sysclkSrv, HocClkIpcCmd_GetKipData, temp);
 }
+
+Result hocClkIpcUpdateEmcRegs()
+{
+    u32 temp = 0;
+    return serviceDispatchIn(&g_sysclkSrv, HocClkIpcCmd_UpdateEmcRegs, temp);
+}

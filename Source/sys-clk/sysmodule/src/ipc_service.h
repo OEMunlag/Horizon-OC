@@ -57,7 +57,7 @@ class IpcService
     Result SetReverseNXRTMode(ReverseNXMode mode);
     Result SetKipData();
     Result GetKipData();
-
+    Result UpdateEmcRegs();
     bool running;
     Thread thread;
     LockableMutex threadMutex;

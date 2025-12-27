@@ -51,6 +51,7 @@ Result sysclkIpcGetFreqList(SysClkModule module, u32* list, u32 maxCount, u32* o
 Result sysclkIpcSetReverseNXRTMode(ReverseNXMode mode);
 Result hocClkIpcSetKipData();
 Result hocClkIpcGetKipData();
+Result hocClkIpcUpdateEmcRegs();
 
 static inline Result sysclkIpcRemoveOverride(SysClkModule module)
 {

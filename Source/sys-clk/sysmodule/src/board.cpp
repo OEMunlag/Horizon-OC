@@ -38,6 +38,15 @@
 #include <display_refresh_rate.h>
 #include <stdio.h>
 #include <cstring>
+#include "emc_mc_defs.h"
+#include <notification.h>
+
+#define MAX(A, B)   std::max(A, B)
+#define MIN(A, B)   std::min(A, B)
+#define CEIL(A)     std::ceil(A)
+#define FLOOR(A)    std::floor(A)
+#define ROUND(A)    std::lround(A)
+
 
 #define FUSE_CPU_SPEEDO_0_CALIB 0x114
 //#define FUSE_CPU_SPEEDO_1_CALIB 0x12C
@@ -874,4 +883,162 @@ std::uint32_t Board::GetVoltage(HocClkVoltage voltage)
     }
 
     return out > 0 ? out : 0;
+}
+
+#define MC_REGISTER_BASE 0x70019000
+#define MC_REGISTER_REGION_SIZE 0x1000
+
+#define EMC_REGISTER_BASE 0x7001b000
+#define EMC_REGISTER_REGION_SIZE 0x1000
+
+#define GET_CYCLE_CEIL(PARAM) u32(CEIL(double(PARAM) / tCK_avg))
+
+#define WRITE_REGISTER_EMC(TIMING_OFFSET, VALUE)                \
+    do {                                                    \
+        args = {};                                          \
+        args.X[0] = 0xF0000002;                             \
+        args.X[1] = EMC_REGISTER_BASE + (TIMING_OFFSET);    \
+        args.X[2] = 0xFFFFFFFF;                             \
+        args.X[3] = (VALUE);                                \
+        svcCallSecureMonitor(&args);                        \
+    } while (false)
+
+#define WRITE_REGISTER_MC(TIMING_OFFSET, VALUE)                \
+    do {                                                    \
+        args = {};                                          \
+        args.X[0] = 0xF0000002;                             \
+        args.X[1] = MC_REGISTER_BASE + (TIMING_OFFSET);    \
+        args.X[2] = 0xFFFFFFFF;                             \
+        args.X[3] = (VALUE);                                \
+        svcCallSecureMonitor(&args);                        \
+    } while (false)
+
+
+// NOTE: needs patch to exosphere to expose emc region to secmon. MC does NOT need this patch
+
+u32 tRCD_values[]  =  { 18, 17, 16, 15, 14, 13, 12, 11 };
+u32 tRP_values[]   =  { 18, 17, 16, 15, 14, 13, 12, 11 };
+u32 tRAS_values[]  =  { 42, 36, 34, 32, 30, 28, 26, 24, 22, 20 };
+double tRRD_values[]   = { /*10.0,*/ 7.5, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0 }; /* 10.0 is used for <2133mhz; do we care? */
+u32 tRFC_values[]   = { 140, 130, 120, 110, 100, 90, 80, 70, 60, 50, 40 };
+u32 tWTR_values[]   = { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
+u32 tREFpb_values[] = { 3900, 5850, 7800, 11700, 15600, 99999 };
+
+// Credit to Lightos for these timings!
+
+
+void Board::UpdateShadowRegs(u32 tRCD_i, u32 tRP_i, u32 tRAS_i, u32 tRRD_i, u32 tRFC_i, u32 tRTW_i, u32 tWTR_i, u32 tREFpb_i, u32 ramFreq, u32 rlAdd, u32 wlAdd, bool hpMode) {
+    // timing stuff
+
+    SecmonArgs args = {};
+
+    constexpr double MC_ARB_DIV = 4.0;
+    constexpr u32 MC_ARB_SFA = 2;
+
+    double tCK_avg = 1000'000.0 / ramFreq;
+    u32 BL = 16;
+    u32 RL = 28 + rlAdd;
+    u32 WL = 14 + wlAdd;
+    u32 RL_DBI = RL + 4;
+
+    u32 tRCD = tRCD_values[tRCD_i];
+    u32 tRPpb = tRP_values[tRP_i];
+    u32 tRAS = tRAS_values[tRAS_i];
+    double tRRD = tRRD_values[tRRD_i];
+    u32 tRFCpb = tRFC_values[tRFC_i];
+    u32 tWTR = 10 - tWTR_values[tWTR_i];
+    u32 tFAW = static_cast<u32>(tRRD * 4.0);
+
+    double tDQSCK_max = 3.5;
+    u32 tWPRE = 2;
+
+    double tRPST = 0.5;
+
+    u32 tR2W = CEIL(RL_DBI + (tDQSCK_max / tCK_avg) + (BL / 2) - WL + tWPRE + FLOOR(tRPST) + 9.0) - (tRTW_i * 3);
+
+    u32 tRC = tRAS + tRPpb;
+    u32 tRFCab = tRFCpb * 2;
+    u32 tRPab = tRPpb + 3;
+
+    u32 tW2R = CEIL(MAX(WL + (0.010322547033278747 * (ramFreq / 1000.0)), (WL * -0.2067922202979121) + FLOOR(((RL_DBI * -0.1331159971685554) + WL) * 3.654131957826108)) - (tWTR / tCK_avg));
+
+    double tMMRI = tRCD + (tCK_avg * 3);
+    double pdex2mrr = tMMRI + 10;
+    u32 emc_cfg = hpMode ? 0x13200000 : 0xF3200000;
+
+    u32 refresh_raw = 0xFFFF;
+    if (tREFpb_i != 6) {
+        refresh_raw = CEIL(tREFpb_values[tREFpb_i] / tCK_avg) - 0x40;
+        refresh_raw = MIN(refresh_raw, static_cast<u32>(0xFFFF));
+    }
+
+    u32 trefbw = refresh_raw + 0x40;
+    trefbw = MIN(trefbw, static_cast<u32>(0x3FFF));
+
+    u32 tR2P = 12 + (rlAdd / 2);
+    u32 tW2P = (CEIL(WL * 1.7303) * 2) - 5;
+
+    double tXSR = (double) (tRFCab + 7.5);
+
+    args = {};                                         
+    args.X[0] = 0xF0000002;                             
+    args.X[1] = EMC_REGISTER_BASE + EMC_INTSTATUS_0;    
+    svcCallSecureMonitor(&args);                        
+
+    if(args.X[1] == (EMC_REGISTER_BASE + EMC_INTSTATUS_0)) { // if param 1 is identical read failed, exosphere needs patch!
+        writeNotification("Horizon OC\nExosphere not patched\nfor EMC r/w"); 
+        return;
+    }
+
+    // actually write the timings
+    WRITE_REGISTER_EMC(EMC_CFG_0, emc_cfg);
+    WRITE_REGISTER_EMC(EMC_RD_RCD_0, GET_CYCLE_CEIL(tRCD));
+    WRITE_REGISTER_EMC(EMC_WR_RCD_0, GET_CYCLE_CEIL(tRCD));
+    WRITE_REGISTER_EMC(EMC_RC_0, MIN(GET_CYCLE_CEIL(tRC), static_cast<u32>(0xB8)));
+    WRITE_REGISTER_EMC(EMC_RAS_0, MIN(GET_CYCLE_CEIL(tRAS), static_cast<u32>(0x7F)));
+    WRITE_REGISTER_EMC(EMC_RRD_0, GET_CYCLE_CEIL(tRRD));
+    WRITE_REGISTER_EMC(EMC_RFCPB_0, GET_CYCLE_CEIL(tRFCpb));
+    WRITE_REGISTER_EMC(EMC_RFC_0, GET_CYCLE_CEIL(tRFCab));
+    WRITE_REGISTER_EMC(EMC_RP_0, GET_CYCLE_CEIL(tRPpb));
+    WRITE_REGISTER_EMC(EMC_TRPAB_0, MIN(GET_CYCLE_CEIL(tRPab), static_cast<u32>(0x3F)));
+    WRITE_REGISTER_EMC(EMC_R2W_0, tR2W);
+    WRITE_REGISTER_EMC(EMC_W2R_0, tW2R);
+    WRITE_REGISTER_EMC(EMC_REFRESH_0, refresh_raw);
+    WRITE_REGISTER_EMC(EMC_PRE_REFRESH_REQ_CNT_0, refresh_raw / 4);
+    WRITE_REGISTER_EMC(EMC_TREFBW_0, trefbw);
+    WRITE_REGISTER_EMC(EMC_PDEX2MRR_0, GET_CYCLE_CEIL(pdex2mrr));
+    WRITE_REGISTER_EMC(EMC_TXSR_0, MIN(GET_CYCLE_CEIL(tXSR), static_cast<u32>(0x3fe)));
+    WRITE_REGISTER_EMC(EMC_TXSRDLL_0, MIN(GET_CYCLE_CEIL(tXSR), static_cast<u32>(0x3fe)));
+
+    WRITE_REGISTER_MC(MC_EMEM_ARB_TIMING_RCD_0, CEIL(GET_CYCLE_CEIL(tRCD)   / MC_ARB_DIV) - 2);
+    WRITE_REGISTER_MC(MC_EMEM_ARB_TIMING_RP_0, CEIL(GET_CYCLE_CEIL(tRPpb)  / MC_ARB_DIV) - 1);
+    WRITE_REGISTER_MC(MC_EMEM_ARB_TIMING_RC_0, CEIL(GET_CYCLE_CEIL(tRC)    / MC_ARB_DIV) - 1);
+    WRITE_REGISTER_MC(MC_EMEM_ARB_TIMING_RAS_0, CEIL(GET_CYCLE_CEIL(tRAS)   / MC_ARB_DIV) - 2);
+    WRITE_REGISTER_MC(MC_EMEM_ARB_TIMING_FAW_0, CEIL(GET_CYCLE_CEIL(tFAW)   / MC_ARB_DIV) - 1);
+    WRITE_REGISTER_MC(MC_EMEM_ARB_TIMING_RRD_0, CEIL(GET_CYCLE_CEIL(tRRD)   / MC_ARB_DIV) - 1);
+    WRITE_REGISTER_MC(MC_EMEM_ARB_TIMING_RFCPB_0, CEIL(GET_CYCLE_CEIL(tRFCpb) / MC_ARB_DIV) - 1);
+
+    WRITE_REGISTER_MC(MC_EMEM_ARB_TIMING_R2W_0, CEIL(tR2W / MC_ARB_DIV) - 1 + MC_ARB_SFA);
+    WRITE_REGISTER_MC(MC_EMEM_ARB_TIMING_W2R_0, CEIL(tW2R / MC_ARB_DIV) - 1 + MC_ARB_SFA);
+
+    WRITE_REGISTER_MC(MC_EMEM_ARB_TIMING_RAP2PRE_0, CEIL(tR2P / MC_ARB_DIV));
+    WRITE_REGISTER_MC(MC_EMEM_ARB_TIMING_WAP2PRE_0, CEIL(tW2P / MC_ARB_DIV) + MC_ARB_SFA);
+
+    u32 da_turns = 0;
+    da_turns |= u8((CEIL(tR2W / MC_ARB_DIV) - 1 + MC_ARB_SFA) / 2) << 16;
+    da_turns |= u8((CEIL(tW2R / MC_ARB_DIV) - 1 + MC_ARB_SFA) / 2) << 24;
+    WRITE_REGISTER_MC(MC_EMEM_ARB_DA_TURNS_0, da_turns);
+
+    u32 da_covers = 0;
+    u8 r_cover = ((CEIL(tR2P / MC_ARB_DIV)) + (CEIL(GET_CYCLE_CEIL(tRPpb)  / MC_ARB_DIV) - 1) + (CEIL(GET_CYCLE_CEIL(tRCD)   / MC_ARB_DIV) - 2)) / 2;
+    u8 w_cover = ((CEIL(tW2P / MC_ARB_DIV) + MC_ARB_SFA) + (CEIL(GET_CYCLE_CEIL(tRPpb)  / MC_ARB_DIV) - 1) + (CEIL(GET_CYCLE_CEIL(tRCD)   / MC_ARB_DIV) - 2)) / 2;
+    da_covers |= ((u32)(CEIL(GET_CYCLE_CEIL(tRC) / (u32)MC_ARB_DIV) - 1) / 2);
+    da_covers |= (r_cover << 8);
+    da_covers |= (w_cover << 16);
+
+    WRITE_REGISTER_MC(MC_EMEM_ARB_DA_COVERS_0, da_covers);
+    // TODO: modify mc_emem_arb_misc0
+    
+    WRITE_REGISTER_MC(MC_TIMING_CONTROL_0, 0x1); // update timing regs as they are shadowed
+    WRITE_REGISTER_EMC(EMC_TIMING_CONTROL_0, 0x1);
 }

@@ -36,6 +36,7 @@
 #include <i2c.h>
 #include "notification.h"
 #include <display_refresh_rate.h>
+#include <cstring>
 
 #define HOSPPC_HAS_BOOST (hosversionAtLeast(7,0,0))
 bool isGovernorEnabled = false; // to avoid thread messes
@@ -43,7 +44,8 @@ bool lastGovernorState = false;
 bool hasChanged = true;
 ClockManager *ClockManager::instance = NULL;
 Thread governorTHREAD;
-
+u32 initialConfigValues[SysClkConfigValue_EnumMax]; // initial config. used for safety checks
+bool writeBootConfigValues = true; // do we write the initial config values?
 ClockManager *ClockManager::GetInstance()
 {
     return instance;
@@ -85,7 +87,7 @@ ClockManager::ClockManager()
     this->lastCsvWriteNs = 0;
 
     this->rnxSync = new ReverseNXSync;
-
+    memset(&initialConfigValues, 0, sizeof(initialConfigValues));
     if(this->config->GetConfigValue(HocClkConfigValue_KipEditing))
         this->GetKipData();   
     threadCreate(
@@ -105,7 +107,6 @@ ClockManager::ClockManager()
     this->context->speedos[HorizonOCSpeedo_CPU] = Board::getCPUSpeedo();
     this->context->speedos[HorizonOCSpeedo_GPU] = Board::getGPUSpeedo();
     this->context->speedos[HorizonOCSpeedo_SOC] = Board::getSOCSpeedo();
-
 }
 
 ClockManager::~ClockManager()
@@ -371,7 +372,6 @@ void ClockManager::GovernorThread(void* arg)
         svcSleepThread(50'000'000);
     }
 }
-
 
 void ClockManager::Tick()
 {
@@ -644,13 +644,13 @@ void ClockManager::SetRNXRTMode(ReverseNXMode mode)
 }
 
 void ClockManager::SetKipData() {
-
-    if(Board::GetSocType() == SysClkSocType_Mariko) {
-        if(I2c_BuckConverter_SetMvOut(&I2c_Mariko_DRAM_VDDQ, this->config->GetConfigValue(KipConfigValue_marikoEmcVddqVolt) / 1000)) {
-            FileUtils::LogLine("[clock_manager] Failed set i2c vddq");
-            writeNotification("Horizon OC\nFailed to write I2C\nwhile setting vddq");
-        }
-    }
+    // TODO: figure out if this REALLY causes issues (i doubt it)
+    // if(Board::GetSocType() == SysClkSocType_Mariko) {
+    //     if(R_FAILED(I2c_BuckConverter_SetMvOut(&I2c_Mariko_DRAM_VDDQ, this->config->GetConfigValue(KipConfigValue_marikoEmcVddqVolt) / 1000))) {
+    //         FileUtils::LogLine("[clock_manager] Failed set i2c vddq");
+    //         writeNotification("Horizon OC\nFailed to write I2C\nwhile setting vddq");
+    //     }
+    // }
     CustomizeTable table;
 
     if (!cust_read_and_cache(this->config->GetConfigValue(HocClkConfigValue_KipFileName) ? "sdmc:/atmosphere/kips/loader.kip" : "sdmc:/atmosphere/kips/hoc.kip", &table)) {
@@ -725,16 +725,73 @@ void ClockManager::SetKipData() {
 
 void ClockManager::GetKipData() {
     if(this->config->Refresh()) {
+        SysClkConfigValueList configValues;
+        this->config->GetConfigValues(&configValues);
+        
         CustomizeTable table;
-
+        
         if (!cust_read_and_cache(this->config->GetConfigValue(HocClkConfigValue_KipFileName) ? "sdmc:/atmosphere/kips/loader.kip" : "sdmc:/atmosphere/kips/hoc.kip", &table)) {
             FileUtils::LogLine("[clock_manager] Failed to read KIP file for GetKipData");
             writeNotification("Horizon OC\nKip read failed");
             return;
         }
+        
+        if(writeBootConfigValues) {
+            writeBootConfigValues = false;
 
-        SysClkConfigValueList configValues;
-        this->config->GetConfigValues(&configValues);
+            initialConfigValues[KipConfigValue_mtcConf] = cust_get_mtc_conf(&table);
+            initialConfigValues[KipConfigValue_hpMode] = cust_get_hp_mode(&table);
+
+            initialConfigValues[KipConfigValue_commonEmcMemVolt] = cust_get_common_emc_volt(&table);
+            initialConfigValues[KipConfigValue_eristaEmcMaxClock] = cust_get_erista_emc_max(&table);
+            initialConfigValues[KipConfigValue_marikoEmcMaxClock] = cust_get_mariko_emc_max(&table);
+            initialConfigValues[KipConfigValue_marikoEmcVddqVolt] = cust_get_mariko_emc_vddq(&table);
+            initialConfigValues[KipConfigValue_emcDvbShift] = cust_get_emc_dvb_shift(&table);
+
+            initialConfigValues[KipConfigValue_t1_tRCD] = cust_get_tRCD(&table);
+            initialConfigValues[KipConfigValue_t2_tRP] = cust_get_tRP(&table);
+            initialConfigValues[KipConfigValue_t3_tRAS] = cust_get_tRAS(&table);
+            initialConfigValues[KipConfigValue_t4_tRRD] = cust_get_tRRD(&table);
+            initialConfigValues[KipConfigValue_t5_tRFC] = cust_get_tRFC(&table);
+            initialConfigValues[KipConfigValue_t6_tRTW] = cust_get_tRTW(&table);
+            initialConfigValues[KipConfigValue_t7_tWTR] = cust_get_tWTR(&table);
+            initialConfigValues[KipConfigValue_t8_tREFI] = cust_get_tREFI(&table);
+            initialConfigValues[KipConfigValue_mem_burst_read_latency] = cust_get_burst_read_lat(&table);
+            initialConfigValues[KipConfigValue_mem_burst_write_latency] = cust_get_burst_write_lat(&table);
+
+            initialConfigValues[KipConfigValue_eristaCpuUV] = cust_get_erista_cpu_uv(&table);
+            initialConfigValues[KipConfigValue_eristaCpuVmin] = cust_get_eristaCpuVmin(&table);
+            initialConfigValues[KipConfigValue_eristaCpuMaxVolt] = cust_get_erista_cpu_max_volt(&table);
+            initialConfigValues[KipConfigValue_eristaCpuUnlock] = cust_get_eristaCpuUnlock(&table);
+
+
+            initialConfigValues[KipConfigValue_marikoCpuUVLow] = cust_get_mariko_cpu_uv_low(&table);
+            initialConfigValues[KipConfigValue_marikoCpuUVHigh] = cust_get_mariko_cpu_uv_high(&table);
+            initialConfigValues[KipConfigValue_tableConf] = cust_get_table_conf(&table);
+            initialConfigValues[KipConfigValue_marikoCpuLowVmin] = cust_get_mariko_cpu_low_vmin(&table);
+            initialConfigValues[KipConfigValue_marikoCpuHighVmin] = cust_get_mariko_cpu_high_vmin(&table);
+            initialConfigValues[KipConfigValue_marikoCpuMaxVolt] = cust_get_mariko_cpu_max_volt(&table);
+            initialConfigValues[KipConfigValue_marikoGpuFullUnlock] = cust_get_marikoCpuMaxClock(&table) / 1000;
+            initialConfigValues[KipConfigValue_eristaCpuBoostClock] = cust_get_erista_cpu_boost(&table) / 1000;
+            initialConfigValues[KipConfigValue_marikoCpuBoostClock] = cust_get_mariko_cpu_boost(&table) / 1000;
+
+            initialConfigValues[KipConfigValue_eristaGpuUV] = cust_get_erista_gpu_uv(&table);
+            initialConfigValues[KipConfigValue_eristaGpuVmin] = cust_get_erista_gpu_vmin(&table);
+            initialConfigValues[KipConfigValue_marikoGpuUV] = cust_get_mariko_gpu_uv(&table);
+            initialConfigValues[KipConfigValue_marikoGpuVmin] = cust_get_mariko_gpu_vmin(&table);
+            initialConfigValues[KipConfigValue_marikoGpuVmax] = cust_get_mariko_gpu_vmax(&table);
+            initialConfigValues[KipConfigValue_commonGpuVoltOffset] = cust_get_common_gpu_offset(&table);
+            initialConfigValues[KipConfigValue_gpuSpeedo] = cust_get_gpu_speedo(&table);
+            initialConfigValues[KipConfigValue_marikoGpuFullUnlock] = cust_get_mariko_gpu_unlock(&table);
+
+            for (int i = 0; i < 24; i++) {
+                initialConfigValues[KipConfigValue_g_volt_76800 + i] = cust_get_mariko_gpu_volt(&table, i);
+            }
+
+            for (int i = 0; i < 27; i++) {
+                initialConfigValues[KipConfigValue_g_volt_e_76800 + i] = cust_get_erista_gpu_volt(&table, i);
+            }
+        }
 
         configValues.values[KipConfigValue_mtcConf] = cust_get_mtc_conf(&table);
         configValues.values[KipConfigValue_hpMode] = cust_get_hp_mode(&table);
@@ -807,4 +864,39 @@ void ClockManager::GetKipData() {
         FileUtils::LogLine("[clock_manager] Config refresh error in GetKipData!");
         writeNotification("Horizon OC\nConfig refresh failed");
     }
+}
+
+void ClockManager::UpdateRamTimings() {
+    if(!this->config->GetConfigValue(HocClkConfigValue_KipEditing))
+        return;
+
+    CustomizeTable table;
+
+    if (!cust_read_and_cache(this->config->GetConfigValue(HocClkConfigValue_KipFileName) ? "sdmc:/atmosphere/kips/loader.kip" : "sdmc:/atmosphere/kips/hoc.kip", &table)) {
+        FileUtils::LogLine("[clock_manager] Failed to read KIP file for GetKipData");
+        writeNotification("Horizon OC\nKip read failed");
+        return;
+    }
+
+    if(this->config->GetConfigValue(KipConfigValue_marikoEmcMaxClock) != initialConfigValues[KipConfigValue_marikoEmcMaxClock] ||
+       this->config->GetConfigValue(KipConfigValue_mem_burst_read_latency) != initialConfigValues[KipConfigValue_mem_burst_read_latency] ||
+       this->config->GetConfigValue(KipConfigValue_mem_burst_write_latency) != initialConfigValues[KipConfigValue_mem_burst_write_latency]
+    ) {
+        writeNotification("Horizon OC\nCritical values changed!\nUnable to write timings");
+        return;
+    }
+    u32 t1_tRCD = this->config->GetConfigValue(KipConfigValue_t1_tRCD);
+    u32 t2_tRP = this->config->GetConfigValue(KipConfigValue_t2_tRP);
+    u32 t3_tRAS = this->config->GetConfigValue(KipConfigValue_t3_tRAS);
+    u32 t4_tRRD = this->config->GetConfigValue(KipConfigValue_t4_tRRD);
+    u32 t5_tRFC = this->config->GetConfigValue(KipConfigValue_t5_tRFC);
+    u32 t6_tRTW = this->config->GetConfigValue(KipConfigValue_t6_tRTW);
+    u32 t7_tWTR = this->config->GetConfigValue(KipConfigValue_t7_tWTR);
+    u32 t8_tREFI = this->config->GetConfigValue(KipConfigValue_t8_tREFI);
+    u64 ramFreq = this->config->GetConfigValue(KipConfigValue_marikoEmcMaxClock);
+    u32 rlAdd = this->config->GetConfigValue(KipConfigValue_mem_burst_read_latency);
+    u32 wlAdd = this->config->GetConfigValue(KipConfigValue_mem_burst_write_latency);
+    bool hpMode = (bool)this->config->GetConfigValue(KipConfigValue_hpMode);
+
+    Board::UpdateShadowRegs(t1_tRCD, t2_tRP, t3_tRAS, t4_tRRD, t5_tRFC, t6_tRTW, t7_tWTR, t8_tREFI, ramFreq, rlAdd, wlAdd, hpMode);
 }

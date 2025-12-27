@@ -51,6 +51,7 @@ enum SysClkIpcCmd
     SysClkIpcCmd_SetReverseNXRTMode = 12,
     HocClkIpcCmd_SetKipData = 13,
     HocClkIpcCmd_GetKipData = 14,
+    HocClkIpcCmd_UpdateEmcRegs = 15,
 };
 
 
