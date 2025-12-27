@@ -52,16 +52,15 @@ It enables advanced CPU, GPU, and RAM tuning with user-friendly configuration to
 
    * [Atmosphere](https://github.com/Atmosphere-NX/Atmosphere)
    * [Ultrahand Overlay](https://github.com/ppkantorski/Ultrahand-Overlay)
-2. Download the latest **hoc.kip** file from the [Releases](../../releases) tab.
+2. Download and extract the **Horizon OC Package** to the root of your SD card.
 3. If using **Hekate**, edit `hekate_ipl.ini` to include:
 
    ```
    kip1=atmosphere/kips/hoc.kip
+   secmon=secmon_patch_ams_x_xx_x.bin
    ```
 
    *(No changes needed if using fusee.)*
-4. Download and extract the **Horizon OC sysmodule** to the root of your SD card.
-5. Alternatively, use the **Configurator** and click the **Install** buttons for automatic setup.
 
 ---
 
@@ -84,12 +83,14 @@ Refer to COMPILATION.md
 ## Credits
 
 * **Lightos** – loader patches development
+* **Lightos's Cat** - Cat
 * **SciresM** - Atmosphere CFW
 * **KazushiMe** – Switch OC Suite
-* **Meha** – Switch OC Suite, EOS, sys-clk-eos
-* **Naga** – OC-kernel
-* **B3711** – EOS
+* **hanai3bi** – Switch OC Suite, EOS, sys-clk-eos
+* **NaGaa95** – L4T-OC-kernel
+* **B3711 (halop)** – EOS
 * **sys-clk team** – sys-clk
-* **b0rd2death** – Ultrahand sys-clk fork
+* **b0rd2death** – Ultrahand sys-clk & Status Monitor fork
 * **MasaGratoR and ZachyCatGames** - General help
-* **Dom, Samybigio, Arcdelta, Miki, Algie, Happy, Flopsider, Winnerboi77, Blaise, Alvise, TDRR, agjeococh and Xenshen** - Testing
+* **MasaGratoR** - Status Monitor & Display Refresh Rate Driver
+* **Dom, Samybigio, Arcdelta, Miki, Happy, Flopsider, Winnerboi77, Blaise, Alvise, TDRR, agjeococh and Xenshen** - Testing

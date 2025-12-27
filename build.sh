@@ -23,16 +23,18 @@ cd Source/Horizon-OC-Monitor/
 make -j"$(nproc)"
 cp Horizon-OC-Monitor.ovl ../../dist/switch/.overlays/Horizon-OC-Monitor.ovl
 
-# cd ../../Source/configurator
+cd ../../
 
-# pip install -U pyinstaller
-# pip install dpg
-# pip install numpy
-# pip install psutil
-# pip install pillow
-# pip install pathlib
+ROOT="build"
+PATCHES="Atmosphere-Patches"
 
-# python3 -m PyInstaller --onefile --add-data "assets:assets" --icon=assets/icon.ico --noconsole src/main.py
+cp "$PATCHES/secmon_memory_layout.hpp" "$ROOT/libraries/libexosphere/include/exosphere/secmon/"
+cp "$PATCHES/secmon_emc_access_table_data.inc" "$ROOT/exosphere/program/source/smc/"
+cp "$PATCHES/secmon_define_emc_access_table.inc" "$ROOT/exosphere/program/source/smc/"
+cp "$PATCHES/secmon_smc_register_access.cpp" "$ROOT/exosphere/program/source/smc/"
+cd build/exosphere
 
-# mv dist/main dist/hocconfig
-# cp dist/hocconfig ../../
+make -j"$(nproc)"
+
+cd out/nintendo_nx_arm64_armv8a/release
+cp "exosphere.bin" "../../../../../dist/"

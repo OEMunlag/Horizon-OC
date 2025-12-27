@@ -1,5 +1,5 @@
 @echo off
-set ROOT=Atmosphere-MTC-Unlock
+set ROOT=build
 set PATCHES=Atmosphere-Patches
 copy "%PATCHES%\secmon_memory_layout.hpp" "%ROOT%\libraries\libexosphere/include/exosphere/secmon/" /Y
 copy "%PATCHES%\secmon_emc_access_table_data.inc" "%ROOT%\exosphere/program/source/smc/" /Y
