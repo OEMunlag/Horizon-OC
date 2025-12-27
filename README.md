@@ -52,16 +52,16 @@ It enables advanced CPU, GPU, and RAM tuning with user-friendly configuration to
 
    * [Atmosphere](https://github.com/Atmosphere-NX/Atmosphere)
    * [Ultrahand Overlay](https://github.com/ppkantorski/Ultrahand-Overlay)
-2. Download the latest **hoc.kip** file from the [Releases](../../releases) tab.
-3. If using **Hekate**, edit `hekate_ipl.ini` to include:
+2. Download and extract the **Horizon OC Package** to the root of your SD card.
+3. Download and extract the **Secmon Patch** to the root of your sd card.
+4. If using **Hekate**, edit `hekate_ipl.ini` to include:
 
    ```
    kip1=atmosphere/kips/hoc.kip
+   secmon=secmon_patch_ams_x_xx_x.bin
    ```
 
    *(No changes needed if using fusee.)*
-4. Download and extract the **Horizon OC sysmodule** to the root of your SD card.
-5. Alternatively, use the **Configurator** and click the **Install** buttons for automatic setup.
 
 ---
 
