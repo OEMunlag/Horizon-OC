@@ -154,7 +154,8 @@ namespace ams::secmon {
         HANDLER(Sdmmc,                   MemoryController1, UINT64_C(0x700B0000), UINT64_C(0x1000),  true, ## __VA_ARGS__) \
         HANDLER(Disp1,                               Sdmmc, UINT64_C(0x54200000), UINT64_C(0x3000),  true, ## __VA_ARGS__) \
         HANDLER(Dsi,                                 Disp1, UINT64_C(0x54300000), UINT64_C(0x1000),  true, ## __VA_ARGS__) \
-        HANDLER(MipiCal,                               Dsi, UINT64_C(0x700E3000), UINT64_C(0x1000),  true, ## __VA_ARGS__)
+        HANDLER(MipiCal,                               Dsi, UINT64_C(0x700E3000), UINT64_C(0x1000),  true, ## __VA_ARGS__) \
+        HANDLER(Soctherm,                          MipiCal, UINT64_C(0x700E2000), UINT64_C(0x1000),  true, ## __VA_ARGS__)
 
     #define DEFINE_DEVICE_REGION(_NAME_, _PREV_, _ADDRESS_, _SIZE_, _SECURE_)                                                                                      \
         constexpr inline const MemoryRegion MemoryRegionVirtualDevice##_NAME_  = MemoryRegion(MemoryRegionVirtualDevice##_PREV_.GetEndAddress() + 0x1000, _SIZE_); \

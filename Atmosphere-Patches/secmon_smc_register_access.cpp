@@ -99,14 +99,16 @@ namespace ams::secmon::smc {
         #include "secmon_define_pmc_access_table.inc"
         #include "secmon_define_mc_access_table.inc"
         #include "secmon_define_emc_access_table.inc"
+        #include "secmon_define_soctherm_access_table.inc"
         #include "secmon_define_mc01_access_table.inc"
 
         constexpr const AccessTableEntry AccessTables[] = {
-            { PmcAccessTable::ReducedAccessTable.data(),                            MemoryRegionVirtualDevicePmc.GetAddress(),                PmcAccessTable::Address,                                                             PmcAccessTable::Size, },
-            { McAccessTable::ReducedAccessTable.data(),                             MemoryRegionVirtualDeviceMemoryController.GetAddress(),    McAccessTable::Address,                                                              McAccessTable::Size, },
-            { EmcAccessTable::ReducedAccessTable.data(),                    MemoryRegionVirtualDeviceExternalMemoryController.GetAddress(),    EmcAccessTable::Address,                                                              EmcAccessTable::Size, },
-            { Mc01AccessTable::ReducedAccessTable.data(), Mc01AccessTable::Address + MemoryRegionVirtualDeviceMemoryController0.GetAddress(), Mc01AccessTable::Address + MemoryRegionPhysicalDeviceMemoryController0.GetAddress(), Mc01AccessTable::Size, },
-            { Mc01AccessTable::ReducedAccessTable.data(), Mc01AccessTable::Address + MemoryRegionVirtualDeviceMemoryController1.GetAddress(), Mc01AccessTable::Address + MemoryRegionPhysicalDeviceMemoryController1.GetAddress(), Mc01AccessTable::Size, },
+            { PmcAccessTable::ReducedAccessTable.data(),      MemoryRegionVirtualDevicePmc.GetAddress(),                                          PmcAccessTable::Address,                                                             PmcAccessTable::Size,      },
+            { McAccessTable::ReducedAccessTable.data(),       MemoryRegionVirtualDeviceMemoryController.GetAddress(),                             McAccessTable::Address,                                                              McAccessTable::Size,       },
+            { EmcAccessTable::ReducedAccessTable.data(),      MemoryRegionVirtualDeviceExternalMemoryController.GetAddress(),                     EmcAccessTable::Address,                                                             EmcAccessTable::Size,      },
+            { SocthermAccessTable::ReducedAccessTable.data(), MemoryRegionVirtualDeviceSoctherm.GetAddress(),                                     SocthermAccessTable::Address,                                                        SocthermAccessTable::Size, },
+            { Mc01AccessTable::ReducedAccessTable.data(),     Mc01AccessTable::Address + MemoryRegionVirtualDeviceMemoryController0.GetAddress(), Mc01AccessTable::Address + MemoryRegionPhysicalDeviceMemoryController0.GetAddress(), Mc01AccessTable::Size,     },
+            { Mc01AccessTable::ReducedAccessTable.data(),     Mc01AccessTable::Address + MemoryRegionVirtualDeviceMemoryController1.GetAddress(), Mc01AccessTable::Address + MemoryRegionPhysicalDeviceMemoryController1.GetAddress(), Mc01AccessTable::Size,     },
         };
 
         constexpr bool IsAccessAllowed(const AccessTableEntry &entry, uintptr_t address) {
