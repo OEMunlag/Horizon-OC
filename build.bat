@@ -35,10 +35,12 @@ cd ..\..
 set ROOT=build
 set PATCHES=Atmosphere-Patches
 
-copy /Y "%PATCHES%\secmon_memory_layout.hpp" "%ROOT%\libraries\libexosphere\include\exosphere\secmon\"
-copy /Y "%PATCHES%\secmon_emc_access_table_data.inc" "%ROOT%\exosphere\program\source\smc\"
-copy /Y "%PATCHES%\secmon_define_emc_access_table.inc" "%ROOT%\exosphere\program\source\smc\"
-copy /Y "%PATCHES%\secmon_smc_register_access.cpp" "%ROOT%\exosphere\program\source\smc\"
+copy "%PATCHES%\secmon_memory_layout.hpp" "%ROOT%\libraries\libexosphere/include/exosphere/secmon/" /Y
+copy "%PATCHES%\secmon_emc_access_table_data.inc" "%ROOT%\exosphere/program/source/smc/" /Y
+copy "%PATCHES%\secmon_soctherm_access_table_data.inc" "%ROOT%\exosphere/program/source/smc/" /Y
+copy "%PATCHES%\secmon_define_emc_access_table.inc" "%ROOT%\exosphere/program/source/smc/" /Y
+copy "%PATCHES%\secmon_define_soctherm_access_table.inc" "%ROOT%\exosphere/program/source/smc/" /Y
+copy "%PATCHES%\secmon_smc_register_access.cpp" "%ROOT%\exosphere/program/source/smc/" /Y
 
 cd build\exosphere
 make -j %NUMBER_OF_PROCESSORS%
