@@ -148,27 +148,28 @@ void BaseMenuGui::preDraw(tsl::gfx::Renderer* renderer) {
     
     y+=20;
 
-    renderer->drawString(labels[10], false, positions[2], y, SMALL_TEXT_SIZE, tsl::sectionTextColor);
+    renderer->drawString(labels[10], false, positions[5], y, SMALL_TEXT_SIZE, tsl::sectionTextColor);
+    renderer->drawString(labels[11], false, positions[6], y, SMALL_TEXT_SIZE, tsl::sectionTextColor);
 
     renderer->drawString(displayStrings[20], false, dataPositions[0], y, SMALL_TEXT_SIZE, tempColors[HorizonOCThermalSensor_Battery]);  // Battery
+    renderer->drawString(displayStrings[22], false, dataPositions[1], y, SMALL_TEXT_SIZE, tempColors[HorizonOCThermalSensor_PMIC]);  // PMIC
 
-    renderer->drawString(labels[13], false, positions[4], y, SMALL_TEXT_SIZE, tsl::sectionTextColor); // disp label
+    renderer->drawString(labels[13], false, positions[7], y, SMALL_TEXT_SIZE, tsl::sectionTextColor); // disp label
 
     renderer->drawString(displayStrings[25], false, dataPositions[2], y, SMALL_TEXT_SIZE, tsl::infoTextColor);   // disp freq
-
-    renderer->drawString(labels[12], false, positions[3], y, SMALL_TEXT_SIZE, tsl::sectionTextColor); // fan label
-
-    renderer->drawString(displayStrings[24], false, dataPositions[1], y, SMALL_TEXT_SIZE, tsl::infoTextColor);   // fan speed
 
     y+=20;
 
     renderer->drawString(displayStrings[21], false, dataPositions[0], y, SMALL_TEXT_SIZE, tsl::infoTextColor);   // Bat voltage
     renderer->drawString(displayStrings[23], false, positions[2] - 2, y, SMALL_TEXT_SIZE, tsl::infoTextColor);  // Bat Age
 
+    renderer->drawString(labels[12], false, positions[6], y, SMALL_TEXT_SIZE, tsl::sectionTextColor); // fan label
+
+    renderer->drawString(displayStrings[24], false, dataPositions[1], y, SMALL_TEXT_SIZE, tsl::infoTextColor);   // fan speed
 
     renderer->drawString(displayStrings[26], false, dataPositions[2], y, SMALL_TEXT_SIZE, tsl::infoTextColor);   // disp volt
 
-    y+=20;
+
 }
 
 // Optimized refresh - now does all the string formatting once per second
@@ -267,12 +268,17 @@ void BaseMenuGui::refresh()
 
     sprintf(displayStrings[21], "%d mV", context->voltages[HocClkVoltage_Battery]); // BAT AVG
 
+    millis = context->temps[HorizonOCThermalSensor_PMIC]; // Battery
+    sprintf(displayStrings[22], "%u.%u °C", millis / 1000U, (millis % 1000U) / 100U);
+    tempColors[HorizonOCThermalSensor_PMIC] = tsl::GradientColor(millis * 0.001f);
+
     sprintf(displayStrings[23], "%u%%", context->PartLoad[HocClkPartLoad_BAT] / 1000);
 
     sprintf(displayStrings[24], "%u%%", context->PartLoad[HocClkPartLoad_FAN]);
 
     sprintf(displayStrings[25], "%u Hz", context->realFreqs[HorizonOCModule_Display]);
 
+    sprintf(displayStrings[26], "%u.%u mV", context->voltages[HocClkVoltage_Display] / 1000U, context->voltages[HocClkVoltage_Display] % 1000U);
     //sprintf(displayStrings[26], "%u", context->speedos[HorizonOCSpeedo_CPU]);
 
 }
