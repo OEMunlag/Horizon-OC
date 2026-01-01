@@ -20,6 +20,7 @@
 
 namespace ams::ldr::oc::pcv::mariko {
     u32 calcClock;
+
     u32 GetRext() {
         if (auto r = FindRext()) {
             return r->correct;
@@ -129,9 +130,30 @@ namespace ams::ldr::oc::pcv::mariko {
         }
     }
 
+    /* TODO: Refactor this into multiple functions. */
+    void CalculateCore() {
+        tCK_avg = 1000'000.0 / calcClock;
+        tR2P = 12 + (C.mem_burst_read_latency / 2);
+        tRTM = RL + 9 + (tDQSCK_max / tCK_avg) + FLOOR(tRPST) + CEIL(10 / tCK_avg); // Fix?
+        tRATM = tRTM + CEIL(10 / tCK_avg) - 12; // Fix?
+        quse = FLOOR((-0.0048159 * (calcClock / 1000.0)) + RL_DBI) + (FLOOR((calcClock / 1000.0) * 0.0050997) * 1.5134);
+        einput = quse - ((calcClock / 1000.0) * 0.01);
+        tW2P = (CEIL(WL * 1.7303) * 2) - 5;
+        tW2R = CEIL(MAX(WL + (0.010322547033278747 * (calcClock / 1000.0)), (WL * -0.2067922202979121) + FLOOR(((RL_DBI * -0.1331159971685554) + WL) * 3.654131957826108)) - (tWTR / tCK_avg));
+        tWTM = WL + (BL / 2) + 1 + CEIL(7.5 / tCK_avg);
+        tWATM = tWTM + CEIL(tWR / tCK_avg);
+        wdv = WL;
+        wsv = WL - 2;
+        wev = 0xA + C.mem_burst_write_latency;
+        tCKE = CEIL(1.0795 * CEIL(0.0074472 * (calcClock / 1000.0)));
+        tMMRI = tRCD + (tCK_avg * 3);
+        pdex2mrr = tMMRI + 10; /* Do this properly? */
+    }
+
     void CalculateTimings(u32 rate_khz) {
         calcClock = rate_khz;
         SetTableMaxClock(rate_khz);
+        CalculateCore();
         CalculateMiscTimings();
         CalculateIbdly();
         CalculateObdly();

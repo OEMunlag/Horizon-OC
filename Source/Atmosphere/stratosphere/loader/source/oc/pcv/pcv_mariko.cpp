@@ -413,34 +413,6 @@ namespace ams::ldr::oc::pcv::mariko {
     }
 
     void MemMtcTableAutoAdjust(MarikoMtcTable *table) {
-        tCK_avg = 1000'000.0 / table->rate_khz;
-        tRCD = tRCD_values[C.t1_tRCD];
-        tRPpb = tRP_values[C.t2_tRP];
-        tRAS = tRAS_values[C.t3_tRAS];
-        tRRD = tRRD_values[C.t4_tRRD];
-        tRFCpb = tRFC_values[C.t5_tRFC];
-        tWTR = 10 - tWTR_values[C.t7_tWTR];
-        tRC = tRAS + tRPpb;
-        tRFCab = tRFCpb * 2;
-        tXSR = (double) (tRFCab + 7.5);
-        tFAW = static_cast<u32>(tRRD * 4.0);
-        tRPab = tRPpb + 3;
-        tR2P = 12 + (C.mem_burst_read_latency / 2);
-        tRTM = RL + 9 + (tDQSCK_max / tCK_avg) + FLOOR(tRPST) + CEIL(10 / tCK_avg); // Fix?
-        tRATM = tRTM + CEIL(10 / tCK_avg) - 12; // Fix?
-        quse = FLOOR((-0.0048159 * (table->rate_khz / 1000.0)) + RL_DBI) + (FLOOR((table->rate_khz / 1000.0) * 0.0050997) * 1.5134);
-        einput = quse - ((table->rate_khz / 1000.0) * 0.01);
-        tW2P = (CEIL(WL * 1.7303) * 2) - 5;
-        tW2R = CEIL(MAX(WL + (0.010322547033278747 * (table->rate_khz / 1000.0)), (WL * -0.2067922202979121) + FLOOR(((RL_DBI * -0.1331159971685554) + WL) * 3.654131957826108)) - (tWTR / tCK_avg));
-        tWTM = WL + (BL / 2) + 1 + CEIL(7.5 / tCK_avg);
-        tWATM = tWTM + CEIL(tWR / tCK_avg);
-        wdv = WL;
-        wsv = WL - 2;
-        wev = 0xA + C.mem_burst_write_latency;
-        tCKE = CEIL(1.0795 * CEIL(0.0074472 * (table->rate_khz / 1000.0)));
-        tMMRI = tRCD + (tCK_avg * 3);
-        pdex2mrr = tMMRI + 10; /* Do this properly? */
-
         #define WRITE_PARAM_ALL_REG(TABLE, PARAM, VALUE) \
             TABLE->burst_regs.PARAM = VALUE;             \
             TABLE->shadow_regs_ca_train.PARAM   = VALUE; \
@@ -616,7 +588,7 @@ namespace ams::ldr::oc::pcv::mariko {
         table->emc_mrw2 = 0x8802003F;
         table->emc_cfg_2 = 0x11083D;
     }
-    
+
    // void MemMtcTableAutoAdjust(MarikoMtcTable *table) {
    //     /* Official Tegra X1 TRM, sign up for nvidia developer program (free) to download:
    //      *     https://developer.nvidia.com/embedded/dlc/tegra-x1-technical-reference-manual
