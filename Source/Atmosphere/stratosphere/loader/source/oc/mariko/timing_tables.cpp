@@ -23,7 +23,6 @@ namespace ams::ldr::oc::pcv::mariko {
     void SetTableMaxClock(u32 maxClock) {
         clkMax = maxClock;
     }
-
     const MiscTimings g_misc_table[] = {
         {1'866'000, 1, 0x20, 0x9, },
         {2'133'000, 1, 0x24, 0xA, },
