@@ -41,7 +41,7 @@ class BaseGui : public tsl::Gui
     public:
         BaseGui() {}
         ~BaseGui() {}
-         virtual void preDraw(tsl::gfx::Renderer* renderer);
+        virtual void preDraw(tsl::gfx::Renderer* renderer);
         void update() override;
         tsl::elm::Element* createUI() override;
         virtual tsl::elm::Element* baseUI() = 0;
