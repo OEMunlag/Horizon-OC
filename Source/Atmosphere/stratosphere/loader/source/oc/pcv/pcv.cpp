@@ -157,7 +157,7 @@ void SafetyCheck() {
 
     for (auto& i : validators) {
         if (R_FAILED(i.check()))
-            CRASH("Triggered");
+            CRASH("Validation FAIL");
     }
 }
 
