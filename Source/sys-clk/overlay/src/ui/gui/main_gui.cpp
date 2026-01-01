@@ -45,7 +45,7 @@ void MainGui::listUI()
     //     this->lastContextUpdate = armGetSystemTick();
     //     this->context->enabled = state;
     // });
-    // this->listElement->addItem(this->enabledToggle);
+//    this->listElement->addItem(this->enabledToggle);
 
     tsl::elm::ListItem* appProfileItem = new tsl::elm::ListItem("Edit App Profile");
     appProfileItem->setClickListener([this](u64 keys) {
