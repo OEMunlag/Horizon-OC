@@ -43,7 +43,7 @@ std::string getVersionString() {
     char buf[0x100] = "";
     Result rc = sysclkIpcGetVersionString(buf, sizeof(buf));
     if (R_FAILED(rc) || buf[0] == '\0') {
-        return "HorizonOC-Misc";
+        return "Unknown";
     }
     return std::string(buf);
 }

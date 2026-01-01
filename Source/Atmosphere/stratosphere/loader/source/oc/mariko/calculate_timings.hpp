@@ -17,7 +17,5 @@
 #pragma once
 
 namespace ams::ldr::oc::pcv::mariko {
-
-    void CalculateTimings();
-
+    void CalculateTimings(u32 rate_khz);
 }
