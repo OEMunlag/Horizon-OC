@@ -35,7 +35,7 @@ enum MtcConfig: u32 {
 };
 
 enum TableConfig: u32 {
-    AUTO = 0, /* Auto is not supported yet. */
+    AUTO_DEPRECATED = 0,
     DEFAULT_TABLE = 1,
     TBREAK_1581 = 2,
     TBREAK_1683 = 3,

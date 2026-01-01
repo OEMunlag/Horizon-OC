@@ -5,6 +5,8 @@
  *
  * Copyright (c) Souldbminer and Horizon OC Contributors
  *
+ * Copyright (c) 2025 Lightos_
+ *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
  * version 2, as published by the Free Software Foundation.
@@ -302,7 +304,7 @@ namespace ams::ldr::oc::pcv {
 
         if (isMariko) {
             switch (C.tableConf) {
-                case AUTO:
+                case AUTO_DEPRECATED:
                 case TBREAK_1683: {
                     customize_table = const_cast<cvb_entry_t *>(C.marikoCpuDvfsTable1683Tbreak);
                     break;
