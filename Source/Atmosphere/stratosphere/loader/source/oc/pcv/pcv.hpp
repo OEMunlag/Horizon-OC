@@ -5,8 +5,6 @@
  *
  * Copyright (c) Souldbminer and Horizon OC Contributors
  *
- * Copyright (c) 2025 Lightos_
- *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
  * version 2, as published by the Free Software Foundation.
@@ -58,9 +56,7 @@ namespace ams::ldr::oc::pcv {
         static const s32 cpuVoltagePatchOffsets[] = {  -2, -1,    5,    6,   7,    8, 9 };
         static_assert(sizeof(cpuVoltagePatchValues) == sizeof(cpuVoltagePatchOffsets), "Invalid cpuVoltagePatch size");
 
-        static const u32 cpuVoltageSecondaryPatchValues[] = { 800, 1120, 0, 800, 1120, 0, 620, 1120, 20000, 620, 1120, 70000, 950, 1132, 0, 950 };
-        static const s32 cpuVoltageSecondaryPatchOffsets[] = { -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-        static_assert(sizeof(cpuVoltageSecondaryPatchValues) == sizeof(cpuVoltageSecondaryPatchOffsets), "Invalid secondary cpuVoltagePatch size");
+        static const u32 cpuVoltThermalData[] = { 620, 1120, 20000, 620, 1120, 70000, 950, 1132, 0, 950, 1227, 0 };
 
         static const u32 allowedCpuMaxFrequencies[] = { 2'397'000, 2'499'000, 2'601'000, 2'703'000, };
 
@@ -336,13 +332,7 @@ namespace ams::ldr::oc::pcv {
         }
 
         u32 cpu_max_volt = isMariko ? C.marikoCpuMaxVolt : C.eristaCpuMaxVolt;
-        u32 cpu_freq_threshold = 1020'000;
-
-        if (isMariko) {
-            cpu_freq_threshold = 2193'000;
-        } else {
-            cpu_freq_threshold = 2091'000;
-        }
+        u32 cpu_freq_threshold = 2091'000;
 
         size_t default_entry_count = GetDvfsTableEntryCount(default_table);
         size_t default_table_size = default_entry_count * sizeof(cvb_entry_t);

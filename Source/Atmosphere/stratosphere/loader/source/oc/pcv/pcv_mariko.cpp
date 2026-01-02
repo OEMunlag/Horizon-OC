@@ -147,7 +147,6 @@ namespace ams::ldr::oc::pcv::mariko {
     }
 
     Result CpuVoltDVFS(u32 *ptr) {
-        /* Check first pattern. */
         if (MatchesPattern(ptr, cpuVoltagePatchOffsets, cpuVoltagePatchValues)) {
             if (C.marikoCpuLowVmin) {
                 PATCH_OFFSET(ptr, C.marikoCpuLowVmin);
@@ -164,25 +163,27 @@ namespace ams::ldr::oc::pcv::mariko {
             R_SUCCEED();
         }
 
-        /* Check alternative pattern. */
-        if (MatchesPattern(ptr, cpuVoltageSecondaryPatchOffsets, cpuVoltageSecondaryPatchValues)) {
-            if (C.marikoCpuLowVmin) {
-                PATCH_OFFSET(ptr,     C.marikoCpuLowVmin);
-                PATCH_OFFSET(ptr + 3, C.marikoCpuLowVmin);
-            }
+        R_THROW(ldr::ResultInvalidCpuMinVolt());
+    }
 
-            if (C.marikoCpuMaxVolt) {
-                PATCH_OFFSET(ptr - 2, C.marikoCpuMaxVolt);
-                PATCH_OFFSET(ptr + 1, C.marikoCpuMaxVolt);
-                PATCH_OFFSET(ptr + 4, C.marikoCpuMaxVolt);
-                PATCH_OFFSET(ptr - 5, C.marikoCpuMaxVolt);
-            }
-
-            R_SUCCEED();
+    Result CpuVoltThermals(u32 *ptr) {
+        if (std::memcmp(ptr, cpuVoltThermalData, sizeof(cpuVoltThermalData))) {
+            R_THROW(ldr::ResultInvalidCpuMinVolt());
         }
 
-        /* Both patterns fail. */
-        R_THROW(ldr::ResultInvalidCpuMinVolt());
+        if (C.marikoCpuLowVmin) {
+            PATCH_OFFSET(ptr,     C.marikoCpuLowVmin);
+            PATCH_OFFSET(ptr + 3, C.marikoCpuLowVmin);
+        }
+
+        if (C.marikoCpuMaxVolt) {
+            PATCH_OFFSET(ptr - 2, C.marikoCpuMaxVolt);
+            PATCH_OFFSET(ptr - 5, C.marikoCpuMaxVolt);
+            PATCH_OFFSET(ptr + 1, C.marikoCpuMaxVolt);
+            PATCH_OFFSET(ptr + 4, C.marikoCpuMaxVolt);
+        }
+
+        R_SUCCEED();
     }
 
     Result CpuVoltDfll(u32 *ptr) {
@@ -562,25 +563,25 @@ namespace ams::ldr::oc::pcv::mariko {
         const u32 allowance4 = static_cast<u32>(0x9600  / (C.marikoEmcMaxClock / 0x3E8)) & 0xFF;
         const u32 allowance5 = static_cast<u32>(0x8980  / (C.marikoEmcMaxClock / 0x3E8)) & 0xFF;
 
-        table->la_scale_regs.mc_latency_allowance_xusb_0 = (table->la_scale_regs.mc_latency_allowance_xusb_0 & MaskHigh) | (allowance1 << 16);
-        table->la_scale_regs.mc_latency_allowance_xusb_1 = (table->la_scale_regs.mc_latency_allowance_xusb_1 & MaskHigh) | (allowance1 << 16);
-        table->la_scale_regs.mc_latency_allowance_tsec_0 = (table->la_scale_regs.mc_latency_allowance_tsec_0 & MaskHigh) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_xusb_0    = (table->la_scale_regs.mc_latency_allowance_xusb_0 & MaskHigh) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_xusb_1    = (table->la_scale_regs.mc_latency_allowance_xusb_1 & MaskHigh) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_tsec_0    = (table->la_scale_regs.mc_latency_allowance_tsec_0 & MaskHigh) | (allowance1 << 16);
         table->la_scale_regs.mc_latency_allowance_sdmmcaa_0 = (table->la_scale_regs.mc_latency_allowance_sdmmcaa_0 & MaskHigh) | (allowance1 << 16);
         table->la_scale_regs.mc_latency_allowance_sdmmcab_0 = (table->la_scale_regs.mc_latency_allowance_sdmmcab_0 & MaskHigh) | (allowance1 << 16);
-        table->la_scale_regs.mc_latency_allowance_sdmmc_0 = (table->la_scale_regs.mc_latency_allowance_sdmmc_0 & MaskHigh) | (allowance1 << 16);
-        table->la_scale_regs.mc_latency_allowance_sdmmca_0 = (table->la_scale_regs.mc_latency_allowance_sdmmca_0 & MaskHigh) | (allowance1 << 16);
-        table->la_scale_regs.mc_latency_allowance_ppcs_1 = (table->la_scale_regs.mc_latency_allowance_ppcs_1 & MaskHigh) | (allowance1 << 16);
-        table->la_scale_regs.mc_latency_allowance_nvdec_0 = (table->la_scale_regs.mc_latency_allowance_nvdec_0 & MaskHigh) | (allowance1 << 16);
-        table->la_scale_regs.mc_latency_allowance_mpcore_0 = (table->la_scale_regs.mc_latency_allowance_mpcore_0 & MaskHigh) | (allowance1 << 16);
-        table->la_scale_regs.mc_latency_allowance_avpc_0 = (table->la_scale_regs.mc_latency_allowance_avpc_0 & MaskHigh) | (allowance1 << 16);
-        table->la_scale_regs.mc_latency_allowance_vic_0 = allowance3 | (table->la_scale_regs.mc_latency_allowance_vic_0 & Mask3) | (allowance1 << 16);
-        table->la_scale_regs.mc_latency_allowance_isp2_1 = (table->la_scale_regs.mc_latency_allowance_isp2_1 & Mask3) | (allowance1 << 16) | allowance1;
-        table->la_scale_regs.mc_latency_allowance_nvenc_0 = allowance4 | (table->la_scale_regs.mc_latency_allowance_nvenc_0 & Mask3) | (allowance1 << 16);
-        table->la_scale_regs.mc_latency_allowance_hc_0 = (table->la_scale_regs.mc_latency_allowance_hc_0 & Mask2) | allowance5;
-        table->la_scale_regs.mc_latency_allowance_gpu_0 = allowance2 | (table->la_scale_regs.mc_latency_allowance_gpu_0 & Mask3) | (allowance1 << 16);
-        table->la_scale_regs.mc_latency_allowance_gpu2_0 = allowance2 | (table->la_scale_regs.mc_latency_allowance_gpu2_0 & Mask3) | (allowance1 << 16);
-        table->la_scale_regs.mc_latency_allowance_hc_1 = (table->la_scale_regs.mc_latency_allowance_hc_1 & Mask2) | allowance1;
-        table->la_scale_regs.mc_latency_allowance_vi2_0 = (table->la_scale_regs.mc_latency_allowance_vi2_0 & Mask2) | allowance1;
+        table->la_scale_regs.mc_latency_allowance_sdmmc_0   = (table->la_scale_regs.mc_latency_allowance_sdmmc_0 & MaskHigh) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_sdmmca_0  = (table->la_scale_regs.mc_latency_allowance_sdmmca_0 & MaskHigh) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_ppcs_1    = (table->la_scale_regs.mc_latency_allowance_ppcs_1 & MaskHigh) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_nvdec_0   = (table->la_scale_regs.mc_latency_allowance_nvdec_0 & MaskHigh) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_mpcore_0  = (table->la_scale_regs.mc_latency_allowance_mpcore_0 & MaskHigh) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_avpc_0    = (table->la_scale_regs.mc_latency_allowance_avpc_0 & MaskHigh) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_vic_0     = allowance3 | (table->la_scale_regs.mc_latency_allowance_vic_0 & Mask3) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_isp2_1    = (table->la_scale_regs.mc_latency_allowance_isp2_1 & Mask3) | (allowance1 << 16) | allowance1;
+        table->la_scale_regs.mc_latency_allowance_nvenc_0   = allowance4 | (table->la_scale_regs.mc_latency_allowance_nvenc_0 & Mask3) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_hc_0      = (table->la_scale_regs.mc_latency_allowance_hc_0 & Mask2) | allowance5;
+        table->la_scale_regs.mc_latency_allowance_gpu_0     = allowance2 | (table->la_scale_regs.mc_latency_allowance_gpu_0 & Mask3) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_gpu2_0    = allowance2 | (table->la_scale_regs.mc_latency_allowance_gpu2_0 & Mask3) | (allowance1 << 16);
+        table->la_scale_regs.mc_latency_allowance_hc_1      = (table->la_scale_regs.mc_latency_allowance_hc_1 & Mask2) | allowance1;
+        table->la_scale_regs.mc_latency_allowance_vi2_0     = (table->la_scale_regs.mc_latency_allowance_vi2_0 & Mask2) | allowance1;
 
         table->dram_timings.t_rp = tRFCpb;
         table->dram_timings.t_rfc = tRFCab;
@@ -1008,10 +1009,11 @@ namespace ams::ldr::oc::pcv::mariko {
         PatcherEntry<u32> patches[] = {
             {"CPU Freq Vdd", &CpuFreqVdd, 1, nullptr, CpuClkOSLimit},
             {"CPU Freq Table", CpuFreqCvbTable<true>, 1, nullptr, CpuCvbDefaultMaxFreq},
-            {"CPU Volt DVFS", &CpuVoltDVFS, 2, nullptr, CpuVminOfficial},
+            {"CPU Volt DVFS", &CpuVoltDVFS, 1, nullptr, CpuVminOfficial},
+            {"CPU Volt Thermals", &CpuVoltThermals, 1, nullptr, CpuVminOfficial},
             {"CPU Volt Dfll", &CpuVoltDfll, 1, nullptr, 0x0000FFCF},
             {"GPU Volt DVFS", &GpuVoltDVFS, 1, nullptr, GpuVminOfficial},
-            {"Gpu Volt Thermals", &GpuVoltThermals, 1, nullptr, GpuVminOfficial},
+            {"GPU Volt Thermals", &GpuVoltThermals, 1, nullptr, GpuVminOfficial},
             {"GPU Freq Table", GpuFreqCvbTable<true>, 1, nullptr, GpuCvbDefaultMaxFreq},
             {"GPU Freq Asm", &GpuFreqMaxAsm, 2, &GpuMaxClockPatternFn},
             {"GPU PLL Max", &GpuFreqPllMax, 1, nullptr, GpuClkPllMax},

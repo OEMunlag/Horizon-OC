@@ -168,7 +168,7 @@ void Patch(uintptr_t mapped_nso, size_t nso_size) {
     if (isMariko)
         mariko::Patch(mapped_nso, nso_size);
     else
-        erista::Patch(mapped_nso, nso_size);
+        mariko::Patch(mapped_nso, nso_size);
     #endif
 }
 
