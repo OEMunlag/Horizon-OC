@@ -100,13 +100,27 @@ ClockManager::ClockManager()
         -2
     );
     
-
-        
 	threadStart(&governorTHREAD);
+    FixCpuBug();
 
     this->context->speedos[HorizonOCSpeedo_CPU] = Board::getCPUSpeedo();
     this->context->speedos[HorizonOCSpeedo_GPU] = Board::getGPUSpeedo();
     this->context->speedos[HorizonOCSpeedo_SOC] = Board::getSOCSpeedo();
+
+}
+
+void ClockManager::FixCpuBug() {
+    Board::SetHz(SysClkModule_CPU, 1785000000); // this will just set to the max when kip is unloaded so idgaf
+    svcSleepThread(5'000'000);
+    Board::SetHz(SysClkModule_CPU, 1963000000);
+    svcSleepThread(5'000'000);
+    Board::SetHz(SysClkModule_CPU, 2091000000);
+    svcSleepThread(5'000'000);
+    Board::SetHz(SysClkModule_CPU, 2397000000);
+    svcSleepThread(5'000'000);
+    Board::SetHz(SysClkModule_CPU, 1020000000);
+    svcSleepThread(5'000'000);
+    ResetToStockClocks();
 }
 
 ClockManager::~ClockManager()
