@@ -64,6 +64,8 @@ typedef enum {
 
     HorizonOCConfigValue_OverwriteRefreshRate,
 
+    HocClkConfigValue_FixCpuVoltBug,
+
     KipConfigValue_custRev,
     KipConfigValue_mtcConf,
     KipConfigValue_hpMode,
@@ -235,6 +237,9 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
         case HorizonOCConfigValue_OverwriteRefreshRate:
             return pretty ? "Display Refresh Rate Changing" : "drr_changing";
 
+        case HocClkConfigValue_FixCpuVoltBug:
+            return pretty ? "Fix CPU Volt Bug" : "cpu_volt_bugfix";
+
         // KIP config values
         case KipConfigValue_custRev:
             return pretty ? "Custom Revision" : "kip_cust_rev";
@@ -403,6 +408,8 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
         case HocClkConfigValue_UncappedClocks:
         case HocClkConfigValue_OverwriteBoostMode:
         case HocClkConfigValue_KipFileName:
+        case HorizonOCConfigValue_BatteryChargeCurrent:
+        case HorizonOCConfigValue_OverwriteRefreshRate:
             return 0ULL;
         case HocClkConfigValue_EristaMaxCpuClock:
             return 1785ULL;
@@ -422,6 +429,7 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
         case HocClkConfigValue_HandheldTDP:
         case HocClkConfigValue_EnforceBoardLimit:
         case HocClkConfigValue_KipEditing:
+        case HocClkConfigValue_FixCpuVoltBug:
             return 1ULL;
         case HocClkConfigValue_ThermalThrottleThreshold:
             return 70ULL;
@@ -429,9 +437,6 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
             return 8600ULL;
         case HocClkConfigValue_LiteTDPLimit:
             return 6400ULL;
-        case HorizonOCConfigValue_BatteryChargeCurrent:
-        case HorizonOCConfigValue_OverwriteRefreshRate:
-            return 0ULL;
         default:
             return 0ULL;
     }
@@ -465,6 +470,7 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case HocClkConfigValue_KipEditing:
         case HocClkConfigValue_KipFileName:
         case HorizonOCConfigValue_OverwriteRefreshRate:
+        case HocClkConfigValue_FixCpuVoltBug:
             return (input & 0x1) == input;
         
         case KipConfigValue_custRev:

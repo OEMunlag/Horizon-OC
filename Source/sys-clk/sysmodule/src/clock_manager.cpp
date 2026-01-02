@@ -101,7 +101,6 @@ ClockManager::ClockManager()
     );
     
 	threadStart(&governorTHREAD);
-    FixCpuBug();
 
     this->context->speedos[HorizonOCSpeedo_CPU] = Board::getCPUSpeedo();
     this->context->speedos[HorizonOCSpeedo_GPU] = Board::getGPUSpeedo();
@@ -111,16 +110,33 @@ ClockManager::ClockManager()
 
 void ClockManager::FixCpuBug() {
     Board::SetHz(SysClkModule_CPU, 1785000000); // this will just set to the max when kip is unloaded so idgaf
-    svcSleepThread(5'000'000);
     Board::SetHz(SysClkModule_CPU, 1963000000);
-    svcSleepThread(5'000'000);
     Board::SetHz(SysClkModule_CPU, 2091000000);
-    svcSleepThread(5'000'000);
     Board::SetHz(SysClkModule_CPU, 2397000000);
-    svcSleepThread(5'000'000);
     Board::SetHz(SysClkModule_CPU, 1020000000);
-    svcSleepThread(5'000'000);
     ResetToStockClocks();
+    u32 targetHz = 0;
+    u32 maxHz = 0;
+    u32 nearestHz = 0;
+    targetHz = this->context->overrideFreqs[SysClkModule_CPU];
+    if (!targetHz)
+    {
+        targetHz = this->config->GetAutoClockHz(this->context->applicationId, SysClkModule_CPU, this->context->profile, false);
+        if(!targetHz)
+            targetHz = this->config->GetAutoClockHz(GLOBAL_PROFILE_ID, SysClkModule_CPU, this->context->profile, false);
+    }
+
+    if (targetHz)
+    {
+        maxHz = this->GetMaxAllowedHz(SysClkModule_CPU, this->context->profile);
+        nearestHz = this->GetNearestHz(SysClkModule_CPU, targetHz, maxHz);
+
+        if (nearestHz != this->context->freqs[SysClkModule_CPU] && this->context->enabled) {
+
+            Board::SetHz(SysClkModule_CPU, nearestHz);
+            this->context->freqs[SysClkModule_CPU] = nearestHz;
+        }
+    }
 }
 
 ClockManager::~ClockManager()
@@ -387,6 +403,8 @@ void ClockManager::GovernorThread(void* arg)
     }
 }
 
+bool prevBoostMode = true;
+
 void ClockManager::Tick()
 {
     std::scoped_lock lock{this->contextMutex};
@@ -401,12 +419,12 @@ void ClockManager::Tick()
 
     if(this->config->GetConfigValue(HocClkConfigValue_HandheldTDP) && opMode == AppletOperationMode_Handheld) {
         if(Board::GetConsoleType() == HorizonOCConsoleType_Lite) {
-            if(Board::GetPowerMw(SysClkPowerSensor_Now) < -(int)this->config->GetConfigValue(HocClkConfigValue_LiteTDPLimit)) {
+            if(Board::GetPowerMw(SysClkPowerSensor_Avg) < -(int)this->config->GetConfigValue(HocClkConfigValue_LiteTDPLimit)) {
                 ResetToStockClocks();
                 return;
             }
         } else {
-            if(Board::GetPowerMw(SysClkPowerSensor_Now) < -(int)this->config->GetConfigValue(HocClkConfigValue_HandheldTDPLimit)) {
+            if(Board::GetPowerMw(SysClkPowerSensor_Avg) < -(int)this->config->GetConfigValue(HocClkConfigValue_HandheldTDPLimit)) {
                 ResetToStockClocks();
                 return;
             }
@@ -417,6 +435,14 @@ void ClockManager::Tick()
         ResetToStockClocks();
         return;
     }
+    bool isBoost = apmExtIsBoostMode(mode);
+
+    if (prevBoostMode && !isBoost) {
+        if(this->config->GetConfigValue(HocClkConfigValue_FixCpuVoltBug))
+            FixCpuBug();
+    }
+
+    prevBoostMode = isBoost;
 
     bool noGPU = false;
 
