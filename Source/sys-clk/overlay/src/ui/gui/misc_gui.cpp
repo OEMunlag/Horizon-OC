@@ -742,7 +742,7 @@ protected:
             );
         } else {
             std::vector<NamedValue> marikoTableConf = {
-                NamedValue("Auto", 0),
+                // NamedValue("Auto", 0),
                 NamedValue("Default", 1),
                 NamedValue("1581MHz Tbreak", 2),
                 NamedValue("1683MHz Tbreak", 3),
