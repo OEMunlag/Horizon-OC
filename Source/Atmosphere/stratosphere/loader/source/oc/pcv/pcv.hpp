@@ -300,7 +300,6 @@ namespace ams::ldr::oc::pcv {
 
         if (isMariko) {
             switch (C.tableConf) {
-                case AUTO_DEPRECATED:
                 case TBREAK_1683: {
                     customize_table = const_cast<cvb_entry_t *>(C.marikoCpuDvfsTable1683Tbreak);
                     break;
