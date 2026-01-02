@@ -18,11 +18,7 @@
 #include "timing_tables.hpp"
 
 namespace ams::ldr::oc::pcv::mariko {
-    u32 clkMax;
 
-    void SetTableMaxClock(u32 maxClock) {
-        clkMax = maxClock;
-    }
     const MiscTimings g_misc_table[] = {
         {1'866'000, 1, 0x20, 0x9, },
         {2'133'000, 1, 0x24, 0xA, },
@@ -69,7 +65,7 @@ namespace ams::ldr::oc::pcv::mariko {
 
     const ReplacePatch *FindRext() {
         for (u32 i = 0; i < g_rext_table_size; i++)
-            if (g_rext_table[i].freq == clkMax)
+            if (g_rext_table[i].freq == C.marikoEmcMaxClock)
                 return &g_rext_table[i];
         return nullptr;
     }
@@ -96,7 +92,7 @@ namespace ams::ldr::oc::pcv::mariko {
 
     const AdjustPatch *FindIbdlyPatch() {
         for (u32 i = 0; i < g_ibdly_table_size; i++)
-            if (g_ibdly_patches[i].freq == clkMax)
+            if (g_ibdly_patches[i].freq == C.marikoEmcMaxClock)
                 return &g_ibdly_patches[i];
         return nullptr;
     }
@@ -129,7 +125,7 @@ namespace ams::ldr::oc::pcv::mariko {
 
     const AdjustPatch *FindObdlyPatch() {
         for (u32 i = 0; i < g_obdly_table_size; i++)
-            if (g_obdly_patches[i].freq == clkMax)
+            if (g_obdly_patches[i].freq == C.marikoEmcMaxClock)
                 return &g_obdly_patches[i];
         return nullptr;
     }
@@ -147,7 +143,7 @@ namespace ams::ldr::oc::pcv::mariko {
 
     const AdjustPatch *FindTR2WPatch() {
         for (u32 i = 0; i < g_tr2w_table_size; i++)
-            if (g_tr2w_patches[i].freq == clkMax)
+            if (g_tr2w_patches[i].freq == C.marikoEmcMaxClock)
                 return &g_tr2w_patches[i];
         return nullptr;
     }
@@ -182,7 +178,7 @@ namespace ams::ldr::oc::pcv::mariko {
 
     const AdjustPatch *FindQrstPatch() {
         for (u32 i = 0; i < g_qrst_table_size; i++)
-            if (g_qrst_patches[i].freq == clkMax)
+            if (g_qrst_patches[i].freq == C.marikoEmcMaxClock)
                 return &g_qrst_patches[i];
         return nullptr;
     }
@@ -213,7 +209,7 @@ namespace ams::ldr::oc::pcv::mariko {
 
     const AdjustPatch *FindQsafePatch() {
         for (u32 i = 0; i < g_qsafe_table_size; i++)
-            if (g_qsafe_patches[i].freq == clkMax)
+            if (g_qsafe_patches[i].freq == C.marikoEmcMaxClock)
                 return &g_qsafe_patches[i];
         return nullptr;
     }
@@ -238,7 +234,7 @@ namespace ams::ldr::oc::pcv::mariko {
 
     const AdjustPatch *FindPdex2rwPatch() {
         for (u32 i = 0; i < g_pdex2rw_table_size; i++)
-            if (g_pdex2rw_patches[i].freq == clkMax)
+            if (g_pdex2rw_patches[i].freq == C.marikoEmcMaxClock)
                 return &g_pdex2rw_patches[i];
         return nullptr;
     }
@@ -264,7 +260,7 @@ namespace ams::ldr::oc::pcv::mariko {
 
     const AdjustPatch *FindCke2pdenPatch() {
         for (u32 i = 0; i < g_cke2pden_table_size; i++)
-            if (g_cke2pden_patches[i].freq == clkMax)
+            if (g_cke2pden_patches[i].freq == C.marikoEmcMaxClock)
                 return &g_cke2pden_patches[i];
         return nullptr;
     }
