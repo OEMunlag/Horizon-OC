@@ -57,7 +57,7 @@ It enables advanced CPU, GPU, and RAM tuning with user-friendly configuration to
 
    ```
    kip1=atmosphere/kips/hoc.kip
-   secmon=secmon_patch_ams_x_xx_x.bin
+   secmon=exosphere.bin
    ```
 
    *(No changes needed if using fusee.)*
