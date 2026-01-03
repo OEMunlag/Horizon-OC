@@ -52,6 +52,7 @@ Result sysclkIpcSetReverseNXRTMode(ReverseNXMode mode);
 Result hocClkIpcSetKipData();
 Result hocClkIpcGetKipData();
 Result hocClkIpcUpdateEmcRegs();
+Result hocClkIpcCalculateGpuVmin();
 
 static inline Result sysclkIpcRemoveOverride(SysClkModule module)
 {

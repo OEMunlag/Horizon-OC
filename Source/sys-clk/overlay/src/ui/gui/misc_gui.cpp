@@ -886,6 +886,19 @@ protected:
                 false
             );
 
+            tsl::elm::ListItem* vminCalcBtn = new tsl::elm::ListItem("Calculate GPU Vmin");
+            vminCalcBtn->setClickListener([this](u64 keys) {
+                if (keys & HidNpadButton_A) {
+                    Result rc = hocClkIpcCalculateGpuVmin();
+                    if (R_FAILED(rc)) {
+                        FatalGui::openWithResultCode("hocClkIpcCalculateGpuVmin", rc);
+                        return false;
+                    }
+                    return true;
+                }
+                return false;
+            });
+
             addConfigButton(
                 KipConfigValue_marikoGpuVmin,
                 "GPU VMIN",

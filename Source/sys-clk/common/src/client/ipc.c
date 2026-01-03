@@ -176,3 +176,8 @@ Result hocClkIpcUpdateEmcRegs()
     u32 temp = 0;
     return serviceDispatchIn(&g_sysclkSrv, HocClkIpcCmd_UpdateEmcRegs, temp);
 }
+Result hocClkIpcCalculateGpuVmin()
+{
+    u32 temp = 0;
+    return serviceDispatchIn(&g_sysclkSrv, HocClkIpcCmd_CalculateGpuVmin, temp);
+}

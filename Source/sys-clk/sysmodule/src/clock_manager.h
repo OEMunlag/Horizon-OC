@@ -68,6 +68,10 @@ class ClockManager
       std::uint32_t count;
       std::uint32_t list[SYSCLK_FREQ_LIST_MAX];
     } freqTable[SysClkModule_EnumMax];
+    int GetSpeedoBracket (int speedo);
+    unsigned int GetGpuVoltage (unsigned int freq, int speedo);
+    void calculateGpuVmin(void);
+
   protected:
     bool IsAssignableHz(SysClkModule module, std::uint32_t hz);
     std::uint32_t GetMaxAllowedHz(SysClkModule module, SysClkProfile profile);

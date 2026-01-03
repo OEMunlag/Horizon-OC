@@ -58,6 +58,7 @@ class IpcService
     Result SetKipData();
     Result GetKipData();
     Result UpdateEmcRegs();
+    Result CalculateGPUVmin();
     bool running;
     Thread thread;
     LockableMutex threadMutex;
