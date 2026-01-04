@@ -40,13 +40,13 @@ typedef enum
 
 typedef enum
 {
-    HorizonOCConsoleType_Unknown = 0,
-    HorizonOCConsoleType_V1,
-    HorizonOCConsoleType_UnreleasedErista,
-    HorizonOCConsoleType_V2,
-    HorizonOCConsoleType_Lite,
-    HorizonOCConsoleType_UnreleasedMariko,
-    HorizonOCConsoleType_OLED,
+    HorizonOCConsoleType_Unknown = 0, ///< Invalid Model
+    HorizonOCConsoleType_V1      = 1, ///< Erista Model
+    HorizonOCConsoleType_UnreleasedErista  = 2, ///< Erista "Simulation" Model
+    HorizonOCConsoleType_V2    = 3, ///< Mariko Model
+    HorizonOCConsoleType_Lite    = 4, ///< Mariko Lite Model
+    HorizonOCConsoleType_UnreleasedMariko  = 5, ///< Mariko "Simulation" Model
+    HorizonOCConsoleType_OLED    = 6, ///< Mariko OLED Model
     HorizonOCConsoleType_EnumMax,
 } HorizonOCConsoleType;
 
@@ -216,7 +216,7 @@ static inline const char* hocClkFormatVoltage(HocClkVoltage voltage, bool pretty
         case HocClkVoltage_SOC:
             return pretty ? "SOC" : "soc";
         case HocClkVoltage_Display:
-            return pretty ? "SOC" : "soc";
+            return pretty ? "Display" : "display";
         default:
             return NULL;
     }
