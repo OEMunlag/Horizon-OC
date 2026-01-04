@@ -670,7 +670,7 @@ bool ClockManager::RefreshContext()
         FileUtils::WriteContextToCsv(this->context);
     }
 
-    if(this->context->profile == SysClkProfile_Docked && !Board::GetConsoleType() == HorizonOCConsoleType_Lite)
+    if(this->context->profile == SysClkProfile_Docked && Board::GetConsoleType() != HorizonOCConsoleType_Lite)
         this->context->maxDisplayFreq = Board::GetHighestDockedDisplayRate();
     else
         this->context->maxDisplayFreq = 60;
