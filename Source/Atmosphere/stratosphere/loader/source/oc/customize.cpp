@@ -342,7 +342,7 @@ volatile CustomizeTable C = {
     { 2397000, { 1490873, -34955, 113, }, { CPU_MAX_MAX_VOLT, } },
     { 2499000, { 1580725, -35815, 113, }, { CPU_MAX_MAX_VOLT, } },
     { 2601000, { 1702903, -36675, 113, }, { CPU_MAX_MAX_VOLT, } },
-    { 2703000, { 1770375, -37515, 113, }, { CPU_MAX_MAX_VOLT, } },
+    { 2703000, { 1775375, -37515, 113, }, { CPU_MAX_MAX_VOLT, } },
 },
 
 .eristaGpuDvfsTable = {
