@@ -1,4 +1,3 @@
-// display_refresh_rate.h
 #ifndef DISPLAY_REFRESH_RATE_H
 #define DISPLAY_REFRESH_RATE_H
 
@@ -109,9 +108,6 @@ typedef struct {
     bool displaySyncDockedOutOfFocus60;
 } DisplayRefreshConfig;
 
-// Callback types for hardware access (compatible with libnx Result types)
-
-// Public API functions
 bool DisplayRefresh_Initialize(const DisplayRefreshConfig* config);
 bool DisplayRefresh_SetRate(uint32_t new_refreshRate);
 bool DisplayRefresh_GetRate(uint32_t* out_refreshRate, bool internal);

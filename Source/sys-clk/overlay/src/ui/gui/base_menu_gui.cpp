@@ -39,7 +39,9 @@ BaseMenuGui::BaseMenuGui() : tempColors{ tsl::Color(0), tsl::Color(0), tsl::Colo
     
     
     // Pre-cache hardware model during initialization
+    IsAula();
     IsMariko();
+    IsHoag();
     
     // Initialize display strings
     memset(displayStrings, 0, sizeof(displayStrings));

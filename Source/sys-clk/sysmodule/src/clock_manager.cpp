@@ -484,7 +484,7 @@ void ClockManager::Tick()
                 isGovernorEnabled = newGovernorState;
             }
             
-            if(module == HorizonOCModule_Display && this->config->GetConfigValue(HorizonOCConfigValue_OverwriteRefreshRate)) {
+            if(module == HorizonOCModule_Display && this->config->GetConfigValue(HorizonOCConfigValue_OverwriteRefreshRate) && Board::GetConsoleType() != HorizonOCConsoleType_Lite) {
                 if(targetHz)
                     Board::SetHz(HorizonOCModule_Display, targetHz);
                 else
@@ -670,7 +670,7 @@ bool ClockManager::RefreshContext()
         FileUtils::WriteContextToCsv(this->context);
     }
 
-    if(this->context->profile == SysClkProfile_Docked)
+    if(this->context->profile == SysClkProfile_Docked && !Board::GetConsoleType() == HorizonOCConsoleType_Lite)
         this->context->maxDisplayFreq = Board::GetHighestDockedDisplayRate();
     else
         this->context->maxDisplayFreq = 60;

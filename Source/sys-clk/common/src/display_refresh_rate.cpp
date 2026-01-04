@@ -1,4 +1,3 @@
-// display_refresh_rate.c
 #include "display_refresh_rate.h"
 #include <string.h>
 #include <math.h>
@@ -111,7 +110,6 @@ static void _changeOledElvssSettings(const uint32_t* offsets, const uint32_t* va
     svcSleepThread(20000000);
 }
 
-// Public API Implementation
 
 bool DisplayRefresh_Initialize(const DisplayRefreshConfig* config) {
     if (!config) return false;
@@ -571,7 +569,7 @@ bool DisplayRefresh_SetRate(uint32_t new_refreshRate) {
     uint32_t fd = 0;
     
     if (g_config.isLite && g_config.isPossiblySpoofedRetro) {
-        g_config.isRetroSUPER = false; // Would check flag file here in original
+        g_config.isRetroSUPER = false; // Would check flag file here in original, but i dont care lol
     }
     
     if (g_config.isRetroSUPER && !g_config.isDocked) {

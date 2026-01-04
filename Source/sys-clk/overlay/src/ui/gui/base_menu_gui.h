@@ -41,17 +41,39 @@ class BaseMenuGui : public BaseGui
         SysClkConfigValueList* configList;
         bool g_hardwareModelCached = false;
         bool g_isMariko = false;
-
-        bool IsMariko() {
+        bool g_isAula = false;
+        bool g_isHoag = false;
+        SetSysProductModel HWmodel;
+        
+        bool IsAula() {
             if (!g_hardwareModelCached) {
-                SetSysProductModel model = SetSysProductModel_Invalid;
-                setsysGetProductModel(&model);
-                g_isMariko = (model == SetSysProductModel_Iowa || 
-                            model == SetSysProductModel_Hoag || 
-                            model == SetSysProductModel_Calcio || 
-                            model == SetSysProductModel_Aula);
+                SetSysProductModel HWmodel = SetSysProductModel_Invalid;
+                setsysGetProductModel(&HWmodel);
                 g_hardwareModelCached = true;
             }
+            g_isAula = (HWmodel == SetSysProductModel_Aula);
+            return g_isAula;
+        }
+        bool IsHoag() {
+            if (!g_hardwareModelCached) {
+                SetSysProductModel HWmodel = SetSysProductModel_Invalid;
+                setsysGetProductModel(&HWmodel);
+                g_hardwareModelCached = true;
+            }
+            g_isHoag = (HWmodel == SetSysProductModel_Hoag);
+            return g_isHoag;
+        }
+        bool IsMariko() {
+            if (!g_hardwareModelCached) {
+                SetSysProductModel HWmodel = SetSysProductModel_Invalid;
+                setsysGetProductModel(&HWmodel);
+                g_hardwareModelCached = true;
+            }
+            g_isMariko = (HWmodel == SetSysProductModel_Iowa || 
+            HWmodel == SetSysProductModel_Hoag || 
+            HWmodel == SetSysProductModel_Calcio || 
+            HWmodel == SetSysProductModel_Aula);
+
             return g_isMariko;
         }
 
