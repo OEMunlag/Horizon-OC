@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2023 KazushiMe
+ * Licensed under the GPLv2
+ */
+
 #include "i2c.h"
 
 Result I2cSet_U8(I2cDevice dev, u8 reg, u8 val) {

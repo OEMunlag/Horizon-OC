@@ -25,6 +25,7 @@ SOURCES		:=	src src/ui/gui src/ui/elements ../common/src ../common/src/client
 DATA		:=	data
 INCLUDES	:=	../common/include
 EXEFS_SRC	:=	exefs_src
+IS_MINIMAL	:=	0
 
 APP_TITLE	:=	Horizon OC
 NO_ICON		:=	1

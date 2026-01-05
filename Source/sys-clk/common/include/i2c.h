@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2023 KazushiMe
+ * Licensed under the GPLv2
+ */
+
 #pragma once
 
 #include <switch.h>

@@ -97,18 +97,19 @@ void MainGui::listUI()
         return false;
     });
     this->listElement->addItem(miscItem);
+    #ifndef IS_MINIMAL
+        tsl::elm::ListItem* infoItem = new tsl::elm::ListItem("Information");
+        infoItem->setClickListener([this](u64 keys) {
+            if((keys & HidNpadButton_A) == HidNpadButton_A && this->context)
+            {
+                tsl::changeTo<InfoGui>();
+                return true;
+            }
 
-    tsl::elm::ListItem* infoItem = new tsl::elm::ListItem("Information");
-    infoItem->setClickListener([this](u64 keys) {
-        if((keys & HidNpadButton_A) == HidNpadButton_A && this->context)
-        {
-            tsl::changeTo<InfoGui>();
-            return true;
-        }
-
-        return false;
-    });
-    this->listElement->addItem(infoItem);
+            return false;
+        });
+        this->listElement->addItem(infoItem);
+    #endif
 }
 
 void MainGui::refresh()

@@ -992,3 +992,5 @@ void ClockManager::calculateGpuVmin (void)
         this->config->SetConfigValues(&configValues, true);
     }
 }
+
+void ClockManager::CalculatePMICLimit(void) {}
