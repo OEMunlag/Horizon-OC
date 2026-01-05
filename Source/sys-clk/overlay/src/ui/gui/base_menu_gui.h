@@ -43,11 +43,10 @@ class BaseMenuGui : public BaseGui
         bool g_isMariko = false;
         bool g_isAula = false;
         bool g_isHoag = false;
-        SetSysProductModel HWmodel;
+        SetSysProductModel HWmodel = SetSysProductModel_Invalid;
         
         bool IsAula() {
             if (!g_hardwareModelCached) {
-                SetSysProductModel HWmodel = SetSysProductModel_Invalid;
                 setsysGetProductModel(&HWmodel);
                 g_hardwareModelCached = true;
             }
@@ -56,7 +55,6 @@ class BaseMenuGui : public BaseGui
         }
         bool IsHoag() {
             if (!g_hardwareModelCached) {
-                SetSysProductModel HWmodel = SetSysProductModel_Invalid;
                 setsysGetProductModel(&HWmodel);
                 g_hardwareModelCached = true;
             }
@@ -65,7 +63,6 @@ class BaseMenuGui : public BaseGui
         }
         bool IsMariko() {
             if (!g_hardwareModelCached) {
-                SetSysProductModel HWmodel = SetSysProductModel_Invalid;
                 setsysGetProductModel(&HWmodel);
                 g_hardwareModelCached = true;
             }

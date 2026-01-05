@@ -27,7 +27,9 @@
 
 #define TESLA_INIT_IMPL
 #include <tesla.hpp>
-
+#ifdef IS_MINIMAL
+#warning "Minimal compilation"
+#endif
 #include "ui/gui/fatal_gui.h"
 #include "ui/gui/main_gui.h"
 #include "rgltr_services.h"  // for extern Service g_rgltrSrv, etc.
@@ -57,7 +59,7 @@ class AppOverlay : public tsl::Overlay
             if(!sysclkIpcRunning())
             {
                 return initially<FatalGui>(
-                    "sys-clk is not running.\n\n"
+                    "hoc-clk is not running.\n\n"
                     "\n"
                     "Please make sure it is correctly\n\n"
                     "installed and enabled.",
@@ -68,7 +70,7 @@ class AppOverlay : public tsl::Overlay
             if(R_FAILED(sysclkIpcInitialize()) || R_FAILED(sysclkIpcGetAPIVersion(&apiVersion)))
             {
                 return initially<FatalGui>(
-                    "Could not connect to sys-clk.\n\n"
+                    "Could not connect to hoc-clk.\n\n"
                     "\n"
                     "Please make sure it is correctly\n\n"
                     "installed and enabled.",
@@ -80,7 +82,7 @@ class AppOverlay : public tsl::Overlay
             {
                 return initially<FatalGui>(
                     "Overlay not compatible with\n\n"
-                    "the running sys-clk version.\n\n"
+                    "the running hoc-clk version.\n\n"
                     "\n"
                     "Please make sure everything is\n\n"
                     "installed and up to date.",

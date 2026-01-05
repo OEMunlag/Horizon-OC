@@ -37,6 +37,7 @@
 #include "notification.h"
 #include <display_refresh_rate.h>
 #include <cstring>
+#include <cstdio>
 
 #define HOSPPC_HAS_BOOST (hosversionAtLeast(7,0,0))
 bool isGovernorEnabled = false; // to avoid thread messes
@@ -46,6 +47,8 @@ ClockManager *ClockManager::instance = NULL;
 Thread governorTHREAD;
 u32 initialConfigValues[SysClkConfigValue_EnumMax]; // initial config. used for safety checks
 bool writeBootConfigValues = true; // do we write the initial config values?
+
+bool kipAvailable = false;
 ClockManager *ClockManager::GetInstance()
 {
     return instance;
@@ -88,8 +91,7 @@ ClockManager::ClockManager()
 
     this->rnxSync = new ReverseNXSync;
     memset(&initialConfigValues, 0, sizeof(initialConfigValues));
-    if(this->config->GetConfigValue(HocClkConfigValue_KipEditing))
-        this->GetKipData();   
+    this->GetKipData();   
     threadCreate(
         &governorTHREAD,
         ClockManager::GovernorThread,
@@ -692,8 +694,19 @@ void ClockManager::SetKipData() {
     //     }
     // }
     CustomizeTable table;
+    FILE* fp;
+    fp = fopen("sdmc:/atmosphere/kips/hoc.kip", "r");
 
-    if (!cust_read_and_cache(this->config->GetConfigValue(HocClkConfigValue_KipFileName) ? "sdmc:/atmosphere/kips/loader.kip" : "sdmc:/atmosphere/kips/hoc.kip", &table)) {
+    if (fp == NULL) {
+        writeNotification("Horizon OC\nKip opening failed");
+        kipAvailable = false;
+        return;
+    } else {
+        kipAvailable = true;
+        fclose(fp);
+    }
+
+    if (!cust_read_and_cache("sdmc:/atmosphere/kips/hoc.kip", &table)) {
         FileUtils::LogLine("[clock_manager] Failed to read KIP file");
         writeNotification("Horizon OC\nKip read failed");
         return;
@@ -755,7 +768,7 @@ void ClockManager::SetKipData() {
         table.eristaGpuVoltArray[i] = this->config->GetConfigValue((SysClkConfigValue)(KipConfigValue_g_volt_e_76800 + i));
     }
 
-    if (!cust_write_table(this->config->GetConfigValue(HocClkConfigValue_KipFileName) ? "sdmc:/atmosphere/kips/loader.kip" : "sdmc:/atmosphere/kips/hoc.kip", &table)) {
+    if (!cust_write_table("sdmc:/atmosphere/kips/hoc.kip", &table)) {
         FileUtils::LogLine("[clock_manager] Failed to write KIP file");
         writeNotification("Horizon OC\nKip write failed");
     }
@@ -764,13 +777,26 @@ void ClockManager::SetKipData() {
 // I know this is very hacky, but the config system in the sysmodule doesn't really support writing
 
 void ClockManager::GetKipData() {
+    FILE* fp;
     if(this->config->Refresh()) {
+
+        fp = fopen("sdmc:/atmosphere/kips/hoc.kip", "r");
+
+        if (fp == NULL) {
+            writeNotification("Horizon OC\nKip opening failed");
+            kipAvailable = false;
+            return;
+        } else {
+            kipAvailable = true;
+            fclose(fp);
+        }
+
         SysClkConfigValueList configValues;
         this->config->GetConfigValues(&configValues);
         
         CustomizeTable table;
         
-        if (!cust_read_and_cache(this->config->GetConfigValue(HocClkConfigValue_KipFileName) ? "sdmc:/atmosphere/kips/loader.kip" : "sdmc:/atmosphere/kips/hoc.kip", &table)) {
+        if (!cust_read_and_cache("sdmc:/atmosphere/kips/hoc.kip", &table)) {
             FileUtils::LogLine("[clock_manager] Failed to read KIP file for GetKipData");
             writeNotification("Horizon OC\nKip read failed");
             return;
@@ -907,13 +933,21 @@ void ClockManager::GetKipData() {
 }
 
 void ClockManager::UpdateRamTimings() {
-    if(!this->config->GetConfigValue(HocClkConfigValue_KipEditing))
-        return;
+    FILE* fp;
+    fp = fopen("sdmc:/atmosphere/kips/hoc.kip", "r");
 
+    if (fp == NULL) {
+        writeNotification("Horizon OC\nKip opening failed");
+        kipAvailable = false;
+        return;
+    } else {
+        kipAvailable = true;
+        fclose(fp);
+    }
     CustomizeTable table;
 
-    if (!cust_read_and_cache(this->config->GetConfigValue(HocClkConfigValue_KipFileName) ? "sdmc:/atmosphere/kips/loader.kip" : "sdmc:/atmosphere/kips/hoc.kip", &table)) {
-        FileUtils::LogLine("[clock_manager] Failed to read KIP file for GetKipData");
+    if (!cust_read_and_cache("sdmc:/atmosphere/kips/hoc.kip", &table)) {
+        FileUtils::LogLine("[clock_manager] Failed to read KIP file for UpdateRamTimings");
         writeNotification("Horizon OC\nKip read failed");
         return;
     }
@@ -992,5 +1026,3 @@ void ClockManager::calculateGpuVmin (void)
         this->config->SetConfigValues(&configValues, true);
     }
 }
-
-void ClockManager::CalculatePMICLimit(void) {}

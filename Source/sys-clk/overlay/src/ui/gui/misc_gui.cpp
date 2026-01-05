@@ -24,6 +24,9 @@
 #include <cstring>
 #include <vector>
 #include <notification.h>
+#ifdef IS_MINIMAL
+#warning "Minimal compilation"
+#endif
 
 class RamSubmenuGui;
 class RamTimingsSubmenuGui;
@@ -264,7 +267,9 @@ void MiscGui::listUI()
 
     addConfigToggle(HocClkConfigValue_UncappedClocks, nullptr);
     addConfigToggle(HocClkConfigValue_OverwriteBoostMode, nullptr);
-    addConfigToggle(HocClkConfigValue_FixCpuVoltBug, nullptr);
+    #ifndef IS_MINIMAL
+        addConfigToggle(HocClkConfigValue_FixCpuVoltBug, nullptr);
+    #endif
     addConfigToggle(HocClkConfigValue_ThermalThrottle, nullptr);
     addConfigToggle(HocClkConfigValue_HandheldTDP, nullptr);
 
@@ -311,23 +316,6 @@ void MiscGui::listUI()
     }
 
     this->listElement->addItem(new tsl::elm::CategoryHeader("KIP"));
-    addConfigToggle(HocClkConfigValue_KipEditing, nullptr);
-
-    std::vector<NamedValue> kipNameLabels = {
-        NamedValue("hoc.kip", 0),
-        NamedValue("loader.kip", 1)
-    };
-
-    addConfigButton(
-        HocClkConfigValue_KipFileName,
-        "KIP File Name",
-        ValueRange(0, 1, 1, "", 0),
-        "KIP File Name",
-        &thresholdsDisabled,
-        {},
-        kipNameLabels,
-        false
-    );
 
     tsl::elm::ListItem* saveBtn = new tsl::elm::ListItem("Save KIP Settings");
     saveBtn->setClickListener([](u64 keys) {
@@ -373,34 +361,35 @@ void MiscGui::listUI()
     });
     this->listElement->addItem(gpuSubmenu);
 
-    this->listElement->addItem(new tsl::elm::CategoryHeader("Experimental"));
+    #ifndef IS_MINIMAL
+        this->listElement->addItem(new tsl::elm::CategoryHeader("Experimental"));
+        std::vector<NamedValue> chargerCurrents = {
+            NamedValue("Disabled", 0),
+            NamedValue("1024mA", 1024),
+            NamedValue("1280mA", 1280),
+            NamedValue("1536mA", 1536),
+            NamedValue("1792mA", 1792),
+            NamedValue("2048mA", 2048),
+            NamedValue("2304mA", 2304),
+            NamedValue("2560mA", 2560),
+            NamedValue("2816mA", 2816),
+            NamedValue("3072mA", 3072),
+        };
 
-    std::vector<NamedValue> chargerCurrents = {
-        NamedValue("Disabled", 0),
-        NamedValue("1024mA", 1024),
-        NamedValue("1280mA", 1280),
-        NamedValue("1536mA", 1536),
-        NamedValue("1792mA", 1792),
-        NamedValue("2048mA", 2048),
-        NamedValue("2304mA", 2304),
-        NamedValue("2560mA", 2560),
-        NamedValue("2816mA", 2816),
-        NamedValue("3072mA", 3072),
-    };
+        ValueThresholds chargerThresholds(2048, 2560);
 
-    ValueThresholds chargerThresholds(2048, 2560);
-
-    addConfigButton(
-        HorizonOCConfigValue_BatteryChargeCurrent,
-        "Charge Current Override",
-        ValueRange(0, 0, 1, "", 0),
-        "Charge Current Override",
-        &chargerThresholds,
-        {},
-        chargerCurrents,
-        false
-    );
-    addConfigToggle(HorizonOCConfigValue_OverwriteRefreshRate, nullptr);
+        addConfigButton(
+            HorizonOCConfigValue_BatteryChargeCurrent,
+            "Charge Current Override",
+            ValueRange(0, 0, 1, "", 0),
+            "Charge Current Override",
+            &chargerThresholds,
+            {},
+            chargerCurrents,
+            false
+        );
+        addConfigToggle(HorizonOCConfigValue_OverwriteRefreshRate, nullptr);
+    #endif
 
 }
 
@@ -717,8 +706,9 @@ protected:
                 &thresholdsDisabled,
                 {},
                 {},
-                true
+                false
             );
+
             addConfigToggle(KipConfigValue_eristaCpuUnlock, "CPU Unlock");
             addConfigButton(
                 KipConfigValue_eristaCpuVmin,
