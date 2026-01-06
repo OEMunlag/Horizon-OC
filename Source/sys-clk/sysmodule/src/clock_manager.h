@@ -71,7 +71,6 @@ class ClockManager
     int GetSpeedoBracket (int speedo);
     unsigned int GetGpuVoltage (unsigned int freq, int speedo);
     void calculateGpuVmin(void);
-
   protected:
     bool IsAssignableHz(SysClkModule module, std::uint32_t hz);
     std::uint32_t GetMaxAllowedHz(SysClkModule module, SysClkProfile profile);

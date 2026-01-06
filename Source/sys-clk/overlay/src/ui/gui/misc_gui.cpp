@@ -24,10 +24,9 @@
 #include <cstring>
 #include <vector>
 #include <notification.h>
-#ifdef IS_MINIMAL
-#warning "Minimal compilation"
+#if IS_MINIMAL == 0
+#pragma message("Compiling with full features")
 #endif
-
 class RamSubmenuGui;
 class RamTimingsSubmenuGui;
 class RamLatenciesSubmenuGui;
@@ -267,47 +266,49 @@ void MiscGui::listUI()
 
     addConfigToggle(HocClkConfigValue_UncappedClocks, nullptr);
     addConfigToggle(HocClkConfigValue_OverwriteBoostMode, nullptr);
-    #ifndef IS_MINIMAL
+    #if IS_MINIMAL == 0
         addConfigToggle(HocClkConfigValue_FixCpuVoltBug, nullptr);
     #endif
     addConfigToggle(HocClkConfigValue_ThermalThrottle, nullptr);
     addConfigToggle(HocClkConfigValue_HandheldTDP, nullptr);
+    addConfigToggle(HocClkConfigValue_EnforceBoardLimit, nullptr);
 
-    std::map<uint32_t, std::string> labels_pwr_r = {
-        {8600, "Official Rating"}
-    };
-    std::map<uint32_t, std::string> labels_pwr_l = {
-        {6400, "Official Rating"}
-    };
+    #if IS_MINIMAL == 0
+        std::map<uint32_t, std::string> labels_pwr_r = {
+            {8600, "Official Rating"}
+        };
+        std::map<uint32_t, std::string> labels_pwr_l = {
+            {6400, "Official Rating"}
+        };
+        ValueThresholds tdpThresholds(8600, 9500);
+        addConfigButton(
+            HocClkConfigValue_HandheldTDPLimit,
+            "TDP Threshold",
+            ValueRange(5000, 10000, 100, "mW", 1),
+            "Power",
+            &tdpThresholds,
+            labels_pwr_r
+        );
 
-    ValueThresholds tdpThresholds(8600, 9500);
-    addConfigButton(
-        HocClkConfigValue_HandheldTDPLimit,
-        "TDP Threshold",
-        ValueRange(5000, 10000, 100, "mW", 1),
-        "Power",
-        &tdpThresholds,
-        labels_pwr_r
-    );
+        ValueThresholds tdpThresholdsLite(6400, 7500);
+        addConfigButton(
+            HocClkConfigValue_LiteTDPLimit,
+            "Lite TDP Threshold",
+            ValueRange(4000, 8000, 100, "mW", 1),
+            "Power",
+            &tdpThresholdsLite,
+            labels_pwr_l
+        );
 
-    ValueThresholds tdpThresholdsLite(6400, 7500);
-    addConfigButton(
-        HocClkConfigValue_LiteTDPLimit,
-        "Lite TDP Threshold",
-        ValueRange(4000, 8000, 100, "mW", 1),
-        "Power",
-        &tdpThresholdsLite,
-        labels_pwr_l
-    );
-
-    ValueThresholds throttleThresholds(70, 80);
-    addConfigButton(
-        HocClkConfigValue_ThermalThrottleThreshold,
-        "Thermal Throttle Limit",
-        ValueRange(50, 85, 1, "°C", 1),
-        "Temp",
-        &throttleThresholds
-    );
+        ValueThresholds throttleThresholds(70, 80);
+        addConfigButton(
+            HocClkConfigValue_ThermalThrottleThreshold,
+            "Thermal Throttle Limit",
+            ValueRange(50, 85, 1, "°C", 1),
+            "Temp",
+            &throttleThresholds
+        );
+    #endif
 
     if(IsMariko()) {
         addFreqButton(HocClkConfigValue_MarikoMaxCpuClock, nullptr, SysClkModule_CPU, cpu_freq_label_m);
@@ -361,7 +362,7 @@ void MiscGui::listUI()
     });
     this->listElement->addItem(gpuSubmenu);
 
-    #ifndef IS_MINIMAL
+    #if IS_MINIMAL == 0
         this->listElement->addItem(new tsl::elm::CategoryHeader("Experimental"));
         std::vector<NamedValue> chargerCurrents = {
             NamedValue("Disabled", 0),
@@ -607,7 +608,7 @@ protected:
         addConfigButton(KipConfigValue_t6_tRTW, "t6 tRTW", ValueRange(0, 10, 1, "", 1), "tRTW", &thresholdsDisabled, {}, {}, false);
         addConfigButton(KipConfigValue_t7_tWTR, "t7 tWTR", ValueRange(0, 10, 1, "", 1), "tWTR", &thresholdsDisabled, {}, {}, false);
         addConfigButton(KipConfigValue_t8_tREFI, "t8 tREFI", ValueRange(0, 6, 1, "", 1), "tREFI", &thresholdsDisabled, {}, {}, false);
-
+        #if IS_MINIMAL == 0
         this->listElement->addItem(new tsl::elm::CategoryHeader("Experimental"));
 
         tsl::elm::ListItem* emcUpdBtn = new tsl::elm::ListItem("Update RAM Timings");
@@ -634,6 +635,7 @@ protected:
         });
         warningText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 150);
         this->listElement->addItem(warningText);
+        #endif
     }
 };
 
@@ -771,7 +773,7 @@ protected:
             );
 
             std::vector<NamedValue> maxClkOptions = {
-                NamedValue("1963MHz", 1963000),
+                // NamedValue("1963MHz", 1963000),
                 NamedValue("2397MHz", 2397000),
                 NamedValue("2499MHz", 2499000),
                 NamedValue("2601MHz", 2601000),

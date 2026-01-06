@@ -271,7 +271,7 @@ void AppProfileGui::addProfileUI(SysClkProfile profile)
     this->addModuleListItem(profile, SysClkModule_CPU);
     this->addModuleListItem(profile, SysClkModule_GPU);
     this->addModuleListItem(profile, SysClkModule_MEM);
-    #ifndef IS_MINIMAL
+    #if IS_MINIMAL == 0
         if(!IsHoag()) {
             if(profile != SysClkProfile_Docked)
                 this->addModuleListItemValue(profile, HorizonOCModule_Display, "Display", 40, 72, 1, " Hz", 1, 0);

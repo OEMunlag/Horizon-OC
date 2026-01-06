@@ -40,13 +40,12 @@ typedef enum
 
 typedef enum
 {
-    HorizonOCConsoleType_Unknown = 0, ///< Invalid Model
-    HorizonOCConsoleType_V1      = 1, ///< Erista Model
-    HorizonOCConsoleType_UnreleasedErista  = 2, ///< Erista "Simulation" Model
-    HorizonOCConsoleType_V2    = 3, ///< Mariko Model
-    HorizonOCConsoleType_Lite    = 4, ///< Mariko Lite Model
-    HorizonOCConsoleType_UnreleasedMariko  = 5, ///< Mariko "Simulation" Model
-    HorizonOCConsoleType_OLED    = 6, ///< Mariko OLED Model
+    HorizonOCConsoleType_Icosa = 0,
+    HorizonOCConsoleType_Copper,
+    HorizonOCConsoleType_Hoag,
+    HorizonOCConsoleType_Iowa,
+    HorizonOCConsoleType_Calcio,
+    HorizonOCConsoleType_Aula,
     HorizonOCConsoleType_EnumMax,
 } HorizonOCConsoleType;
 

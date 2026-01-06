@@ -420,16 +420,23 @@ void ClockManager::Tick()
     }
 
     if(this->config->GetConfigValue(HocClkConfigValue_HandheldTDP) && opMode == AppletOperationMode_Handheld) {
-        if(Board::GetConsoleType() == HorizonOCConsoleType_Lite) {
-            if(Board::GetPowerMw(SysClkPowerSensor_Avg) < -(int)this->config->GetConfigValue(HocClkConfigValue_LiteTDPLimit)) {
+        if(Board::GetConsoleType() == HorizonOCConsoleType_Hoag) {
+            if(Board::GetPowerMw(SysClkPowerSensor_Now) < -(int)this->config->GetConfigValue(HocClkConfigValue_LiteTDPLimit)) {
                 ResetToStockClocks();
                 return;
             }
         } else {
-            if(Board::GetPowerMw(SysClkPowerSensor_Avg) < -(int)this->config->GetConfigValue(HocClkConfigValue_HandheldTDPLimit)) {
+            if(Board::GetPowerMw(SysClkPowerSensor_Now) < -(int)this->config->GetConfigValue(HocClkConfigValue_HandheldTDPLimit)) {
                 ResetToStockClocks();
                 return;
             }
+        }
+    }
+
+    if(this->config->GetConfigValue(HocClkConfigValue_EnforceBoardLimit) && opMode == AppletOperationMode_Console ) {
+        if(Board::GetPowerMw(SysClkPowerSensor_Now) < 0) {
+            ResetToStockClocks();
+            return;
         }
     }
 
@@ -486,7 +493,7 @@ void ClockManager::Tick()
                 isGovernorEnabled = newGovernorState;
             }
             
-            if(module == HorizonOCModule_Display && this->config->GetConfigValue(HorizonOCConfigValue_OverwriteRefreshRate) && Board::GetConsoleType() != HorizonOCConsoleType_Lite) {
+            if(module == HorizonOCModule_Display && this->config->GetConfigValue(HorizonOCConfigValue_OverwriteRefreshRate) && Board::GetConsoleType() != HorizonOCConsoleType_Hoag) {
                 if(targetHz)
                     Board::SetHz(HorizonOCModule_Display, targetHz);
                 else
@@ -672,7 +679,7 @@ bool ClockManager::RefreshContext()
         FileUtils::WriteContextToCsv(this->context);
     }
 
-    if(this->context->profile == SysClkProfile_Docked && Board::GetConsoleType() != HorizonOCConsoleType_Lite)
+    if(this->context->profile == SysClkProfile_Docked && Board::GetConsoleType() != HorizonOCConsoleType_Hoag)
         this->context->maxDisplayFreq = Board::GetHighestDockedDisplayRate();
     else
         this->context->maxDisplayFreq = 60;
