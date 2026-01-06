@@ -236,9 +236,6 @@ void Board::Initialize()
     rc = pmdmntInitialize();
     ASSERT_RESULT_OK(rc, "pmdmntInitialize");
 
-    rc = setInitialize();
-    ASSERT_RESULT_OK(rc, "setInitialize");
-
     threadCreate(&gpuLThread, gpuLoadThread, NULL, NULL, 0x1000, 0x3F, -2);
 	threadStart(&gpuLThread);
 
