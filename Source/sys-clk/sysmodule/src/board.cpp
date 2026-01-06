@@ -791,8 +791,6 @@ void Board::FetchHardwareInfos()
             g_socType = SysClkSocType_Erista;
     }
 
-    rc = splGetConfig(SplConfigItem_HardwareType, &sku);
-    ASSERT_RESULT_OK(rc, "splGetConfig");
     g_consoleType = (HorizonOCConsoleType)sku;
 }
 
