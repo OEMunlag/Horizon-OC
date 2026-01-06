@@ -32,7 +32,6 @@
 
 typedef struct
 {
-    uint8_t enabled;
     uint64_t applicationId;
     SysClkProfile profile;
     uint32_t freqs[SysClkModule_EnumMax];

@@ -76,7 +76,6 @@ ClockManager::ClockManager()
     this->context = new SysClkContext;
     this->context->applicationId = 0;
     this->context->profile = SysClkProfile_Handheld;
-    this->context->enabled = false;
     for (unsigned int module = 0; module < SysClkModule_EnumMax; module++)
     {
         this->context->freqs[module] = 0;
@@ -133,7 +132,7 @@ void ClockManager::FixCpuBug() {
         maxHz = this->GetMaxAllowedHz(SysClkModule_CPU, this->context->profile);
         nearestHz = this->GetNearestHz(SysClkModule_CPU, targetHz, maxHz);
 
-        if (nearestHz != this->context->freqs[SysClkModule_CPU] && this->context->enabled) {
+        if (nearestHz != this->context->freqs[SysClkModule_CPU]) {
 
             Board::SetHz(SysClkModule_CPU, nearestHz);
             this->context->freqs[SysClkModule_CPU] = nearestHz;
@@ -487,7 +486,6 @@ void ClockManager::Tick()
                     lastGovernorState = newGovernorState;
 
                     hasChanged = true;
-                    this->context->enabled = this->GetConfig()->Enabled();
                     Board::ResetToStock();
                 }
                 isGovernorEnabled = newGovernorState;
@@ -498,7 +496,11 @@ void ClockManager::Tick()
                     Board::SetHz(HorizonOCModule_Display, targetHz);
                 else
                     Board::ResetToStockDisplay();
+
             }
+
+            if(targetHz && this->context->realFreqs[HorizonOCModule_Display] != targetHz && module == HorizonOCModule_Display)
+                this->context->realFreqs[HorizonOCModule_Display] = targetHz;
 
             // Skip GPU if governor handles it
             if(module > SysClkModule_MEM) {
@@ -517,7 +519,7 @@ void ClockManager::Tick()
                 maxHz = this->GetMaxAllowedHz((SysClkModule)module, this->context->profile);
                 nearestHz = this->GetNearestHz((SysClkModule)module, targetHz, maxHz);
 
-                if (nearestHz != this->context->freqs[module] && this->context->enabled) {
+                if (nearestHz != this->context->freqs[module]) {
                     FileUtils::LogLine(
                         "[mgr] %s clock set : %u.%u MHz (target = %u.%u MHz)",
                         Board::GetModuleName((SysClkModule)module, true),
@@ -549,14 +551,6 @@ void ClockManager::WaitForNextTick()
 bool ClockManager::RefreshContext()
 {
     bool hasChanged = false;
-
-    bool enabled = this->GetConfig()->Enabled();
-    if (enabled != this->context->enabled)
-    {
-        this->context->enabled = enabled;
-        FileUtils::LogLine("[mgr] " TARGET " status: %s", enabled ? "enabled" : "disabled");
-        hasChanged = true;
-    }
 
     std::uint64_t applicationId = ProcessManagement::GetCurrentApplicationId();
     if (applicationId != this->context->applicationId)
@@ -683,6 +677,18 @@ bool ClockManager::RefreshContext()
         this->context->maxDisplayFreq = Board::GetHighestDockedDisplayRate();
     else
         this->context->maxDisplayFreq = 60;
+
+    u32 targetHz = this->context->overrideFreqs[HorizonOCModule_Display];
+    if (!targetHz)
+    {
+        targetHz = this->config->GetAutoClockHz(this->context->applicationId, HorizonOCModule_Display, this->context->profile, true);
+        if(!targetHz)
+            targetHz = this->config->GetAutoClockHz(GLOBAL_PROFILE_ID, HorizonOCModule_Display, this->context->profile, true);
+    }
+
+    if(targetHz && this->context->realFreqs[HorizonOCModule_Display] != targetHz)
+        this->context->realFreqs[HorizonOCModule_Display] = targetHz; // clean up display real freqs, should probably be moved to the real freqs loop?
+
 
     return hasChanged;
 }

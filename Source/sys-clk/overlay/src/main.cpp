@@ -27,9 +27,6 @@
 
 #define TESLA_INIT_IMPL
 #include <tesla.hpp>
-#ifdef IS_MINIMAL
-#warning "Minimal compilation"
-#endif
 #include "ui/gui/fatal_gui.h"
 #include "ui/gui/main_gui.h"
 #include "rgltr_services.h"  // for extern Service g_rgltrSrv, etc.

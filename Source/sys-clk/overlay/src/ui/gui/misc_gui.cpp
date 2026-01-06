@@ -24,8 +24,8 @@
 #include <cstring>
 #include <vector>
 #include <notification.h>
-#if IS_MINIMAL == 0
-#pragma message("Compiling with full features")
+#if IS_MINIMAL == 1
+#pragma message("Compiling with minimal features")
 #endif
 class RamSubmenuGui;
 class RamTimingsSubmenuGui;
