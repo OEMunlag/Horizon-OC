@@ -326,7 +326,7 @@ namespace ams::ldr::oc::pcv {
                     customize_table = const_cast<cvb_entry_t *>(C.eristaCpuDvfsTable);
                 }
             } else {
-                customize_table = default_table;;
+                customize_table = default_table;
             }
         }
 

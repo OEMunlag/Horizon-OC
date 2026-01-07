@@ -195,151 +195,125 @@ namespace ams::ldr::oc::pcv::mariko {
         R_UNLESS(entry->tune1_high == 0x3FFF7FF, ldr::ResultInvalidCpuVoltDfllEntry());
 
         switch (C.marikoCpuUVLow) {
-            case 0:
+            case 1:
+                PATCH_OFFSET(&(entry->tune0_low), 0xffa0);
+                PATCH_OFFSET(&(entry->tune0_high), 0xffff);
+                PATCH_OFFSET(&(entry->tune1_low), 0x21107ff);
+                PATCH_OFFSET(&(entry->tune1_high), 0);
                 break;
-            case 1: {
-                    PATCH_OFFSET(&(entry->tune0_low), 0xffa0);
-                    PATCH_OFFSET(&(entry->tune0_high), 0xffff);
-                    PATCH_OFFSET(&(entry->tune1_low), 0x21107ff);
-                    PATCH_OFFSET(&(entry->tune1_high), 0x0);
-                    break;
-                }
-            case 2: {
-                    PATCH_OFFSET(&(entry->tune0_high), 0xffdf);
-                    PATCH_OFFSET(&(entry->tune1_low), 0x21107ff);
-                    PATCH_OFFSET(&(entry->tune1_high), 0x27207ff);
-                    break;
-                }
-            case 3: {
-                    PATCH_OFFSET(&(entry->tune0_low), 0xffdf);
-                    PATCH_OFFSET(&(entry->tune0_high), 0xffdf);
-                    PATCH_OFFSET(&(entry->tune1_low), 0x21107ff);
-                    PATCH_OFFSET(&(entry->tune1_high), 0x27307ff);
-                    break;
-                }
-            case 4: {
-                    PATCH_OFFSET(&(entry->tune0_low), 0xffff);
-                    PATCH_OFFSET(&(entry->tune0_high), 0xffdf);
-                    PATCH_OFFSET(&(entry->tune1_low), 0x21107ff);
-                    PATCH_OFFSET(&(entry->tune1_high), 0x27407ff);
-                    break;
-                }
-            case 5: {
-                    PATCH_OFFSET(&(entry->tune0_high), 0xffdf);
-                    PATCH_OFFSET(&(entry->tune1_low), 0x21607ff);
-                    PATCH_OFFSET(&(entry->tune1_high), 0x27707ff);
-                    break;
-                }
-            case 6: {
-                    PATCH_OFFSET(&(entry->tune0_high), 0xffdf);
-                    PATCH_OFFSET(&(entry->tune1_low), 0x21607ff);
-                    PATCH_OFFSET(&(entry->tune1_high), 0x27807ff);
-                    break;
-                }
-            case 7: {
-                    PATCH_OFFSET(&(entry->tune0_high), 0xdfff);
-                    PATCH_OFFSET(&(entry->tune1_low), 0x21607ff);
-                    PATCH_OFFSET(&(entry->tune1_high), 0x27b07ff);
-                    break;
-                }
-            case 8: {
-                    PATCH_OFFSET(&(entry->tune0_low), 0xdfff);
-                    PATCH_OFFSET(&(entry->tune0_high), 0xdfff);
-                    PATCH_OFFSET(&(entry->tune1_low), 0x21707ff);
-                    PATCH_OFFSET(&(entry->tune1_high), 0x27b07ff);
-                    break;
-                }
-            case 9: {
-                    PATCH_OFFSET(&(entry->tune0_low), 0xdfff);
-                    PATCH_OFFSET(&(entry->tune0_high), 0xdfff);
-                    PATCH_OFFSET(&(entry->tune1_low), 0x21707ff);
-                    PATCH_OFFSET(&(entry->tune1_high), 0x27c07ff);
-                    break;
-                }
-            case 10: {
-                    PATCH_OFFSET(&(entry->tune0_low), 0xdfff);
-                    PATCH_OFFSET(&(entry->tune0_high), 0xdfff);
-                    PATCH_OFFSET(&(entry->tune1_low), 0x21707ff);
-                    PATCH_OFFSET(&(entry->tune1_high), 0x27d07ff);
-                    break;
-                }
-            case 11: {
-                    PATCH_OFFSET(&(entry->tune0_low), 0xdfff);
-                    PATCH_OFFSET(&(entry->tune0_high), 0xdfff);
-                    PATCH_OFFSET(&(entry->tune1_low), 0x21707ff);
-                    PATCH_OFFSET(&(entry->tune1_high), 0x27e07ff);
-                    break;
-                }
-            case 12: {
-                    PATCH_OFFSET(&(entry->tune0_low), 0xdfff);
-                    PATCH_OFFSET(&(entry->tune0_high), 0xdfff);
-                    PATCH_OFFSET(&(entry->tune1_low), 0x21707ff);
-                    PATCH_OFFSET(&(entry->tune1_high), 0x27f07ff);
-                    break;
-                }
+            case 2:
+                PATCH_OFFSET(&(entry->tune0_high), 0xffdf);
+                PATCH_OFFSET(&(entry->tune1_low), 0x21107ff);
+                PATCH_OFFSET(&(entry->tune1_high), 0x27207ff);
+                break;
+            case 3:
+                PATCH_OFFSET(&(entry->tune0_low), 0xffdf);
+                PATCH_OFFSET(&(entry->tune0_high), 0xffdf);
+                PATCH_OFFSET(&(entry->tune1_low), 0x21107ff);
+                PATCH_OFFSET(&(entry->tune1_high), 0x27307ff);
+                break;
+            case 4:
+                PATCH_OFFSET(&(entry->tune0_low), 0xffff);
+                PATCH_OFFSET(&(entry->tune0_high), 0xffdf);
+                PATCH_OFFSET(&(entry->tune1_low), 0x21107ff);
+                PATCH_OFFSET(&(entry->tune1_high), 0x27407ff);
+                break;
+            case 5:
+                PATCH_OFFSET(&(entry->tune0_high), 0xffdf);
+                PATCH_OFFSET(&(entry->tune1_low), 0x21607ff);
+                PATCH_OFFSET(&(entry->tune1_high), 0x27707ff);
+                break;
+            case 6:
+                PATCH_OFFSET(&(entry->tune0_high), 0xffdf);
+                PATCH_OFFSET(&(entry->tune1_low), 0x21607ff);
+                PATCH_OFFSET(&(entry->tune1_high), 0x27807ff);
+                break;
+            case 7:
+                PATCH_OFFSET(&(entry->tune0_high), 0xdfff);
+                PATCH_OFFSET(&(entry->tune1_low), 0x21607ff);
+                PATCH_OFFSET(&(entry->tune1_high), 0x27b07ff);
+                break;
+            case 8:
+                PATCH_OFFSET(&(entry->tune0_low), 0xdfff);
+                PATCH_OFFSET(&(entry->tune0_high), 0xdfff);
+                PATCH_OFFSET(&(entry->tune1_low), 0x21707ff);
+                PATCH_OFFSET(&(entry->tune1_high), 0x27b07ff);
+                break;
+            case 9:
+                PATCH_OFFSET(&(entry->tune0_low), 0xdfff);
+                PATCH_OFFSET(&(entry->tune0_high), 0xdfff);
+                PATCH_OFFSET(&(entry->tune1_low), 0x21707ff);
+                PATCH_OFFSET(&(entry->tune1_high), 0x27c07ff);
+                break;
+            case 10:
+                PATCH_OFFSET(&(entry->tune0_low), 0xdfff);
+                PATCH_OFFSET(&(entry->tune0_high), 0xdfff);
+                PATCH_OFFSET(&(entry->tune1_low), 0x21707ff);
+                PATCH_OFFSET(&(entry->tune1_high), 0x27d07ff);
+                break;
+            case 11:
+                PATCH_OFFSET(&(entry->tune0_low), 0xdfff);
+                PATCH_OFFSET(&(entry->tune0_high), 0xdfff);
+                PATCH_OFFSET(&(entry->tune1_low), 0x21707ff);
+                PATCH_OFFSET(&(entry->tune1_high), 0x27e07ff);
+                break;
+            case 12:
+                PATCH_OFFSET(&(entry->tune0_low), 0xdfff);
+                PATCH_OFFSET(&(entry->tune0_high), 0xdfff);
+                PATCH_OFFSET(&(entry->tune1_low), 0x21707ff);
+                PATCH_OFFSET(&(entry->tune1_high), 0x27f07ff);
+                break;
             default:
                 break;
         }
 
+
         switch (C.marikoCpuUVHigh) {
-            case 0:
+            case 1:
+                PATCH_OFFSET(&(entry->tune1_high), 0);
+                PATCH_OFFSET(&(entry->tune0_high), 0xffff);
                 break;
-            case 1: {
-                    PATCH_OFFSET(&(entry->tune0_high), 0xffff);
-                    PATCH_OFFSET(&(entry->tune1_high), 0x0);
-                    break;
-                }
-            case 2: {
-                    PATCH_OFFSET(&(entry->tune0_high), 0xfffd);
-                    PATCH_OFFSET(&(entry->tune1_high), 0x27207ff);
-                    break;
-                }
-            case 3: {
-                    PATCH_OFFSET(&(entry->tune0_high), 0xffdf);
-                    PATCH_OFFSET(&(entry->tune1_high), 0x27307ff;);
-                    break;
-                }
-            case 4: {
-                    PATCH_OFFSET(&(entry->tune0_high), 0xffdf);
-                    PATCH_OFFSET(&(entry->tune1_high), 0x27407ff;);
-                    break;
-                }
-            case 5: {
-                    PATCH_OFFSET(&(entry->tune0_high), 0xffdf);
-                    PATCH_OFFSET(&(entry->tune1_high), 0x27707ff);
-                    break;
-                }
-            case 6: {
-                    PATCH_OFFSET(&(entry->tune0_high), 0xffdf);
-                    PATCH_OFFSET(&(entry->tune1_high), 0x27807ff);
-                    break;
-                }
+            case 2:
+                PATCH_OFFSET(&(entry->tune0_high), 0xffdf);
+                PATCH_OFFSET(&(entry->tune1_high), 0x27207ff);
+                break;
+            case 3:
+                PATCH_OFFSET(&(entry->tune0_high), 0xffdf);
+                PATCH_OFFSET(&(entry->tune1_high), 0x27307ff);
+                break;
+            case 4:
+                PATCH_OFFSET(&(entry->tune0_high), 0xffdf);
+                PATCH_OFFSET(&(entry->tune1_high), 0x27407ff);
+                break;
+            case 5:
+                PATCH_OFFSET(&(entry->tune0_high), 0xffdf);
+                PATCH_OFFSET(&(entry->tune1_high), 0x27707ff);
+                break;
+            case 6:
+                PATCH_OFFSET(&(entry->tune0_high), 0xffdf);
+                PATCH_OFFSET(&(entry->tune1_high), 0x27807ff);
+                break;
             case 7:
-            case 8: {
-                    PATCH_OFFSET(&(entry->tune0_high), 0xdfff);
-                    PATCH_OFFSET(&(entry->tune1_high), 0x27b07ff);
-                    break;
-                }
-            case 9: {
-                    PATCH_OFFSET(&(entry->tune0_high), 0xdfff);
-                    PATCH_OFFSET(&(entry->tune1_high), 0x27c07ff);
-                    break;
-                }
-            case 10: {
-                    PATCH_OFFSET(&(entry->tune0_high), 0xdfff);
-                    PATCH_OFFSET(&(entry->tune1_high), 0x27d07ff;);
-                    break;
-                }
-            case 11: {
-                    PATCH_OFFSET(&(entry->tune0_high), 0xdfff);
-                    PATCH_OFFSET(&(entry->tune1_high), 0x27e07ff);
-                    break;
-                }
-            case 12: {
-                    PATCH_OFFSET(&(entry->tune0_high), 0xdfff);
-                    PATCH_OFFSET(&(entry->tune1_high), 0x27f07ff);
-                    break;
-                }
+            case 8:
+                PATCH_OFFSET(&(entry->tune0_high), 0xdfff);
+                PATCH_OFFSET(&(entry->tune1_high), 0x27b07ff);
+                break;
+            case 9:
+                PATCH_OFFSET(&(entry->tune0_high), 0xdfff);
+                PATCH_OFFSET(&(entry->tune1_high), 0x27c07ff);
+                break;
+            case 10:
+                PATCH_OFFSET(&(entry->tune0_high), 0xdfff);
+                PATCH_OFFSET(&(entry->tune1_high), 0x27d07ff);
+                break;
+            case 11:
+                PATCH_OFFSET(&(entry->tune0_high), 0xdfff);
+                PATCH_OFFSET(&(entry->tune1_high), 0x27e07ff);
+                break;
+            case 12:
+                PATCH_OFFSET(&(entry->tune0_high), 0xdfff);
+                PATCH_OFFSET(&(entry->tune1_high), 0x27f07ff);
+                break;
             default:
                 break;
         }
@@ -928,8 +902,7 @@ namespace ams::ldr::oc::pcv::mariko {
         } else if (C.marikoEmcMaxClock < 2931200) {
             emc_dvb_dvfs_table_t oc_table = {2665600, {DVB_VOLT(775, 750, 725)}};
             std::memcpy(new_start, &oc_table, sizeof(emc_dvb_dvfs_table_t));
-        }
-        else if (C.marikoEmcMaxClock < 3200000) {
+        } else if (C.marikoEmcMaxClock < 3200000) {
             emc_dvb_dvfs_table_t oc_table = {2931200, {DVB_VOLT(800, 775, 750)}};
             std::memcpy(new_start, &oc_table, sizeof(emc_dvb_dvfs_table_t));
         } else {
