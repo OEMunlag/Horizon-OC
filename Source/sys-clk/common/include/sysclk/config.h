@@ -219,7 +219,7 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
             return pretty ? "Handheld TDP Limit" : "tdp_limit";
 
         case HocClkConfigValue_LiteTDPLimit:
-            return pretty ? "Lite TDP Limit" : "tdp_limit_l";
+            return pretty ? "Handheld TDP Limit" : "tdp_limit_l";
 
         case HocClkConfigValue_EnforceBoardLimit:
             return pretty ? "Enforce Board Limit" : "enforce_board_limit";
