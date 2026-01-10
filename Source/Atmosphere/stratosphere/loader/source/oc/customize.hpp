@@ -104,8 +104,6 @@ typedef struct CustomizeTable {
     /* TODO: Automatically detect speedo. */
     u32 gpuSpeedo;
 
-    u32 marikoGpuFullUnlock;
-
     u32 eristaGpuVoltArray[27];
     u32 marikoGpuVoltArray[24];
 

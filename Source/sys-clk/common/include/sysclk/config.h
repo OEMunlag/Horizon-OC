@@ -111,7 +111,6 @@ typedef enum {
 
     KipConfigValue_commonGpuVoltOffset,
     KipConfigValue_gpuSpeedo,
-    KipConfigValue_marikoGpuFullUnlock,
 
     KipConfigValue_g_volt_76800,
     KipConfigValue_g_volt_153600,
@@ -332,8 +331,6 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
             return pretty ? "Common GPU Voltage Offset" : "common_gpu_volt_offset";
         case KipConfigValue_gpuSpeedo:
             return pretty ? "GPU Speedo" : "gpu_speedo";
-        case KipConfigValue_marikoGpuFullUnlock:
-            return pretty ? "Mariko GPU Full Unlock" : "mariko_gpu_full_unlock";
 
         // Mariko GPU voltages (24)
         case KipConfigValue_g_volt_76800: return pretty ? "Mariko GPU Volt 76 MHz" : "g_volt_76800";
@@ -509,7 +506,6 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case KipConfigValue_marikoGpuVmax:
         case KipConfigValue_commonGpuVoltOffset:
         case KipConfigValue_gpuSpeedo:
-        case KipConfigValue_marikoGpuFullUnlock:
         case KipConfigValue_g_volt_76800:
         case KipConfigValue_g_volt_153600:
         case KipConfigValue_g_volt_230400:

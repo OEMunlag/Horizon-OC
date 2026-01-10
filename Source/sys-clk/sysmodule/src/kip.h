@@ -67,7 +67,6 @@ typedef struct {
     u32 marikoGpuVmax;
     u32 commonGpuVoltOffset;
     u32 gpuSpeedo;
-    u32 marikoGpuFullUnlock;
     u32 eristaGpuVoltArray[27];
     u32 marikoGpuVoltArray[24];
 } CustomizeTable;
@@ -215,7 +214,6 @@ static inline bool cust_set_mariko_gpu_vmin(const char* p, u32 v) { CUST_WRITE_F
 static inline bool cust_set_mariko_gpu_vmax(const char* p, u32 v) { CUST_WRITE_FIELD(p, marikoGpuVmax, v); }
 static inline bool cust_set_common_gpu_offset(const char* p, u32 v) { CUST_WRITE_FIELD(p, commonGpuVoltOffset, v); }
 static inline bool cust_set_gpu_speedo(const char* p, u32 v) { CUST_WRITE_FIELD(p, gpuSpeedo, v); }
-static inline bool cust_set_mariko_gpu_unlock(const char* p, u32 v) { CUST_WRITE_FIELD(p, marikoGpuFullUnlock, v); }
 static inline bool cust_set_marikoCpuMaxClock(const char* p, u32 v) { CUST_WRITE_FIELD(p, marikoCpuMaxClock, v); }
 
 /* GPU VOLT ARRAY HELPERS */
@@ -284,7 +282,6 @@ static inline u32 cust_get_mariko_gpu_vmin(const CustomizeTable* t) { return CUS
 static inline u32 cust_get_mariko_gpu_vmax(const CustomizeTable* t) { return CUST_GET_FIELD(t, marikoGpuVmax); }
 static inline u32 cust_get_common_gpu_offset(const CustomizeTable* t) { return CUST_GET_FIELD(t, commonGpuVoltOffset); }
 static inline u32 cust_get_gpu_speedo(const CustomizeTable* t) { return CUST_GET_FIELD(t, gpuSpeedo); }
-static inline u32 cust_get_mariko_gpu_unlock(const CustomizeTable* t) { return CUST_GET_FIELD(t, marikoGpuFullUnlock); }
 static inline u32 cust_get_marikoCpuMaxClock(const CustomizeTable* t) { return CUST_GET_FIELD(t, marikoCpuMaxClock); }
 
 static inline u32 cust_get_erista_gpu_volt(const CustomizeTable* t, int idx) {

@@ -92,13 +92,6 @@ volatile CustomizeTable C = {
 
 .gpuSpeedo = 1450,
 
-/* >1305 GPU unlock. */
-/* WARNING! This removes ALL gpu frequency limits and risks permanent hardware damage. */
-/* This setting is very dangerous and can damage your pmic, degrade your soc, damage the voltage rails and can cause various other damage. */
-/* Even with all of that said, if you still decide to use this despite all the warnings, use it at your own risk. */
-/* No warranty is provided in any way whatsoever. */
-.marikoGpuFullUnlock = DISABLED,
-
 /* This table is used with a gpu uv mode of 2. */
 /* Setting DEACTIVATED_GPU_FREQ on any freq will disable it and all freqs greater than it. (the latter is a bug :/) */
 /* AUTO: Voltage is optimally chosen; with commonGpuVoltOffset applied. */

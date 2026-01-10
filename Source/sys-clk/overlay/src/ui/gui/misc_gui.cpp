@@ -935,17 +935,6 @@ protected:
             return false;
         });
         this->listElement->addItem(customTableSubmenu);
-
-        addConfigToggle(KipConfigValue_marikoGpuFullUnlock, "GPU Full Unlock");
-        tsl::elm::CustomDrawer* warningText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
-            renderer->drawString("\uE150 GPU Full Unlock can cause", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
-            renderer->drawString("PERMANANT damage to your Switch!", false, x + 20, y + 50, 18, tsl::style::color::ColorText);
-            renderer->drawString("Only enable if you know what", false, x + 20, y + 80, 16, tsl::style::color::ColorText);
-            renderer->drawString("you're doing. Proceed at your", false, x + 20, y + 100, 16, tsl::style::color::ColorText);
-            renderer->drawString("own risk!", false, x + 20, y + 120, 16, tsl::style::color::ColorText);
-        });
-        warningText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 150);
-        this->listElement->addItem(warningText);
     }
 };
 
@@ -1024,6 +1013,17 @@ protected:
         };
 
         if (IsMariko()) {
+            
+            tsl::elm::CustomDrawer* warningText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
+                renderer->drawString("\uE150 Setting GPU Clocks past", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
+                renderer->drawString("1075MHz without UV, 1152MHz on SLT or ", false, x + 20, y + 50, 18, tsl::style::color::ColorText);
+                renderer->drawString("1228MHz on HiOPT can cause ", false, x + 20, y + 80, 16, tsl::style::color::ColorText);
+                renderer->drawString("permanent damage to your Switch!", false, x + 20, y + 100, 16, tsl::style::color::ColorText);
+                renderer->drawString("Proceed at your own risk!", false, x + 20, y + 120, 16, tsl::style::color::ColorText);
+            });
+            warningText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 150);
+            this->listElement->addItem(warningText);
+
             addConfigButton(KipConfigValue_g_volt_76800, "76.8MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
             addConfigButton(KipConfigValue_g_volt_153600, "153.6MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
             addConfigButton(KipConfigValue_g_volt_230400, "230.4MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
@@ -1049,6 +1049,17 @@ protected:
             addConfigButton(KipConfigValue_g_volt_1497600, "1497.6MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
             addConfigButton(KipConfigValue_g_volt_1536000, "1536.0MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
         } else {
+
+            tsl::elm::CustomDrawer* warningText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
+                renderer->drawString("\uE150 Setting GPU Clocks past", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
+                renderer->drawString("921MHz without UV and 960MHz on", false, x + 20, y + 50, 18, tsl::style::color::ColorText);
+                renderer->drawString("SLT or HiOPT can cause ", false, x + 20, y + 80, 16, tsl::style::color::ColorText);
+                renderer->drawString("permanent damage to your Switch!", false, x + 20, y + 100, 16, tsl::style::color::ColorText);
+                renderer->drawString("Proceed at your own risk!", false, x + 20, y + 120, 16, tsl::style::color::ColorText);
+            });
+            warningText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 150);
+            this->listElement->addItem(warningText);
+
             addConfigButton(KipConfigValue_g_volt_e_76800, "76.8MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts, false);
             addConfigButton(KipConfigValue_g_volt_e_115200, "115.2MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts, false);
             addConfigButton(KipConfigValue_g_volt_e_153600, "153.6MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts, false);

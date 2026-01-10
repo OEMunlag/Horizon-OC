@@ -378,11 +378,8 @@ namespace ams::ldr::oc::pcv::mariko {
         if (prev_freq != 128000 && prev_freq != 1300000 && prev_freq != 76800) {
             R_THROW(ldr::ResultInvalidGpuPllEntry());
         }
-
-        if (C.marikoGpuFullUnlock) {
-            /* Removes all limits - dangerous. */
-            *ptr = 3600000;
-        }
+        
+        PATCH_OFFSET(ptr, 3600000);
 
         R_SUCCEED();
     }

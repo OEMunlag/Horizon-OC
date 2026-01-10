@@ -777,7 +777,6 @@ void ClockManager::SetKipData() {
 
     CUST_WRITE_FIELD_BATCH(&table, commonGpuVoltOffset, this->config->GetConfigValue(KipConfigValue_commonGpuVoltOffset));
     CUST_WRITE_FIELD_BATCH(&table, gpuSpeedo, this->config->GetConfigValue(KipConfigValue_gpuSpeedo));
-    CUST_WRITE_FIELD_BATCH(&table, marikoGpuFullUnlock, this->config->GetConfigValue(KipConfigValue_marikoGpuFullUnlock));
 
     for (int i = 0; i < 24; i++) {
         table.marikoGpuVoltArray[i] = this->config->GetConfigValue((SysClkConfigValue)(KipConfigValue_g_volt_76800 + i));
@@ -856,7 +855,7 @@ void ClockManager::GetKipData() {
             initialConfigValues[KipConfigValue_marikoCpuLowVmin] = cust_get_mariko_cpu_low_vmin(&table);
             initialConfigValues[KipConfigValue_marikoCpuHighVmin] = cust_get_mariko_cpu_high_vmin(&table);
             initialConfigValues[KipConfigValue_marikoCpuMaxVolt] = cust_get_mariko_cpu_max_volt(&table);
-            initialConfigValues[KipConfigValue_marikoGpuFullUnlock] = cust_get_marikoCpuMaxClock(&table) / 1000;
+            initialConfigValues[KipConfigValue_marikoCpuMaxClock] = cust_get_marikoCpuMaxClock(&table) / 1000;
             initialConfigValues[KipConfigValue_eristaCpuBoostClock] = cust_get_erista_cpu_boost(&table) / 1000;
             initialConfigValues[KipConfigValue_marikoCpuBoostClock] = cust_get_mariko_cpu_boost(&table) / 1000;
 
@@ -867,7 +866,6 @@ void ClockManager::GetKipData() {
             initialConfigValues[KipConfigValue_marikoGpuVmax] = cust_get_mariko_gpu_vmax(&table);
             initialConfigValues[KipConfigValue_commonGpuVoltOffset] = cust_get_common_gpu_offset(&table);
             initialConfigValues[KipConfigValue_gpuSpeedo] = cust_get_gpu_speedo(&table);
-            initialConfigValues[KipConfigValue_marikoGpuFullUnlock] = cust_get_mariko_gpu_unlock(&table);
 
             for (int i = 0; i < 24; i++) {
                 initialConfigValues[KipConfigValue_g_volt_76800 + i] = cust_get_mariko_gpu_volt(&table, i);
@@ -910,7 +908,7 @@ void ClockManager::GetKipData() {
         configValues.values[KipConfigValue_marikoCpuLowVmin] = cust_get_mariko_cpu_low_vmin(&table);
         configValues.values[KipConfigValue_marikoCpuHighVmin] = cust_get_mariko_cpu_high_vmin(&table);
         configValues.values[KipConfigValue_marikoCpuMaxVolt] = cust_get_mariko_cpu_max_volt(&table);
-        configValues.values[KipConfigValue_marikoGpuFullUnlock] = cust_get_marikoCpuMaxClock(&table) / 1000;
+        configValues.values[KipConfigValue_marikoCpuMaxClock] = cust_get_marikoCpuMaxClock(&table) / 1000;
         configValues.values[KipConfigValue_eristaCpuBoostClock] = cust_get_erista_cpu_boost(&table) / 1000;
         configValues.values[KipConfigValue_marikoCpuBoostClock] = cust_get_mariko_cpu_boost(&table) / 1000;
 
@@ -921,7 +919,6 @@ void ClockManager::GetKipData() {
         configValues.values[KipConfigValue_marikoGpuVmax] = cust_get_mariko_gpu_vmax(&table);
         configValues.values[KipConfigValue_commonGpuVoltOffset] = cust_get_common_gpu_offset(&table);
         configValues.values[KipConfigValue_gpuSpeedo] = cust_get_gpu_speedo(&table);
-        configValues.values[KipConfigValue_marikoGpuFullUnlock] = cust_get_mariko_gpu_unlock(&table);
 
         for (int i = 0; i < 24; i++) {
             configValues.values[KipConfigValue_g_volt_76800 + i] = cust_get_mariko_gpu_volt(&table, i);
