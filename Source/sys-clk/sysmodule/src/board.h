@@ -34,9 +34,8 @@ class Board
 {
   public:
     static void fuseReadSpeedos();
-    static u16 getCPUSpeedo();
-    static u16 getGPUSpeedo();
-    static u16 getSOCSpeedo();
+    static u16 getSpeedo(HorizonOCSpeedo speedoType);
+    static u16 getIDDQ(HorizonOCSpeedo speedoType);
     static const char* GetProfileName(SysClkProfile profile, bool pretty);
     static const char* GetModuleName(SysClkModule module, bool pretty);
     static const char* GetThermalSensorName(SysClkThermalSensor sensor, bool pretty);
@@ -63,6 +62,7 @@ class Board
     static u8 GetFanRotationLevel();
     static u8 GetDramID();
     static void UpdateShadowRegs(u32 tRCD_i, u32 tRP_i, u32 tRAS_i, u32 tRRD_i, u32 tRFC_i, u32 tRTW_i, u32 tWTR_i, u32 tREFpb_i, u32 ramFreq, u32 rlAdd, u32 wlAdd, bool hpMode);
+    static bool IsDram8GB();
   protected:
     static void FetchHardwareInfos();
     static PcvModule GetPcvModule(SysClkModule sysclkModule);

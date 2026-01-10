@@ -66,11 +66,10 @@ It enables advanced CPU, GPU, and RAM tuning with user-friendly configuration to
 
 ## Configuration
 
-1. Download the latest **Configurator** on your computer.
-2. Run the executable.
-3. Select your SD card or UMS drive.
-4. Adjust overclocking settings as desired.
-5. Click **Save** to apply your configuration.
+1. Open the Horizon OC Overlay
+2. Open the settings menu
+3. Adjust your overclocking settings as desired.
+4. Click **Save KIP Settings** to apply your configuration.
 
 ---
 
@@ -81,16 +80,18 @@ Refer to COMPILATION.md
 ---
 
 ## Credits
-
-* **Lightos** – loader patches development
 * **Lightos's Cat** - Cat
+
+* **Souldbminer** – hoc-clk and loader development
+* **Lightos** – loader patches development
 * **SciresM** - Atmosphere CFW
 * **KazushiMe** – Switch OC Suite
-* **hanai3bi** – Switch OC Suite, EOS, sys-clk-eos
+* **hanai3bi (meha)** – Switch OC Suite, EOS, sys-clk-eos
 * **NaGaa95** – L4T-OC-kernel
 * **B3711 (halop)** – EOS
-* **sys-clk team** – sys-clk
+* **sys-clk team (m4xw, p-sam, nautalis)** – sys-clk
 * **b0rd2death** – Ultrahand sys-clk & Status Monitor fork
 * **MasaGratoR and ZachyCatGames** - General help
 * **MasaGratoR** - Status Monitor & Display Refresh Rate Driver
 * **Dom, Samybigio, Arcdelta, Miki, Happy, Flopsider, Winnerboi77, Blaise, Alvise, TDRR, agjeococh and Xenshen** - Testing
+* **Samybigio2011** - Italian translations

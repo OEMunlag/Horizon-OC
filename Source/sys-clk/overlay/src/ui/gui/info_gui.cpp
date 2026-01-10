@@ -17,14 +17,14 @@
 #include "../format.h"
 #include <tesla.hpp>
 #include <string>
-tsl::elm::ListItem* cpuSpeedoItem;
-tsl::elm::ListItem* gpuSpeedoItem;
-tsl::elm::ListItem* socSpeedoItem;
+
+tsl::elm::ListItem* SpeedoItem;
+tsl::elm::ListItem* IddqItem;
 
 InfoGui::InfoGui()
 {
     // Initialize display strings
-    memset(speedoStrings, 0, sizeof(speedoStrings));
+    memset(strings, 0, sizeof(strings));
 }
 
 InfoGui::~InfoGui()
@@ -33,17 +33,14 @@ InfoGui::~InfoGui()
 
 void InfoGui::listUI()
 {
-    cpuSpeedoItem =
-        new tsl::elm::ListItem("CPU Speedo");
-    this->listElement->addItem(cpuSpeedoItem);
-    
-    gpuSpeedoItem =
-        new tsl::elm::ListItem("GPU Speedo");
-    this->listElement->addItem(gpuSpeedoItem);
-    
-    socSpeedoItem =
-        new tsl::elm::ListItem("SOC Speedo");
-    this->listElement->addItem(socSpeedoItem);
+    SpeedoItem =
+        new tsl::elm::ListItem("Speedos:");
+    this->listElement->addItem(SpeedoItem);
+
+    IddqItem =
+        new tsl::elm::ListItem("IDDQ:");
+    this->listElement->addItem(IddqItem);
+
 }
 
 void InfoGui::update()
@@ -58,12 +55,10 @@ void InfoGui::refresh()
     if (!this->context)
         return;
     
-    // Format speedo strings once per refresh
-    sprintf(speedoStrings[0], "%u", this->context->speedos[HorizonOCSpeedo_CPU]);
-    sprintf(speedoStrings[1], "%u", this->context->speedos[HorizonOCSpeedo_GPU]);
-    sprintf(speedoStrings[2], "%u", this->context->speedos[HorizonOCSpeedo_SOC]);
-    cpuSpeedoItem->setValue(speedoStrings[HorizonOCSpeedo_CPU]); // this is SO hacky but it works i guess
-    gpuSpeedoItem->setValue(speedoStrings[HorizonOCSpeedo_GPU]);
-    socSpeedoItem->setValue(speedoStrings[HorizonOCSpeedo_SOC]);
+    // Format strings once per refresh
+    sprintf(strings[0], "%u/%u/%u", this->context->speedos[HorizonOCSpeedo_CPU], this->context->speedos[HorizonOCSpeedo_GPU], this->context->speedos[HorizonOCSpeedo_SOC]);
+    sprintf(strings[1], "%u/%u/%u", this->context->iddq[HorizonOCSpeedo_CPU], this->context->iddq[HorizonOCSpeedo_GPU], this->context->iddq[HorizonOCSpeedo_SOC]);
+    SpeedoItem->setValue(strings[0]);
+    IddqItem->setValue(strings[1]);
 
 }

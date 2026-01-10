@@ -222,7 +222,7 @@ uint64_t lastFrameNumber = 0;
 uint32_t realCPU_Hz = 0;
 uint32_t realGPU_Hz = 0;
 uint32_t realRAM_Hz = 0;
-uint32_t PartLoad[SysClkPartLoad_EnumMax];
+uint32_t partLoad[SysClkPartLoad_EnumMax];
 uint32_t realCPU_mV = 0; 
 uint32_t realGPU_mV = 0; 
 uint32_t realVDD2_mV = 0;
@@ -578,8 +578,8 @@ void Misc(void*) {
                 realCPU_Hz = sysclkCTX.realFreqs[SysClkModule_CPU];
                 realGPU_Hz = sysclkCTX.realFreqs[SysClkModule_GPU];
                 realRAM_Hz = sysclkCTX.realFreqs[SysClkModule_MEM];
-                PartLoad[SysClkPartLoad_EMC] = sysclkCTX.PartLoad[SysClkPartLoad_EMC];
-                PartLoad[SysClkPartLoad_EMCCpu] = sysclkCTX.PartLoad[SysClkPartLoad_EMCCpu];
+                partLoad[SysClkPartLoad_EMC] = sysclkCTX.partLoad[SysClkPartLoad_EMC];
+                partLoad[SysClkPartLoad_EMCCpu] = sysclkCTX.partLoad[SysClkPartLoad_EMCCpu];
                 
                 realCPU_mV = sysclkCTX.voltages[HocClkVoltage_CPU]; 
                 realGPU_mV = sysclkCTX.voltages[HocClkVoltage_GPU]; 
@@ -704,8 +704,8 @@ void Misc3(void*) {
         if (R_SUCCEEDED(sysclkCheck)) {
                 SysClkContext sysclkCTX;
                 if (R_SUCCEEDED(sysclkIpcGetCurrentContext(&sysclkCTX))) {
-                    PartLoad[SysClkPartLoad_EMC] = sysclkCTX.PartLoad[SysClkPartLoad_EMC];
-                    PartLoad[SysClkPartLoad_EMCCpu] = sysclkCTX.PartLoad[SysClkPartLoad_EMCCpu];
+                    partLoad[SysClkPartLoad_EMC] = sysclkCTX.partLoad[SysClkPartLoad_EMC];
+                    partLoad[SysClkPartLoad_EMCCpu] = sysclkCTX.partLoad[SysClkPartLoad_EMCCpu];
                     
                     realCPU_mV = sysclkCTX.voltages[HocClkVoltage_CPU]; 
                     realGPU_mV = sysclkCTX.voltages[HocClkVoltage_GPU]; 

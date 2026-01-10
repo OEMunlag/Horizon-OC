@@ -102,12 +102,14 @@ ClockManager::ClockManager()
     );
     
 	threadStart(&governorTHREAD);
-
-    this->context->speedos[HorizonOCSpeedo_CPU] = Board::getCPUSpeedo();
-    this->context->speedos[HorizonOCSpeedo_GPU] = Board::getGPUSpeedo();
-    this->context->speedos[HorizonOCSpeedo_SOC] = Board::getSOCSpeedo();
+    
+    for(int i = 0; i < HorizonOCSpeedo_EnumMax; i++) {
+        this->context->speedos[i] = Board::getSpeedo((HorizonOCSpeedo)i);
+        this->context->iddq[i] = Board::getIDDQ((HorizonOCSpeedo)i);
+    }
 
     this->context->dramID = Board::GetDramID();
+    this->context->isDram8GB = Board::IsDram8GB();
 }
 
 void ClockManager::FixCpuBug() {
@@ -666,7 +668,7 @@ bool ClockManager::RefreshContext()
     // ram load do not and should not force a refresh, hasChanged untouched
     for (unsigned int loadSource = 0; loadSource < SysClkPartLoad_EnumMax; loadSource++)
     {
-        this->context->PartLoad[loadSource] = Board::GetPartLoad((SysClkPartLoad)loadSource);
+        this->context->partLoad[loadSource] = Board::GetPartLoad((SysClkPartLoad)loadSource);
     }
 
     for (unsigned int voltageSource = 0; voltageSource < HocClkVoltage_EnumMax; voltageSource++)
@@ -1037,7 +1039,7 @@ void ClockManager::calculateGpuVmin (void)
         SysClkConfigValueList configValues;
         this->config->GetConfigValues(&configValues);
 
-        int speedo = Board::getGPUSpeedo(), freq = this->config->GetConfigValue(KipConfigValue_marikoEmcMaxClock);
+        int speedo = Board::getSpeedo(HorizonOCSpeedo_CPU), freq = this->config->GetConfigValue(KipConfigValue_marikoEmcMaxClock);
         configValues.values[KipConfigValue_marikoGpuVmin] = GetGpuVoltage(freq, speedo);
         this->config->SetConfigValues(&configValues, true);
     }

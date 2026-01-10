@@ -39,13 +39,14 @@ typedef struct
     uint32_t overrideFreqs[SysClkModule_EnumMax];
     uint32_t temps[SysClkThermalSensor_EnumMax];
     int32_t power[SysClkPowerSensor_EnumMax];
-    uint32_t PartLoad[SysClkPartLoad_EnumMax];
+    uint32_t partLoad[SysClkPartLoad_EnumMax];
     uint32_t voltages[HocClkVoltage_EnumMax];
     u16 speedos[HorizonOCSpeedo_EnumMax];
-    uint32_t perfConfId;
+    u16 iddq[HorizonOCSpeedo_EnumMax];
     u8 maxDisplayFreq;
     u8 fps;
     u8 dramID;
+    bool isDram8GB;
 } SysClkContext;
 
 typedef struct

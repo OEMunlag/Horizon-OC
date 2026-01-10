@@ -25,7 +25,7 @@
 class InfoGui : public BaseMenuGui
 {
 protected:
-    char speedoStrings[3][16];  // Pre-formatted speedo strings
+    char strings[32][32];  // Pre-formatted strings
     
 public:
     InfoGui();

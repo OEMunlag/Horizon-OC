@@ -16,7 +16,6 @@
  *
  */
 
-
 #include "misc_gui.h"
 #include "fatal_gui.h"
 #include "../format.h"

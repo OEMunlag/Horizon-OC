@@ -323,17 +323,34 @@ void Board::fuseReadSpeedos() {
     svcCloseHandle(debug);
 }
 
-u16 Board::getCPUSpeedo() {
-    return cpuSpeedo0;
+u16 Board::getSpeedo(HorizonOCSpeedo speedoType) {
+    switch(speedoType) {
+        case HorizonOCSpeedo_CPU:
+            return cpuSpeedo0;
+        case HorizonOCSpeedo_GPU:
+            return cpuSpeedo2;
+        case HorizonOCSpeedo_SOC:
+            return socSpeedo0;
+        default:
+            ASSERT_ENUM_VALID(HorizonOCSpeedo, speedoType);
+            return 0;
+    }
 }
 
-u16 Board::getGPUSpeedo() {
-    return cpuSpeedo2;
+u16 Board::getIDDQ(HorizonOCSpeedo speedoType) {
+    switch(speedoType) {
+        case HorizonOCSpeedo_CPU:
+            return cpuIDDQ;
+        case HorizonOCSpeedo_GPU:
+            return gpuIDDQ;
+        case HorizonOCSpeedo_SOC:
+            return socIDDQ;
+        default:
+            ASSERT_ENUM_VALID(HorizonOCSpeedo, speedoType);
+            return 0;
+    }
 }
 
-u16 Board::getSOCSpeedo() {
-    return socSpeedo0;
-}
 
 void Board::Exit()
 {
@@ -1065,4 +1082,18 @@ void Board::UpdateShadowRegs(u32 tRCD_i, u32 tRP_i, u32 tRAS_i, u32 tRRD_i, u32 
     
     WRITE_REGISTER_MC(MC_TIMING_CONTROL_0, 0x1); // update timing regs as they are shadowed
     WRITE_REGISTER_EMC(EMC_TIMING_CONTROL_0, 0x1);
+}
+
+
+bool Board::IsDram8GB() {
+    SecmonArgs args = {};                                         
+    args.X[0] = 0xF0000002;                             
+    args.X[1] = MC_REGISTER_BASE + MC_EMEM_CFG_0;    
+    svcCallSecureMonitor(&args);                        
+
+    if(args.X[1] == (MC_REGISTER_BASE + MC_EMEM_CFG_0)) { // if param 1 is identical read failed
+        writeNotification("Horizon OC\nSecmon read failed!\n This may be a hardware issue!"); 
+        return false;
+    }  else
+        return args.X[1] == 0x00002000 ? true : false;
 }

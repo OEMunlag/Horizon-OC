@@ -259,9 +259,9 @@ void BaseMenuGui::refresh()
     sprintf(displayStrings[16], "%d mW", context->power[1]); // Avg
 
 
-    sprintf(displayStrings[17], "%u%%", context->PartLoad[HocClkPartLoad_GPU] / 10);
-    sprintf(displayStrings[18], "%u%%", context->PartLoad[SysClkPartLoad_EMC] / 10);
-    // sprintf(displayStrings[19], "%u", context->PartLoad[HocClkPartLoad_CPUAvg]);
+    sprintf(displayStrings[17], "%u%%", context->partLoad[HocClkPartLoad_GPU] / 10);
+    sprintf(displayStrings[18], "%u%%", context->partLoad[SysClkPartLoad_EMC] / 10);
+    // sprintf(displayStrings[19], "%u", context->partLoad[HocClkPartLoad_CPUAvg]);
 
     millis = context->temps[HorizonOCThermalSensor_Battery]; // Battery
     sprintf(displayStrings[20], "%u.%u °C", millis / 1000U, (millis % 1000U) / 100U);
@@ -269,9 +269,9 @@ void BaseMenuGui::refresh()
 
     sprintf(displayStrings[21], "%d mV", context->voltages[HocClkVoltage_Battery]); // BAT AVG
 
-    sprintf(displayStrings[23], "%u%%", context->PartLoad[HocClkPartLoad_BAT] / 1000);
+    sprintf(displayStrings[23], "%u%%", context->partLoad[HocClkPartLoad_BAT] / 1000);
 
-    sprintf(displayStrings[24], "%u%%", context->PartLoad[HocClkPartLoad_FAN]);
+    sprintf(displayStrings[24], "%u%%", context->partLoad[HocClkPartLoad_FAN]);
 
     sprintf(displayStrings[25], "%u Hz", context->realFreqs[HorizonOCModule_Display]);
 
