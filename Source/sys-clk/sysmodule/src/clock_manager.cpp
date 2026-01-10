@@ -107,13 +107,20 @@ ClockManager::ClockManager()
     this->context->speedos[HorizonOCSpeedo_GPU] = Board::getGPUSpeedo();
     this->context->speedos[HorizonOCSpeedo_SOC] = Board::getSOCSpeedo();
 
+    this->context->dramID = Board::GetDramID();
 }
 
 void ClockManager::FixCpuBug() {
     Board::SetHz(SysClkModule_CPU, 1785000000); // this will just set to the max when kip is unloaded so idgaf
+    Board::SetHz(SysClkModule_CPU, 1887000000);
     Board::SetHz(SysClkModule_CPU, 1963000000);
     Board::SetHz(SysClkModule_CPU, 2091000000);
+    Board::SetHz(SysClkModule_CPU, 2193000000);
+    Board::SetHz(SysClkModule_CPU, 2295000000);
     Board::SetHz(SysClkModule_CPU, 2397000000);
+    Board::SetHz(SysClkModule_CPU, 2499000000);
+    Board::SetHz(SysClkModule_CPU, 2601000000);
+    Board::SetHz(SysClkModule_CPU, 2703000000); // i am just replicating what the user would manually do to fix the bug. if 2703 is unstable it will reset to 1020 due to how fast this runs
     Board::SetHz(SysClkModule_CPU, 1020000000);
     ResetToStockClocks();
     u32 targetHz = 0;
@@ -414,10 +421,6 @@ void ClockManager::Tick()
     Result rc = apmExtGetCurrentPerformanceConfiguration(&mode);
     ASSERT_RESULT_OK(rc, "apmExtGetCurrentPerformanceConfiguration");
 
-    if(this->config->GetConfigValue(HorizonOCConfigValue_BatteryChargeCurrent)) {
-        I2c_Bq24193_SetFastChargeCurrentLimit(this->config->GetConfigValue(HorizonOCConfigValue_BatteryChargeCurrent));
-    }
-
     if(this->config->GetConfigValue(HocClkConfigValue_HandheldTDP) && opMode == AppletOperationMode_Handheld) {
         if(Board::GetConsoleType() == HorizonOCConsoleType_Hoag) {
             if(Board::GetPowerMw(SysClkPowerSensor_Now) < -(int)this->config->GetConfigValue(HocClkConfigValue_LiteTDPLimit)) {
@@ -456,6 +459,9 @@ void ClockManager::Tick()
 
     if (this->RefreshContext() || this->config->Refresh())
     {
+        if(this->config->GetConfigValue(HorizonOCConfigValue_BatteryChargeCurrent)) {
+            I2c_Bq24193_SetFastChargeCurrentLimit(this->config->GetConfigValue(HorizonOCConfigValue_BatteryChargeCurrent));
+        }
         std::uint32_t targetHz = 0;
         std::uint32_t maxHz = 0;
         std::uint32_t nearestHz = 0;
@@ -965,25 +971,25 @@ void ClockManager::UpdateRamTimings() {
         return;
     }
 
-    if(this->config->GetConfigValue(KipConfigValue_marikoEmcMaxClock) != initialConfigValues[KipConfigValue_marikoEmcMaxClock] ||
-       this->config->GetConfigValue(KipConfigValue_mem_burst_read_latency) != initialConfigValues[KipConfigValue_mem_burst_read_latency] ||
-       this->config->GetConfigValue(KipConfigValue_mem_burst_write_latency) != initialConfigValues[KipConfigValue_mem_burst_write_latency]
-    ) {
-        writeNotification("Horizon OC\nCritical values changed!\nUnable to write timings");
-        return;
-    }
-    u32 t1_tRCD = this->config->GetConfigValue(KipConfigValue_t1_tRCD);
-    u32 t2_tRP = this->config->GetConfigValue(KipConfigValue_t2_tRP);
-    u32 t3_tRAS = this->config->GetConfigValue(KipConfigValue_t3_tRAS);
-    u32 t4_tRRD = this->config->GetConfigValue(KipConfigValue_t4_tRRD);
-    u32 t5_tRFC = this->config->GetConfigValue(KipConfigValue_t5_tRFC);
-    u32 t6_tRTW = this->config->GetConfigValue(KipConfigValue_t6_tRTW);
-    u32 t7_tWTR = this->config->GetConfigValue(KipConfigValue_t7_tWTR);
-    u32 t8_tREFI = this->config->GetConfigValue(KipConfigValue_t8_tREFI);
-    u64 ramFreq = this->config->GetConfigValue(KipConfigValue_marikoEmcMaxClock);
-    u32 rlAdd = this->config->GetConfigValue(KipConfigValue_mem_burst_read_latency);
-    u32 wlAdd = this->config->GetConfigValue(KipConfigValue_mem_burst_write_latency);
-    bool hpMode = (bool)this->config->GetConfigValue(KipConfigValue_hpMode);
+    // if(this->config->GetConfigValue(KipConfigValue_marikoEmcMaxClock) != initialConfigValues[KipConfigValue_marikoEmcMaxClock] ||
+    //    this->config->GetConfigValue(KipConfigValue_mem_burst_read_latency) != initialConfigValues[KipConfigValue_mem_burst_read_latency] ||
+    //    this->config->GetConfigValue(KipConfigValue_mem_burst_write_latency) != initialConfigValues[KipConfigValue_mem_burst_write_latency]
+    // ) {
+    //     writeNotification("Horizon OC\nCritical values changed!\nUnable to write timings");
+    //     return;
+    // }
+    u32 t1_tRCD = initialConfigValues[KipConfigValue_t1_tRCD];
+    u32 t2_tRP = initialConfigValues[KipConfigValue_t2_tRP];
+    u32 t3_tRAS = initialConfigValues[KipConfigValue_t3_tRAS];
+    u32 t4_tRRD = initialConfigValues[KipConfigValue_t4_tRRD];
+    u32 t5_tRFC = initialConfigValues[KipConfigValue_t5_tRFC];
+    u32 t6_tRTW = initialConfigValues[KipConfigValue_t6_tRTW];
+    u32 t7_tWTR = initialConfigValues[KipConfigValue_t7_tWTR];
+    u32 t8_tREFI = initialConfigValues[KipConfigValue_t8_tREFI];
+    u64 ramFreq = initialConfigValues[KipConfigValue_marikoEmcMaxClock];
+    u32 rlAdd = initialConfigValues[KipConfigValue_mem_burst_read_latency];
+    u32 wlAdd = initialConfigValues[KipConfigValue_mem_burst_write_latency];
+    bool hpMode = (bool)initialConfigValues[KipConfigValue_hpMode];
 
     Board::UpdateShadowRegs(t1_tRCD, t2_tRP, t3_tRAS, t4_tRRD, t5_tRFC, t6_tRTW, t7_tWTR, t8_tREFI, ramFreq, rlAdd, wlAdd, hpMode);
 }

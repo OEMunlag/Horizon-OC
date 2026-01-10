@@ -41,10 +41,11 @@ typedef struct
     int32_t power[SysClkPowerSensor_EnumMax];
     uint32_t PartLoad[SysClkPartLoad_EnumMax];
     uint32_t voltages[HocClkVoltage_EnumMax];
+    u16 speedos[HorizonOCSpeedo_EnumMax];
     uint32_t perfConfId;
     u8 maxDisplayFreq;
     u8 fps;
-    u16 speedos[HorizonOCSpeedo_EnumMax];
+    u8 dramID;
 } SysClkContext;
 
 typedef struct

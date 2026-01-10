@@ -73,7 +73,7 @@ class ClockManager
     void calculateGpuVmin(void);
   protected:
     bool IsAssignableHz(SysClkModule module, std::uint32_t hz);
-    std::uint32_t GetMaxAllowedHz(SysClkModule module, SysClkProfile profile);
+    inline std::uint32_t GetMaxAllowedHz(SysClkModule module, SysClkProfile profile);
     std::uint32_t GetNearestHz(SysClkModule module, std::uint32_t inHz, std::uint32_t maxHz);
     bool ConfigIntervalTimeout(SysClkConfigValue intervalMsConfigValue, std::uint64_t ns, std::uint64_t* lastLogNs);
     void RefreshFreqTableRow(SysClkModule module);

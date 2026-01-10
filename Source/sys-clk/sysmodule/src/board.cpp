@@ -39,7 +39,7 @@
 #include <display_refresh_rate.h>
 #include <stdio.h>
 #include <cstring>
-#include "emc_mc_defs.h"
+#include <registers.h>
 #include <notification.h>
 
 #define MAX(A, B)   std::max(A, B)
@@ -97,7 +97,7 @@ std::atomic<uint64_t> idletick3{systemtickfrequency};
 u32 cpu0, cpu1, cpu2, cpu3, cpuAvg;
 u16 cpuSpeedo0, cpuSpeedo2, socSpeedo0; // CPU, GPU, SOC
 u16 cpuIDDQ, gpuIDDQ, socIDDQ;
-
+u8 g_dramID = 0;
 
 const char* Board::GetModuleName(SysClkModule module, bool pretty)
 {
@@ -239,10 +239,10 @@ void Board::Initialize()
     threadCreate(&gpuLThread, gpuLoadThread, NULL, NULL, 0x1000, 0x3F, -2);
 	threadStart(&gpuLThread);
 
-    threadCreate(&cpuCore0Thread, CheckCore, &idletick0, NULL, 0x1000, 0x10, 0);
-    threadCreate(&cpuCore1Thread, CheckCore, &idletick1, NULL, 0x1000, 0x10, 1);
-    threadCreate(&cpuCore2Thread, CheckCore, &idletick2, NULL, 0x1000, 0x10, 2);
-    threadCreate(&cpuCore3Thread, CheckCore, &idletick3, NULL, 0x1000, 0x10, 3);
+    threadCreate(&cpuCore0Thread, CheckCore, &idletick0, NULL, 0x500, 0x10, 0);
+    threadCreate(&cpuCore1Thread, CheckCore, &idletick1, NULL, 0x500, 0x10, 1);
+    threadCreate(&cpuCore2Thread, CheckCore, &idletick2, NULL, 0x500, 0x10, 2);
+    threadCreate(&cpuCore3Thread, CheckCore, &idletick3, NULL, 0x500, 0x10, 3);
     threadCreate(&miscThread, miscThreadFunc, NULL, NULL, 0x1000, 0x3F, 3);
 
     threadStart(&cpuCore0Thread);
@@ -266,6 +266,7 @@ void Board::Initialize()
 
         DisplayRefresh_Initialize(&cfg);
     }
+
     FetchHardwareInfos();
 }
 
@@ -767,16 +768,23 @@ HorizonOCConsoleType Board::GetConsoleType() {
     return g_consoleType;
 }
 
+u8 Board::GetDramID() {
+    return g_dramID;
+}
+
 void Board::FetchHardwareInfos()
 {
     fuseReadSpeedos();
-    u64 sku = 0;
+    u64 sku = 0, dramID = 0;
     Result rc = splInitialize();
     ASSERT_RESULT_OK(rc, "splInitialize");
 
     rc = splGetConfig(SplConfigItem_HardwareType, &sku);
     ASSERT_RESULT_OK(rc, "splGetConfig");
 
+    rc = splGetConfig(SplConfigItem_DramId, &dramID);
+    ASSERT_RESULT_OK(rc, "splGetConfig");
+    
     splExit();
 
     switch(sku)
@@ -792,6 +800,8 @@ void Board::FetchHardwareInfos()
     }
 
     g_consoleType = (HorizonOCConsoleType)sku;
+    g_dramID = (u8)dramID;
+
 }
 
 /*
