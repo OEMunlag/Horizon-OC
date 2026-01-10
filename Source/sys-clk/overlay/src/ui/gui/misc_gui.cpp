@@ -1012,6 +1012,67 @@ protected:
             NamedValue("985mV", 985), NamedValue("990mV", 990), NamedValue("995mV", 995),
         };
 
+        std::vector<NamedValue> mGpuVolts_noAuto = {
+            NamedValue("Disabled", 2000),
+            NamedValue("480mV", 480), NamedValue("485mV", 485), NamedValue("490mV", 490),
+            NamedValue("495mV", 495), NamedValue("500mV", 500), NamedValue("505mV", 505),
+            NamedValue("510mV", 510), NamedValue("515mV", 515), NamedValue("520mV", 520),
+            NamedValue("525mV", 525), NamedValue("530mV", 530), NamedValue("535mV", 535),
+            NamedValue("540mV", 540), NamedValue("545mV", 545), NamedValue("550mV", 550),
+            NamedValue("555mV", 555), NamedValue("560mV", 560), NamedValue("565mV", 565),
+            NamedValue("570mV", 570), NamedValue("575mV", 575), NamedValue("580mV", 580),
+            NamedValue("585mV", 585), NamedValue("590mV", 590), NamedValue("595mV", 595),
+            NamedValue("600mV", 600), NamedValue("605mV", 605), NamedValue("610mV", 610),
+            NamedValue("615mV", 615), NamedValue("620mV", 620), NamedValue("625mV", 625),
+            NamedValue("630mV", 630), NamedValue("635mV", 635), NamedValue("640mV", 640),
+            NamedValue("645mV", 645), NamedValue("650mV", 650), NamedValue("655mV", 655),
+            NamedValue("660mV", 660), NamedValue("665mV", 665), NamedValue("670mV", 670),
+            NamedValue("675mV", 675), NamedValue("680mV", 680), NamedValue("685mV", 685),
+            NamedValue("690mV", 690), NamedValue("695mV", 695), NamedValue("700mV", 700),
+            NamedValue("705mV", 705), NamedValue("710mV", 710), NamedValue("715mV", 715),
+            NamedValue("720mV", 720), NamedValue("725mV", 725), NamedValue("730mV", 730),
+            NamedValue("735mV", 735), NamedValue("740mV", 740), NamedValue("745mV", 745),
+            NamedValue("750mV", 750), NamedValue("755mV", 755), NamedValue("760mV", 760),
+            NamedValue("765mV", 765), NamedValue("770mV", 770), NamedValue("775mV", 775),
+            NamedValue("780mV", 780), NamedValue("785mV", 785), NamedValue("790mV", 790),
+            NamedValue("795mV", 795), NamedValue("800mV", 800), NamedValue("805mV", 805),
+            NamedValue("810mV", 810), NamedValue("815mV", 815), NamedValue("820mV", 820),
+            NamedValue("825mV", 825), NamedValue("830mV", 830), NamedValue("835mV", 835),
+            NamedValue("840mV", 840), NamedValue("845mV", 845), NamedValue("850mV", 850),
+            NamedValue("855mV", 855), NamedValue("860mV", 860), NamedValue("865mV", 865),
+            NamedValue("870mV", 870), NamedValue("875mV", 875), NamedValue("880mV", 880),
+            NamedValue("885mV", 885), NamedValue("890mV", 890), NamedValue("895mV", 895),
+            NamedValue("900mV", 900), NamedValue("905mV", 905), NamedValue("910mV", 910),
+            NamedValue("915mV", 915), NamedValue("920mV", 920), NamedValue("925mV", 925),
+            NamedValue("930mV", 930), NamedValue("935mV", 935), NamedValue("940mV", 940),
+            NamedValue("945mV", 945), NamedValue("950mV", 950), NamedValue("955mV", 955),
+            NamedValue("960mV", 960),
+        };
+
+        std::vector<NamedValue> eGpuVolts_noAuto = {
+            NamedValue("Disabled", 2000),
+            NamedValue("700mV", 700), NamedValue("705mV", 705), NamedValue("710mV", 710),
+            NamedValue("715mV", 715), NamedValue("720mV", 720), NamedValue("725mV", 725),
+            NamedValue("730mV", 730), NamedValue("735mV", 735), NamedValue("740mV", 740),
+            NamedValue("745mV", 745), NamedValue("750mV", 750), NamedValue("755mV", 755),
+            NamedValue("760mV", 760), NamedValue("765mV", 765), NamedValue("770mV", 770),
+            NamedValue("775mV", 775), NamedValue("780mV", 780), NamedValue("785mV", 785),
+            NamedValue("790mV", 790), NamedValue("795mV", 795), NamedValue("800mV", 800),
+            NamedValue("805mV", 805), NamedValue("810mV", 810), NamedValue("815mV", 815),
+            NamedValue("820mV", 820), NamedValue("825mV", 825), NamedValue("830mV", 830),
+            NamedValue("835mV", 835), NamedValue("840mV", 840), NamedValue("845mV", 845),
+            NamedValue("850mV", 850), NamedValue("855mV", 855), NamedValue("860mV", 860),
+            NamedValue("865mV", 865), NamedValue("870mV", 870), NamedValue("875mV", 875),
+            NamedValue("880mV", 880), NamedValue("885mV", 885), NamedValue("890mV", 890),
+            NamedValue("895mV", 895), NamedValue("900mV", 900), NamedValue("905mV", 905),
+            NamedValue("910mV", 910), NamedValue("915mV", 915), NamedValue("920mV", 920),
+            NamedValue("925mV", 925), NamedValue("930mV", 930), NamedValue("935mV", 935),
+            NamedValue("940mV", 940), NamedValue("945mV", 945), NamedValue("950mV", 950),
+            NamedValue("955mV", 955), NamedValue("960mV", 960), NamedValue("965mV", 965),
+            NamedValue("970mV", 970), NamedValue("975mV", 975), NamedValue("980mV", 980),
+            NamedValue("985mV", 985), NamedValue("990mV", 990), NamedValue("995mV", 995),
+        };
+
         if (IsMariko()) {
             
             tsl::elm::CustomDrawer* warningText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
@@ -1042,12 +1103,12 @@ protected:
             addConfigButton(KipConfigValue_g_volt_1228800, "1228.8MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
             addConfigButton(KipConfigValue_g_volt_1267200, "1267.2MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
             addConfigButton(KipConfigValue_g_volt_1305600, "1305.6MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
-            addConfigButton(KipConfigValue_g_volt_1344000, "1344.0MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
-            addConfigButton(KipConfigValue_g_volt_1382400, "1382.4MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
-            addConfigButton(KipConfigValue_g_volt_1420800, "1420.8MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
-            addConfigButton(KipConfigValue_g_volt_1459200, "1459.2MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
-            addConfigButton(KipConfigValue_g_volt_1497600, "1497.6MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
-            addConfigButton(KipConfigValue_g_volt_1536000, "1536.0MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
+            addConfigButton(KipConfigValue_g_volt_1344000, "1344.0MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
+            addConfigButton(KipConfigValue_g_volt_1382400, "1382.4MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
+            addConfigButton(KipConfigValue_g_volt_1420800, "1420.8MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
+            addConfigButton(KipConfigValue_g_volt_1459200, "1459.2MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
+            addConfigButton(KipConfigValue_g_volt_1497600, "1497.6MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
+            addConfigButton(KipConfigValue_g_volt_1536000, "1536.0MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
         } else {
 
             tsl::elm::CustomDrawer* warningText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
@@ -1085,8 +1146,8 @@ protected:
             addConfigButton(KipConfigValue_g_volt_e_921600, "921.6MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts, false);
             addConfigButton(KipConfigValue_g_volt_e_960000, "960.0MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts, false);
             addConfigButton(KipConfigValue_g_volt_e_998400, "998.4MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts, false);
-            addConfigButton(KipConfigValue_g_volt_e_1036800, "1036.8MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts, false);
-            addConfigButton(KipConfigValue_g_volt_e_1075200, "1075.2MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts, false);
+            addConfigButton(KipConfigValue_g_volt_e_1036800, "1036.8MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts_noAuto, false);
+            addConfigButton(KipConfigValue_g_volt_e_1075200, "1075.2MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts_noAuto, false);
         }
     }
 };
