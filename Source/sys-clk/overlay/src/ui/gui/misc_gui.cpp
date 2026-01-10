@@ -280,25 +280,29 @@ void MiscGui::listUI()
         std::map<uint32_t, std::string> labels_pwr_l = {
             {6400, "Official Rating"}
         };
-        ValueThresholds tdpThresholds(8600, 9500);
-        addConfigButton(
-            HocClkConfigValue_HandheldTDPLimit,
-            "TDP Threshold",
-            ValueRange(5000, 10000, 100, "mW", 1),
-            "Power",
-            &tdpThresholds,
-            labels_pwr_r
-        );
 
-        ValueThresholds tdpThresholdsLite(6400, 7500);
-        addConfigButton(
-            HocClkConfigValue_LiteTDPLimit,
-            "Lite TDP Threshold",
-            ValueRange(4000, 8000, 100, "mW", 1),
-            "Power",
-            &tdpThresholdsLite,
-            labels_pwr_l
-        );
+        if(IsHoag()) {
+            ValueThresholds tdpThresholdsLite(6400, 7500);
+            addConfigButton(
+                HocClkConfigValue_LiteTDPLimit,
+                "Lite TDP Threshold",
+                ValueRange(4000, 8000, 100, "mW", 1),
+                "Power",
+                &tdpThresholdsLite,
+                labels_pwr_l
+            );
+        } else {
+            ValueThresholds tdpThresholds(8600, 9500);
+            addConfigButton(
+                HocClkConfigValue_HandheldTDPLimit,
+                "TDP Threshold",
+                ValueRange(5000, 10000, 100, "mW", 1),
+                "Power",
+                &tdpThresholds,
+                labels_pwr_r
+            );
+        }
+
 
         ValueThresholds throttleThresholds(70, 80);
         addConfigButton(
@@ -376,20 +380,59 @@ void MiscGui::listUI()
             NamedValue("2816mA", 2816),
             NamedValue("3072mA", 3072),
         };
+        if(!IsHoag()) {
+            std::vector<NamedValue> chargerCurrents = {
+                NamedValue("Disabled", 0),
+                NamedValue("1024mA", 1024),
+                NamedValue("1280mA", 1280),
+                NamedValue("1536mA", 1536),
+                NamedValue("1792mA", 1792),
+                NamedValue("2048mA", 2048),
+                NamedValue("2304mA", 2304),
+                NamedValue("2560mA", 2560),
+                NamedValue("2816mA", 2816),
+                NamedValue("3072mA", 3072),
+            };
 
-        ValueThresholds chargerThresholds(2048, 2560);
+            ValueThresholds chargerThresholds(2048, 2560);
 
-        addConfigButton(
-            HorizonOCConfigValue_BatteryChargeCurrent,
-            "Charge Current Override",
-            ValueRange(0, 0, 1, "", 0),
-            "Charge Current Override",
-            &chargerThresholds,
-            {},
-            chargerCurrents,
-            false
-        );
-        addConfigToggle(HorizonOCConfigValue_OverwriteRefreshRate, nullptr);
+            addConfigButton(
+                HorizonOCConfigValue_BatteryChargeCurrent,
+                "Charge Current Override",
+                ValueRange(0, 0, 1, "", 0),
+                "Charge Current Override",
+                &chargerThresholds,
+                {},
+                chargerCurrents,
+                false
+            );
+            addConfigToggle(HorizonOCConfigValue_OverwriteRefreshRate, nullptr);
+        } else {
+            std::vector<NamedValue> chargerCurrents = {
+                NamedValue("Disabled", 0),
+                NamedValue("1024mA", 1024),
+                NamedValue("1280mA", 1280),
+                NamedValue("1536mA", 1536),
+                NamedValue("1792mA", 1792),
+                NamedValue("2048mA", 2048),
+                NamedValue("2304mA", 2304),
+                NamedValue("2560mA", 2560),
+            };
+
+            ValueThresholds chargerThresholds(1792, 2048);
+
+            addConfigButton(
+                HorizonOCConfigValue_BatteryChargeCurrent,
+                "Charge Current Override",
+                ValueRange(0, 0, 1, "", 0),
+                "Charge Current Override",
+                &chargerThresholds,
+                {},
+                chargerCurrents,
+                false
+            );
+
+        }
     #endif
 
 }
