@@ -35,13 +35,14 @@ It enables advanced CPU, GPU, and RAM tuning with user-friendly configuration to
 ## Features
 
 * **CPU:** Up to 1963MHz (Mariko) / 1785MHz (Erista)
-* **GPU:** Up to 1075MHz (Mariko) / 998MHz (Erista)
+* **GPU:** Up to 1075MHz (Mariko) / 921MHz (Erista)
 * **RAM:** Up to 1866MHz (Mariko) / 1600MHz (Erista)
 * Over/undervolting support
 * Built-in configurator
 * Compatible with most homebrew
 
 > *Higher (potentially dangerous) frequencies are unlockable via configuration.*
+> *Erista and Mariko units can usually push a bit further fully safely with a bit of undervolting, however this may not work on all units.*
 > *The exact maximum overclock possible varies per console, although most consoles should be able to do this safely.*
 
 ---

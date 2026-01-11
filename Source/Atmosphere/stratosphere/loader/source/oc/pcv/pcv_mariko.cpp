@@ -496,6 +496,10 @@ namespace ams::ldr::oc::pcv::mariko {
             table->burst_mc_regs.mc_emem_arb_timing_r2r = CEIL(table->burst_regs.emc_rext / 4) - 1 + MC_ARB_SFA;
         }
 
+        if (table->burst_mc_regs.mc_emem_arb_timing_w2w > 1) {
+            table->burst_mc_regs.mc_emem_arb_timing_w2w = CEIL(table->burst_regs.emc_wext / MC_ARB_DIV) - 1 + MC_ARB_SFA;
+        }
+
         table->burst_mc_regs.mc_emem_arb_timing_r2w = CEIL(tR2W / MC_ARB_DIV) - 1 + MC_ARB_SFA;
         table->burst_mc_regs.mc_emem_arb_timing_w2r = CEIL(tW2R / MC_ARB_DIV) - 1 + MC_ARB_SFA;
 
