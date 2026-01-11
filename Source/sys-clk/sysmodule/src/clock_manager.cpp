@@ -920,7 +920,7 @@ void ClockManager::GetKipData() {
         configValues.values[KipConfigValue_marikoGpuVmin] = cust_get_mariko_gpu_vmin(&table);
         configValues.values[KipConfigValue_marikoGpuVmax] = cust_get_mariko_gpu_vmax(&table);
         configValues.values[KipConfigValue_commonGpuVoltOffset] = cust_get_common_gpu_offset(&table);
-        configValues.values[KipConfigValue_gpuSpeedo] = cust_get_gpu_speedo(&table);
+        configValues.values[KipConfigValue_gpuSpeedo] = Board::getSpeedo(HorizonOCSpeedo_GPU); // cust_get_gpu_speedo(&table);
 
         for (int i = 0; i < 24; i++) {
             configValues.values[KipConfigValue_g_volt_76800 + i] = cust_get_mariko_gpu_volt(&table, i);
