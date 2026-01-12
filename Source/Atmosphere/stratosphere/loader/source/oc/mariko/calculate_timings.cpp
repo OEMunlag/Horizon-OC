@@ -29,16 +29,12 @@ namespace ams::ldr::oc::pcv::mariko {
 
     /* TODO: This function is quite uggly, refactor! */
     void CalculateMiscTimings() {
-        rdv             = 0x39 + C.mem_burst_read_latency;
         einput_duration = 0x1C;
-        quse_width      = 0x8;
 
         for (u32 i = 0; i < g_misc_table_size; i++) {
             const auto& e = g_misc_table[i];
             if (C.marikoEmcMaxClock >= e.min_freq) {
-                rdv += e.rdv_inc;
                 if (e.einput) einput_duration = e.einput;
-                if (e.quse_width) quse_width = e.quse_width;
             }
         }
 
@@ -54,14 +50,6 @@ namespace ams::ldr::oc::pcv::mariko {
         }
     }
 
-    void CalculateObdly() {
-        obdly = 0x10000002 + C.mem_burst_write_latency;
-
-        if (auto patch = FindObdlyPatch()) {
-            obdly += patch->adjust;
-        }
-    }
-
     void CalculateTWTPDEN() {
         tWTPDEN = tW2P + 1 + CEIL(tDQSS_max / tCK_avg) + CEIL(tDQS2DQ_max / tCK_avg) + 6;
         if (C.marikoEmcMaxClock >= 2'233'000 && C.marikoEmcMaxClock < 2'533'000) tWTPDEN++;
@@ -73,24 +61,6 @@ namespace ams::ldr::oc::pcv::mariko {
 
         if (auto patch = FindTR2WPatch()) {
             tR2W += patch->adjust;
-        }
-    }
-
-    void CalculateQrst() {
-        qrst = 0x00070000;
-        u32 qrst_calc = ROUND(22.1 - (C.marikoEmcMaxClock / 1000000.0) * 8.0) + C.mem_burst_read_latency;
-        u32 qrst_low = MAX(static_cast<u32>(0), qrst_calc);
-
-        if (C.marikoEmcMaxClock >= 2'533'000) {
-            qrst = INCREMENT_HIGH_BYTES_BY(qrst, 1);
-        } else if (C.marikoEmcMaxClock == 2'800'000) {
-            qrst = SET_HIGH_BYTES(qrst, 6);
-        }
-
-        qrst = SET_LOW_BYTES(qrst, qrst_low);
-
-        if (auto patch = FindQrstPatch()) {
-            qrst = INCREMENT_LOW_BYTES_BY(qrst, patch->adjust);
         }
     }
 
@@ -132,10 +102,8 @@ namespace ams::ldr::oc::pcv::mariko {
     void CalculateTimings() {
         CalculateMiscTimings();
         CalculateIbdly();
-        CalculateObdly();
         CalculateTWTPDEN();
         CalculateTR2W();
-        CalculateQrst();
         CalculateQsafe();
         CalculateQpop();
         CalculatePdex2rw();
