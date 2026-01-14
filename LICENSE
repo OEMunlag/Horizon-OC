@@ -4,8 +4,7 @@
 
 - Tinymembench is under MIT license, which is compatible with GPL v2.
 
-- Although "sys-clk" uses permissive license, all modifications towards it in this repo ("hoc-sys") are licensed under GPL v2.
-
+- Although "sys-clk" uses permissive license, all modifications towards it in this repo ("hoc-clk") are licensed under GPL v2.
 
                     GNU GENERAL PUBLIC LICENSE
                        Version 2, June 1991
