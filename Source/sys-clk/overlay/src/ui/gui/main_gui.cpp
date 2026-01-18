@@ -32,6 +32,8 @@
 #include "global_override_gui.h"
 #include "misc_gui.h"
 #include "info_gui.h"
+#include "about_gui.h"
+
 void MainGui::listUI()
 {
     // this->enabledToggle = new tsl::elm::ToggleListItem("Enable", false);
@@ -110,6 +112,18 @@ void MainGui::listUI()
         });
         this->listElement->addItem(infoItem);
     #endif
+    tsl::elm::ListItem* aboutItem = new tsl::elm::ListItem("About");
+    aboutItem->setClickListener([this](u64 keys) {
+        if((keys & HidNpadButton_A) == HidNpadButton_A && this->context)
+        {
+            tsl::changeTo<AboutGui>();
+            return true;
+        }
+
+        return false;
+    });
+    this->listElement->addItem(aboutItem);
+
 }
 
 void MainGui::refresh()
