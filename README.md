@@ -96,6 +96,3 @@ Refer to COMPILATION.md
 * **MasaGratoR** - Status Monitor & Display Refresh Rate Driver
 * **Dom, Samybigio, Arcdelta, Miki, Happy, Flopsider, Winnerboi77, Blaise, Alvise, TDRR, agjeococh and Xenshen** - Testing
 * **Samybigio2011** - Italian translations
-
-## Cat
-<img src="assets/cat.jpg" alt="cat"/>
