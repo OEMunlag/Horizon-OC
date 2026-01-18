@@ -82,6 +82,7 @@ Refer to COMPILATION.md
 
 ## Credits
 * **Lightos's Cat** - Cat
+* **Samy's Kitten** - Kitten
 
 * **Souldbminer** – hoc-clk and loader development
 * **Lightos** – loader patches development

@@ -1,6 +1,5 @@
 *.DS_Store
 .vscode/
-dist/
 .pyc
 build/
 __pycache__/
