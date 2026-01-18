@@ -27,7 +27,7 @@ INCLUDES	:=	../common/include
 EXEFS_SRC	:=	exefs_src
 IS_MINIMAL	:=	0
 
-APP_TITLE	:=	Horizon OC
+APP_TITLE	:=	Horizon OC Zeus
 NO_ICON		:=	1
 
 

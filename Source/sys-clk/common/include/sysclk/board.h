@@ -125,7 +125,6 @@ typedef enum {
     HorizonOCSpeedo_EnumMax,
 } HorizonOCSpeedo;
 
-
 #define SYSCLK_ENUM_VALID(n, v) ((v) < n##_EnumMax)
 
 static inline const char* sysclkFormatModule(SysClkModule module, bool pretty)
