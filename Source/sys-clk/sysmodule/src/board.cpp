@@ -426,14 +426,14 @@ void Board::SetHz(SysClkModule module, std::uint32_t hz)
         DisplayRefresh_SetRate(hz);
         return;
     }
-
+    if(module > SysClkModule_MEM)
+        return;
     if(HOSSVC_HAS_CLKRST)
     {
         ClkrstSession session = {0};
 
         rc = clkrstOpenSession(&session, Board::GetPcvModuleId(module), 3);
         ASSERT_RESULT_OK(rc, "clkrstOpenSession");
-
         rc = clkrstSetClockRate(&session, hz);
         ASSERT_RESULT_OK(rc, "clkrstSetClockRate");
 

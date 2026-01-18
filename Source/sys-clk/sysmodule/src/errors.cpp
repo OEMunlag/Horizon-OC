@@ -28,14 +28,14 @@
 #include "errors.h"
 #include <cstdarg>
 #include <cstring>
-
+#include "file_utils.h"
 void Errors::ThrowException(const char* format, ...)
 {
     va_list args;
     va_start(args, format);
     const char* msg = Errors::FormatMessage(format, args);
     va_end(args);
-
+    FileUtils::LogLine(format, args);
     throw std::runtime_error(msg);
 }
 
