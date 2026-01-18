@@ -31,7 +31,6 @@
 #include "app_profile_gui.h"
 #include "global_override_gui.h"
 #include "misc_gui.h"
-#include "info_gui.h"
 #include "about_gui.h"
 
 void MainGui::listUI()
@@ -98,20 +97,7 @@ void MainGui::listUI()
 
         return false;
     });
-    this->listElement->addItem(miscItem);
-    #if IS_MINIMAL == 0
-        tsl::elm::ListItem* infoItem = new tsl::elm::ListItem("Information");
-        infoItem->setClickListener([this](u64 keys) {
-            if((keys & HidNpadButton_A) == HidNpadButton_A && this->context)
-            {
-                tsl::changeTo<InfoGui>();
-                return true;
-            }
 
-            return false;
-        });
-        this->listElement->addItem(infoItem);
-    #endif
     tsl::elm::ListItem* aboutItem = new tsl::elm::ListItem("About");
     aboutItem->setClickListener([this](u64 keys) {
         if((keys & HidNpadButton_A) == HidNpadButton_A && this->context)
