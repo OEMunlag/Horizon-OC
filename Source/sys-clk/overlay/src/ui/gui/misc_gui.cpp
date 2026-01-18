@@ -652,7 +652,7 @@ protected:
         addConfigButton(KipConfigValue_t8_tREFI, "t8 tREFI", ValueRange(0, 6, 1, "", 1), "tREFI", &thresholdsDisabled, {}, {}, false);
         #if IS_MINIMAL == 0
         this->listElement->addItem(new tsl::elm::CategoryHeader("Experimental"));
-
+        
         tsl::elm::ListItem* emcUpdBtn = new tsl::elm::ListItem("Update RAM Timings");
         emcUpdBtn->setClickListener([this](u64 keys) {
             if (keys & HidNpadButton_A) {
@@ -968,7 +968,7 @@ protected:
             false
         );
 
-        tsl::elm::ListItem* customTableSubmenu = new tsl::elm::ListItem("GPU Custom Table");
+        tsl::elm::ListItem* customTableSubmenu = new tsl::elm::ListItem("GPU Voltage Table");
         customTableSubmenu->setClickListener([](u64 keys) {
             if (keys & HidNpadButton_A) {
                 tsl::changeTo<GpuCustomTableSubmenuGui>();
@@ -1119,10 +1119,10 @@ protected:
             
             tsl::elm::CustomDrawer* warningText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
                 renderer->drawString("\uE150 Setting GPU Clocks past", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
-                renderer->drawString("1075MHz without UV, 1152MHz on SLT or ", false, x + 20, y + 50, 18, tsl::style::color::ColorText);
-                renderer->drawString("1228MHz on HiOPT can cause ", false, x + 20, y + 80, 16, tsl::style::color::ColorText);
-                renderer->drawString("permanent damage to your Switch!", false, x + 20, y + 100, 16, tsl::style::color::ColorText);
-                renderer->drawString("Proceed at your own risk!", false, x + 20, y + 120, 16, tsl::style::color::ColorText);
+                renderer->drawString("1075MHz without UV, 1152MHz on SLT", false, x + 20, y + 50, 18, tsl::style::color::ColorText);
+                renderer->drawString("or 1228MHz on HiOPT can cause ", false, x + 20, y + 80, 18, tsl::style::color::ColorText);
+                renderer->drawString("permanent damage to your Switch!", false, x + 20, y + 100, 18, tsl::style::color::ColorText);
+                renderer->drawString("Proceed at your own risk!", false, x + 20, y + 120, 18, tsl::style::color::ColorText);
             });
             warningText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 150);
             this->listElement->addItem(warningText);
@@ -1156,9 +1156,9 @@ protected:
             tsl::elm::CustomDrawer* warningText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
                 renderer->drawString("\uE150 Setting GPU Clocks past", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
                 renderer->drawString("921MHz without UV and 960MHz on", false, x + 20, y + 50, 18, tsl::style::color::ColorText);
-                renderer->drawString("SLT or HiOPT can cause ", false, x + 20, y + 80, 16, tsl::style::color::ColorText);
-                renderer->drawString("permanent damage to your Switch!", false, x + 20, y + 100, 16, tsl::style::color::ColorText);
-                renderer->drawString("Proceed at your own risk!", false, x + 20, y + 120, 16, tsl::style::color::ColorText);
+                renderer->drawString("SLT or HiOPT can cause ", false, x + 20, y + 80, 18, tsl::style::color::ColorText);
+                renderer->drawString("permanent damage to your Switch!", false, x + 20, y + 100, 18, tsl::style::color::ColorText);
+                renderer->drawString("Proceed at your own risk!", false, x + 20, y + 120, 18, tsl::style::color::ColorText);
             });
             warningText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 150);
             this->listElement->addItem(warningText);
