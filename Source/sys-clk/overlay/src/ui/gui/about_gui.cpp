@@ -17,7 +17,8 @@
 #include "../format.h"
 #include <tesla.hpp>
 #include <string>
-
+#include "cat.h"
+#include "ult_ext.h"
 tsl::elm::ListItem* SpeedoItem = NULL;
 tsl::elm::ListItem* IddqItem = NULL;
 
@@ -174,6 +175,16 @@ void AboutGui::listUI()
     this->listElement->addItem(
         new tsl::elm::ListItem("The Switch Homebrew Community")
     );  
+
+    this->listElement->addItem(
+        new tsl::elm::CategoryHeader("Cat")
+    );
+    this->listElement->addItem(
+        new ImageElement(CAT_DATA, CAT_WIDTH, CAT_HEIGHT)
+    );
+
+    this->listElement->addItem(new tsl::elm::CustomDrawer([](tsl::gfx::Renderer*, s32, s32, s32, s32) {}), 75); // add a bit of space
+
 }
 
 void AboutGui::update()
