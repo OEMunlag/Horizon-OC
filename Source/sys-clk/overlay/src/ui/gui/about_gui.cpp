@@ -173,10 +173,6 @@ void AboutGui::listUI()
     );
 
     this->listElement->addItem(
-        new tsl::elm::ListItem("The Switch Homebrew Community")
-    );  
-
-    this->listElement->addItem(
         new tsl::elm::CategoryHeader("Cat")
     );
     this->listElement->addItem(
