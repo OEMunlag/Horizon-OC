@@ -195,7 +195,7 @@ Result FileUtils::Initialize()
     {
         FileUtils::RefreshFlags(true);
         g_has_initialized = true;
-        FileUtils::LogLine("=== hoc-clk" TARGET_VERSION " ===");
+        FileUtils::LogLine("=== hoc-clk " TARGET_VERSION " ===");
         FileUtils::LogLine("by m4xw, natinusala, p-sam, Souldbminer and Lightos_");
     }
 
