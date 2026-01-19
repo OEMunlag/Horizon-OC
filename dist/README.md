@@ -82,7 +82,6 @@ Refer to COMPILATION.md
 
 ## Credits
 * **Lightos's Cat** - Cat
-* **Samy's Kitten** - Kitten
 
 * **Souldbminer** – hoc-clk and loader development
 * **Lightos** – loader patches development
@@ -97,7 +96,3 @@ Refer to COMPILATION.md
 * **MasaGratoR** - Status Monitor & Display Refresh Rate Driver
 * **Dom, Samybigio, Arcdelta, Miki, Happy, Flopsider, Winnerboi77, Blaise, Alvise, TDRR, agjeococh and Xenshen** - Testing
 * **Samybigio2011** - Italian translations
-
-## Cat
-<img src="assets/cat.jpg" alt="cat"/>
-
