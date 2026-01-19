@@ -97,6 +97,7 @@ void MainGui::listUI()
 
         return false;
     });
+    this->listElement->addItem(miscItem);
 
     tsl::elm::ListItem* aboutItem = new tsl::elm::ListItem("About");
     aboutItem->setClickListener([this](u64 keys) {
