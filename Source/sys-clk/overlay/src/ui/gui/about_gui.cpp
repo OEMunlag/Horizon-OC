@@ -13,14 +13,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+
 #include "about_gui.h"
 #include "../format.h"
 #include <tesla.hpp>
 #include <string>
 #include "cat.h"
 #include "ult_ext.h"
+
 tsl::elm::ListItem* SpeedoItem = NULL;
 tsl::elm::ListItem* IddqItem = NULL;
+ImageElement* CatImage = NULL;
+HideableCategoryHeader* CatHeader = NULL;
+HideableCustomDrawer* CatSpacer = NULL;
+int lightosClickCount = 0;
 
 AboutGui::AboutGui()
 {
@@ -57,9 +64,21 @@ void AboutGui::listUI()
         new tsl::elm::ListItem("Souldbminer")
     );
 
-    this->listElement->addItem(
-        new tsl::elm::ListItem("Lightos_")
-    );
+    // Create special clickable item for Lightos
+    auto lightosItem = new tsl::elm::ListItem("Lightos_");
+    lightosItem->setClickListener([this](u64 keys) -> bool {
+        if (keys & HidNpadButton_A) {
+            lightosClickCount++;
+            if (lightosClickCount >= 10) {
+                if (CatImage != NULL) CatImage->setVisible(true);
+                if (CatHeader != NULL) CatHeader->setVisible(true);
+                if (CatSpacer != NULL) CatSpacer->setVisible(true);
+            }
+            return true;
+        }
+        return false;
+    });
+    this->listElement->addItem(lightosItem);
 
     // ---- Contributors ----
     this->listElement->addItem(
@@ -172,15 +191,18 @@ void AboutGui::listUI()
         new tsl::elm::ListItem("MasaGratoR - Status Monitor")
     );
 
-    this->listElement->addItem(
-        new tsl::elm::CategoryHeader("Cat")
-    );
-    this->listElement->addItem(
-        new ImageElement(CAT_DATA, CAT_WIDTH, CAT_HEIGHT)
-    );
+    // Create cat elements but hide them initially
+    CatHeader = new HideableCategoryHeader("Cat");
+    CatHeader->setVisible(false);
+    this->listElement->addItem(CatHeader);
+    
+    CatImage = new ImageElement(CAT_DATA, CAT_WIDTH, CAT_HEIGHT);
+    CatImage->setVisible(false);
+    this->listElement->addItem(CatImage);
 
-    this->listElement->addItem(new tsl::elm::CustomDrawer([](tsl::gfx::Renderer*, s32, s32, s32, s32) {}), 75); // add a bit of space
-
+    CatSpacer = new HideableCustomDrawer(75);
+    CatSpacer->setVisible(false);
+    this->listElement->addItem(CatSpacer);
 }
 
 void AboutGui::update()
@@ -200,21 +222,3 @@ void AboutGui::refresh()
     SpeedoItem->setValue(strings[0]);
     IddqItem->setValue(strings[1]);
 }
-/*
-## Credits
-* **Lightos's Cat** - Cat
-
-* **Souldbminer** – hoc-clk and loader development
-* **Lightos** – loader patches development
-* **SciresM** - Atmosphere CFW
-* **KazushiMe** – Switch OC Suite
-* **hanai3bi (meha)** – Switch OC Suite, EOS, sys-clk-eos
-* **NaGaa95** – L4T-OC-kernel
-* **B3711 (halop)** – EOS
-* **sys-clk team (m4xw, p-sam, nautalis)** – sys-clk
-* **b0rd2death** – Ultrahand sys-clk & Status Monitor fork
-* **MasaGratoR and ZachyCatGames** - General help
-* **MasaGratoR** - Status Monitor & Display Refresh Rate Driver
-* **Dom, Samybigio, Arcdelta, Miki, Happy, Flopsider, Winnerboi77, Blaise, Alvise, TDRR, agjeococh and Xenshen** - Testing
-* **Samybigio2011** - Italian translations
-*/
