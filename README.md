@@ -90,7 +90,7 @@ Refer to COMPILATION.md
 * **hanai3bi (meha)** – Switch OC Suite, EOS, sys-clk-eos
 * **NaGaa95** – L4T-OC-kernel
 * **B3711 (halop)** – EOS
-* **sys-clk team (m4xw, p-sam, nautalis)** – sys-clk
+* **sys-clk team (m4xw, p-sam, natinusala)** – sys-clk
 * **b0rd2death** – Ultrahand sys-clk & Status Monitor fork
 * **MasaGratoR and ZachyCatGames** - General help
 * **MasaGratoR** - Status Monitor & Display Refresh Rate Driver

@@ -4,3 +4,8 @@
 [submodule "Source/Horizon-OC-Monitor/lib/libultrahand"]
 	path = Source/Horizon-OC-Monitor/lib/libultrahand
 	url = https://github.com/ppkantorski/libultrahand
+
+[submodule "Source/sys-clk/overlay/lib/libultrahand"]
+	path = Source/sys-clk/overlay/lib/libultrahand
+	url = https://github.com/ppkantorski/libultrahand
+
