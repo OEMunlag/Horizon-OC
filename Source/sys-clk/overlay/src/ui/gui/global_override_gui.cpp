@@ -269,6 +269,12 @@ void GlobalOverrideGui::addModuleToggleItem(SysClkModule module)
 
 void GlobalOverrideGui::listUI()
 {
+    Result rc = sysclkIpcGetConfigValues(&configList); // idk why this is needed, probably some refreshing issue
+    if (R_FAILED(rc)) [[unlikely]] {
+        FatalGui::openWithResultCode("sysclkIpcGetConfigValues", rc);
+        return;
+    }
+
     this->listElement->addItem(new tsl::elm::CategoryHeader(
     "Temporary Overrides " + ult::DIVIDER_SYMBOL + "  Reset"));
     this->addModuleListItem(SysClkModule_CPU);
@@ -276,8 +282,8 @@ void GlobalOverrideGui::listUI()
     this->addModuleListItem(SysClkModule_MEM);
     #if IS_MINIMAL == 0
         ValueThresholds lcdThresholds(60, 65);
-        if(!IsHoag())
-            this->addModuleListItemValue(HorizonOCModule_Display, "Display", 40, 72, 1, " Hz", 1, 0, lcdThresholds);
+        if(!IsHoag() && configList.values[HorizonOCConfigValue_OverwriteRefreshRate])
+            this->addModuleListItemValue(HorizonOCModule_Display, "Display", 40, configList.values[HorizonOCConfigValue_EnableUnsafeDisplayFreqs] ? 72 : 60, 1, " Hz", 1, 0, lcdThresholds);
     #endif
     this->addModuleToggleItem(HorizonOCModule_Governor);
 }

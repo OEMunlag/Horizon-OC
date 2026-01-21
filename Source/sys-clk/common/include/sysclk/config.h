@@ -63,7 +63,7 @@ typedef enum {
     HorizonOCConfigValue_BatteryChargeCurrent,
 
     HorizonOCConfigValue_OverwriteRefreshRate,
-
+    HorizonOCConfigValue_EnableUnsafeDisplayFreqs,
     HocClkConfigValue_FixCpuVoltBug,
 
     KipConfigValue_custRev,
@@ -239,6 +239,9 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
         case HocClkConfigValue_FixCpuVoltBug:
             return pretty ? "Fix CPU Volt Bug" : "cpu_volt_bugfix";
 
+        case HorizonOCConfigValue_EnableUnsafeDisplayFreqs:
+            return pretty ? "Enable Unsafe Display Frequencies" : "drr_unsafe";
+
         // KIP config values
         case KipConfigValue_custRev:
             return pretty ? "Custom Revision" : "kip_cust_rev";
@@ -407,6 +410,7 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
         case HocClkConfigValue_KipFileName:
         case HorizonOCConfigValue_BatteryChargeCurrent:
         case HorizonOCConfigValue_OverwriteRefreshRate:
+        case HorizonOCConfigValue_EnableUnsafeDisplayFreqs:
             return 0ULL;
         case HocClkConfigValue_EristaMaxCpuClock:
             return 1785ULL;
@@ -468,6 +472,7 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case HocClkConfigValue_KipFileName:
         case HorizonOCConfigValue_OverwriteRefreshRate:
         case HocClkConfigValue_FixCpuVoltBug:
+        case HorizonOCConfigValue_EnableUnsafeDisplayFreqs:
             return (input & 0x1) == input;
         
         case KipConfigValue_custRev:

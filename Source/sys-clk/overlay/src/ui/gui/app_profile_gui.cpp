@@ -269,15 +269,20 @@ void AppProfileGui::addModuleListItemValue(
 
 void AppProfileGui::addProfileUI(SysClkProfile profile)
 {
+    Result rc = sysclkIpcGetConfigValues(&configList); // idk why this is needed, probably some refreshing issue
+    if (R_FAILED(rc)) [[unlikely]] {
+        FatalGui::openWithResultCode("sysclkIpcGetConfigValues", rc);
+        return;
+    }
     this->listElement->addItem(new tsl::elm::CategoryHeader(sysclkFormatProfile(profile, true) + std::string(" ") + ult::DIVIDER_SYMBOL + "  Reset"));
     this->addModuleListItem(profile, SysClkModule_CPU);
     this->addModuleListItem(profile, SysClkModule_GPU);
     this->addModuleListItem(profile, SysClkModule_MEM);
     #if IS_MINIMAL == 0
         ValueThresholds lcdThresholds(60, 65);
-        if(!IsHoag()) {
+        if(!IsHoag() && configList.values[HorizonOCConfigValue_OverwriteRefreshRate]) {
             if(profile != SysClkProfile_Docked)
-                this->addModuleListItemValue(profile, HorizonOCModule_Display, "Display", 40, 72, 1, " Hz", 1, 0, lcdThresholds);
+                this->addModuleListItemValue(profile, HorizonOCModule_Display, "Display", 40, configList.values[HorizonOCConfigValue_EnableUnsafeDisplayFreqs] ? 72 : 60, 1, " Hz", 1, 0, lcdThresholds);
             else
                 this->addModuleListItemValue(profile, HorizonOCModule_Display, "Display", 50, 120, 5, " Hz", 1, 0);
         }

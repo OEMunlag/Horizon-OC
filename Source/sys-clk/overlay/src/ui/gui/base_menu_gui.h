@@ -38,7 +38,7 @@ class BaseMenuGui : public BaseGui
         // u8 dockedHighestAllowedRefreshRate = 60;
         SysClkContext* context;
         std::uint64_t lastContextUpdate;
-        SysClkConfigValueList* configList;
+        SysClkConfigValueList configList;
         bool g_hardwareModelCached = false;
         bool g_isMariko = false;
         bool g_isAula = false;

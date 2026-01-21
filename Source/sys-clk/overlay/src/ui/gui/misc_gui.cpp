@@ -406,6 +406,15 @@ void MiscGui::listUI()
                 false
             );
             addConfigToggle(HorizonOCConfigValue_OverwriteRefreshRate, nullptr);
+            tsl::elm::CustomDrawer* warningText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
+                renderer->drawString("\uE150 Enabling unsafe display", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
+                renderer->drawString("refresh rates may cause stress", false, x + 20, y + 50, 18, tsl::style::color::ColorText);
+                renderer->drawString("or damage to your display! ", false, x + 20, y + 70, 18, tsl::style::color::ColorText);
+                renderer->drawString("Proceed at your own risk!", false, x + 20, y + 90, 18, tsl::style::color::ColorText);
+            });
+            warningText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 110);
+            this->listElement->addItem(warningText);
+            addConfigToggle(HorizonOCConfigValue_EnableUnsafeDisplayFreqs, nullptr);
         } else {
             std::vector<NamedValue> chargerCurrents = {
                 NamedValue("Disabled", 0),
@@ -675,7 +684,7 @@ protected:
             renderer->drawString("\uE150 This feature is EXPERIMENTAL", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
             renderer->drawString("and should only be used for testing!", false, x + 20, y + 50, 18, tsl::style::color::ColorText);
         });
-        warningText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 150);
+        warningText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 70);
         this->listElement->addItem(warningText);
         #endif
     }
@@ -817,7 +826,10 @@ protected:
             );
 
             std::vector<NamedValue> maxClkOptions = {
-                // NamedValue("1963MHz", 1963000),
+                NamedValue("1963MHz", 1963000),
+                NamedValue("2091MHz", 2091000),
+                NamedValue("2193MHz", 2193000),
+                NamedValue("2295MHz", 2295000),
                 NamedValue("2397MHz", 2397000),
                 NamedValue("2499MHz", 2499000),
                 NamedValue("2601MHz", 2601000),
@@ -1139,10 +1151,10 @@ protected:
                 renderer->drawString("\uE150 Setting GPU Clocks past", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
                 renderer->drawString("1075MHz without UV, 1152MHz on SLT", false, x + 20, y + 50, 18, tsl::style::color::ColorText);
                 renderer->drawString("or 1228MHz on HiOPT can cause ", false, x + 20, y + 70, 18, tsl::style::color::ColorText);
-                renderer->drawString("permanent damage to your Switch!", false, x + 20, y + 900, 18, tsl::style::color::ColorText);
+                renderer->drawString("permanent damage to your Switch!", false, x + 20, y + 90, 18, tsl::style::color::ColorText);
                 renderer->drawString("Proceed at your own risk!", false, x + 20, y + 110, 18, tsl::style::color::ColorText);
             });
-            warningText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 150);
+            warningText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 130);
             this->listElement->addItem(warningText);
 
             addConfigButton(KipConfigValue_g_volt_76800, "76.8MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
@@ -1178,7 +1190,7 @@ protected:
                 renderer->drawString("permanent damage to your Switch!", false, x + 20, y + 90, 18, tsl::style::color::ColorText);
                 renderer->drawString("Proceed at your own risk!", false, x + 20, y + 110, 18, tsl::style::color::ColorText);
             });
-            warningText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 150);
+            warningText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 130);
             this->listElement->addItem(warningText);
 
             addConfigButton(KipConfigValue_g_volt_e_76800, "76.8MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts, false);
