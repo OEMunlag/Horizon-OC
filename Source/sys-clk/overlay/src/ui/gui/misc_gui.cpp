@@ -826,22 +826,22 @@ protected:
             );
 
             std::vector<NamedValue> maxClkOptions = {
-                NamedValue("1963MHz", 1963000),
-                NamedValue("2091MHz", 2091000),
-                NamedValue("2193MHz", 2193000),
-                NamedValue("2295MHz", 2295000),
-                NamedValue("2397MHz", 2397000),
-                NamedValue("2499MHz", 2499000),
-                NamedValue("2601MHz", 2601000),
-                NamedValue("2703MHz", 2703000),
+                NamedValue("1963 MHz", 1963000),
+                NamedValue("2091 MHz", 2091000),
+                NamedValue("2193 MHz", 2193000),
+                NamedValue("2295 MHz", 2295000),
+                NamedValue("2397 MHz", 2397000),
+                NamedValue("2499 MHz", 2499000),
+                NamedValue("2601 MHz", 2601000),
+                NamedValue("2703 MHz", 2703000),
             };
-
+            ValueThresholds mCpuMaxClockThresholds(1963000, 2397000);
             addConfigButton(
                 KipConfigValue_marikoCpuMaxClock,
                 "CPU Max Clock",
                 ValueRange(0, 0, 1, "", 1),
                 "CPU Max Clock",
-                &thresholdsDisabled,
+                &mCpuMaxClockThresholds,
                 {},
                 maxClkOptions,
                 false
