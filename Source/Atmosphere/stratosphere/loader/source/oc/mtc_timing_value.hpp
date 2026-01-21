@@ -42,8 +42,8 @@ namespace ams::ldr::oc {
     const u32 BL = 16;
 
     /* Base latency for read and write (tWRL). */
-    const u32 RL = 28 + C.mem_burst_read_latency;
-    const u32 WL = 14 + C.mem_burst_write_latency;
+    const u32 RL = C.mem_burst_read_latency;
+    const u32 WL = C.mem_burst_write_latency;
 
     /* Switch uses RL_DBI, todo: get rid of non DBI_RL. */
     const u32 RL_DBI = RL + 4;

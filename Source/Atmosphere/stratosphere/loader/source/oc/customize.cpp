@@ -54,8 +54,8 @@ volatile CustomizeTable C = {
 
 /* Set to 4 read and 2 write for 1866b tWRL. */
 /* For 2133 tWRL: 8 read and 4 write. */
-.mem_burst_read_latency = 8,
-.mem_burst_write_latency = 4,
+.mem_burst_read_latency = 40,
+.mem_burst_write_latency = 18,
 
 .eristaCpuUV = 0,
 .eristaCpuVmin = 800,
