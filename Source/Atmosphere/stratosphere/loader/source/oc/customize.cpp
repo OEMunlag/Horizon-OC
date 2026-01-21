@@ -37,7 +37,7 @@ volatile CustomizeTable C = {
 .commonEmcMemVolt  = 1175000, // LPDDR4X JEDEC Specification
 .eristaEmcMaxClock = 1600000, // Maximum HB-MGCH ram rating
 
-.marikoEmcMaxClock = 2133000,
+.marikoEmcMaxClock = 1866000,
 .marikoEmcVddqVolt = 600000,
 .emcDvbShift = 0,
 
@@ -54,8 +54,21 @@ volatile CustomizeTable C = {
 
 /* Set to 4 read and 2 write for 1866b tWRL. */
 /* For 2133 tWRL: 8 read and 4 write. */
-.mem_burst_read_latency = 40,
-.mem_burst_write_latency = 18,
+
+/*
+ *  Read:
+ *   2133RL = 40
+ *   1866RL = 36
+ *   1600RL = 32
+ *   1331RL = 28
+ *  Write:
+ *   2133WL = 18
+ *   1866WL = 16
+ *   1600WL = 14
+ *   1331WL = 12
+ */
+.mem_burst_read_latency = 36,
+.mem_burst_write_latency = 16,
 
 .eristaCpuUV = 0,
 .eristaCpuVmin = 800,
@@ -65,16 +78,19 @@ volatile CustomizeTable C = {
 
 .marikoCpuUVLow = 0, // No undervolt
 .marikoCpuUVHigh = 0, // No undervolt
-.tableConf = DEFAULT_TABLE, /* TODO: Add AUTO */
+.tableConf = DEFAULT_TABLE,
 .marikoCpuLowVmin = 620,
 .marikoCpuHighVmin = 750,
 .marikoCpuMaxVolt = 1120,
 
-/* Supported values: 2397000, 2499000, 2601000, 2703000. */
+/* Supported values: 1963000, 2091000, 2193000, 2295000, 2397000, 2499000, 2601000, 2703000. */
+/* 1963000 is official rating of T214/Mariko, fully safe. */
+/* 2091000-2295000 is a slight OC which should work on all units, but no guarantees. */
+/* 2397000 is the max safe OC for most average units with tuned undervolt. */
 /* 2499000 should be used with caution. */
 /* 2601000 exceeds pmic limit on most consoles. */
 /* 2703000 is potentially dangerous and not advised. */
-.marikoCpuMaxClock = 2397000,
+.marikoCpuMaxClock = 1963000,
 
 .eristaCpuBoostClock = 1785000, // Default boost clock
 .marikoCpuBoostClock = 1963000, // Default boost clock
@@ -84,7 +100,7 @@ volatile CustomizeTable C = {
 
 .marikoGpuUV = 0,
 /* For automatic vmin detection, set this to AUTO. */
-.marikoGpuVmin = 610,
+.marikoGpuVmin = AUTO,
 
 .marikoGpuVmax = 800,
 
@@ -95,8 +111,9 @@ volatile CustomizeTable C = {
 /* This table is used with a gpu uv mode of 2. */
 /* Setting DEACTIVATED_GPU_FREQ on any freq will disable it and all freqs greater than it. (the latter is a bug :/) */
 /* AUTO: Voltage is optimally chosen; with commonGpuVoltOffset applied. */
-/* AUTO only works up to 1305 GPU */
+/* AUTO only works up to 1305 GPU on Mariko and 921 GPU on Erista */
 /* You can overwrite auto with any voltage (in mv) of your choice - offset will not be applied. */
+
 .eristaGpuVoltArray = {
                         AUTO /*   76                       */,
                         AUTO /*  115                       */,

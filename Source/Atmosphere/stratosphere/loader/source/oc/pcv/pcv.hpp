@@ -58,7 +58,7 @@ namespace ams::ldr::oc::pcv {
 
         static const u32 cpuVoltThermalData[] = { 620, 1120, 20000, 620, 1120, 70000, 950, 1132, 0, 950, 1227, 0 };
 
-        static const u32 allowedCpuMaxFrequencies[] = { 2'397'000, 2'499'000, 2'601'000, 2'703'000, };
+        static const u32 allowedCpuMaxFrequencies[] = { 1'963'000, 2'091'000, 2'193'000, 2'295'000, 2'397'000, 2'499'000, 2'601'000, 2'703'000, };
 
         constexpr cvb_entry_t GpuCvbTableDefault[] = {
             // GPUB01_NA_CVB_TABLE
@@ -420,27 +420,26 @@ namespace ams::ldr::oc::pcv {
         std::memcpy(gpu_cvb_table_head, (void *)customize_table, customize_table_size);
 
         // Patch GPU volt
-        if (C.marikoGpuUV == 2 || C.eristaGpuUV == 2) {
-            cvb_entry_t *entry = static_cast<cvb_entry_t *>(gpu_cvb_table_head);
-            for (size_t i = 0; i < customize_entry_count; ++i) {
-                if (isMariko) {
-                    if (C.marikoGpuVoltArray[i] != 0) {
-                        PATCH_OFFSET(&(entry->cvb_pll_param.c0), (C.marikoGpuVoltArray[i] * 1000));
-                        ClearCvbPllEntry(entry);
-                    } else {
-                        PATCH_OFFSET(&(entry->cvb_pll_param.c0), (entry->cvb_pll_param.c0 - C.commonGpuVoltOffset * 1000));
-                    }
+        cvb_entry_t *entry = static_cast<cvb_entry_t *>(gpu_cvb_table_head);
+        for (size_t i = 0; i < customize_entry_count; ++i) {
+            if (isMariko) {
+                if (C.marikoGpuVoltArray[i] != 0) {
+                    PATCH_OFFSET(&(entry->cvb_pll_param.c0), (C.marikoGpuVoltArray[i] * 1000));
+                    ClearCvbPllEntry(entry);
                 } else {
-                    if (C.eristaGpuVoltArray[i] != 0) {
-                        PATCH_OFFSET(&(entry->cvb_pll_param.c0), (C.eristaGpuVoltArray[i] * 1000));
-                        ClearCvbPllEntry(entry);
-                    } else {
-                        PATCH_OFFSET(&(entry->cvb_pll_param.c0), (entry->cvb_pll_param.c0 - C.commonGpuVoltOffset * 1000));
-                    }
+                    PATCH_OFFSET(&(entry->cvb_pll_param.c0), (entry->cvb_pll_param.c0 - C.commonGpuVoltOffset * 1000));
                 }
-                ++entry;
+            } else {
+                if (C.eristaGpuVoltArray[i] != 0) {
+                    PATCH_OFFSET(&(entry->cvb_pll_param.c0), (C.eristaGpuVoltArray[i] * 1000));
+                    ClearCvbPllEntry(entry);
+                } else {
+                    PATCH_OFFSET(&(entry->cvb_pll_param.c0), (entry->cvb_pll_param.c0 - C.commonGpuVoltOffset * 1000));
+                }
             }
-        } else if (C.commonGpuVoltOffset) {
+            ++entry;
+        }
+        if (C.commonGpuVoltOffset && !(isMariko ? C.marikoGpuUV : C.eristaGpuUV)) {
             cvb_entry_t *entry = static_cast<cvb_entry_t *>(gpu_cvb_table_head);
             for (size_t i = 0; i < customize_entry_count; ++i) {
                 PATCH_OFFSET(&(entry->cvb_pll_param.c0), (entry->cvb_pll_param.c0 - C.commonGpuVoltOffset * 1000));
