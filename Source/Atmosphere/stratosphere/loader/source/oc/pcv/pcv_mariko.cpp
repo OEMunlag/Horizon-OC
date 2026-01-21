@@ -588,25 +588,25 @@ namespace ams::ldr::oc::pcv::mariko {
     void MemMtcPllmbDivisor(MarikoMtcTable *table) {
         constexpr u32 PllOscInKHz   = 38400;
         constexpr u32 PllOscHalfKHz = 19200;
-        u32 ramKhz = table->rate_khz;
-        double target_freq_d = static_cast<double>(ramKhz);
 
-        s32 divm_candidate_half = static_cast<u8>(ramKhz / PllOscHalfKHz);
+        double target_freq_d = static_cast<double>(C.marikoEmcMaxClock);
 
-        bool remainder_check = (ramKhz - PllOscInKHz * (ramKhz / PllOscInKHz)) > (ramKhz - PllOscHalfKHz * divm_candidate_half) && static_cast<int>(((target_freq_d / PllOscHalfKHz - divm_candidate_half - 0.5) * 8192.0)) != 0;
+        s32 divm_candidate_half = static_cast<u8>(C.marikoEmcMaxClock / PllOscHalfKHz);
+
+        bool remainder_check = (C.marikoEmcMaxClock - PllOscInKHz * (C.marikoEmcMaxClock / PllOscInKHz)) > (C.marikoEmcMaxClock - PllOscHalfKHz * divm_candidate_half) && static_cast<int>(((target_freq_d / PllOscHalfKHz - divm_candidate_half - 0.5) * 8192.0)) != 0;
 
         u32 divm_final = remainder_check + 1;
         table->pllmb_divm = divm_final;
 
         double div_step_d = static_cast<double>(PllOscInKHz) / divm_final;
-        s32 divn_integer = static_cast<u8>(ramKhz / div_step_d);
+        s32 divn_integer = static_cast<u8>(C.marikoEmcMaxClock / div_step_d);
         table->pllmb_divn = divn_integer;
 
         u32 divn_fraction = static_cast<s32>((target_freq_d / div_step_d - divn_integer - 0.5) * 8192.0);
 
         u32 actual_freq_khz = static_cast<u32>((divn_integer + 0.5 + divn_fraction * 0.000122070312) * div_step_d);
 
-        if (ramKhz - 2366001 < 133999) {
+        if (C.marikoEmcMaxClock - 2366001 < 133999) {
             s32 divn_fraction_ssc = static_cast<s32>((actual_freq_khz * 0.997 / div_step_d - divn_integer - 0.5) * 8192.0);
 
             double delta_scaled = (0.3 / div_step_d + 0.3 / div_step_d) * (divn_fraction - divn_fraction_ssc);
@@ -634,7 +634,7 @@ namespace ams::ldr::oc::pcv::mariko {
             table->pllm_ss_cfg &= 0xBFFFFFFF;
             table->pllmb_ss_cfg &= 0xBFFFFFFF;
 
-            u64 pair = (static_cast<u64>(divn_fraction) << 32) | static_cast<u64>(ramKhz);
+            u64 pair = (static_cast<u64>(divn_fraction) << 32) | static_cast<u64>(C.marikoEmcMaxClock);
             u32 pll_misc = (table->pllm_ss_ctrl2 & 0xFFFF0000) | static_cast<u32>((pair - actual_freq_khz) >> 32);
 
             table->pllm_ss_ctrl2 = pll_misc;
