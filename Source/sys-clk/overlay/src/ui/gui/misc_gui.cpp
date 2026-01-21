@@ -692,10 +692,10 @@ protected:
         this->listElement->addItem(new tsl::elm::CategoryHeader("Memory Latencies"));
 
         std::vector<NamedValue> rlLabels = {
-            NamedValue("2133RL", 40)
+            NamedValue("2133RL", 40),
             NamedValue("1866RL", 36),
             NamedValue("1600RL", 32),
-            NamedValue("1333RL", 28),
+            NamedValue("1333RL", 28)
         };
 
         std::vector<NamedValue> wlLabels = {
