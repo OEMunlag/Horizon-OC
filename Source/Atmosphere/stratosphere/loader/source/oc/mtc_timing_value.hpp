@@ -96,7 +96,7 @@ namespace ams::ldr::oc {
         const u32 tFAW     = static_cast<u32>(tRRD * 4.0);
         const double tRPab = tRPpb + 3;
 
-        const u32 tR2P   = 12 + (C.mem_burst_read_latency / 2);
+        const u32 tR2P   = 12 + ((RL_DBI - 32) / 2);
         inline u32 tR2W;
         const u32 tRTM   = RL + 9 + (tDQSCK_max / tCK_avg) + FLOOR(tRPST) + CEIL(10 / tCK_avg); // Fix?
         const u32 tRATM  = tRTM + CEIL(10 / tCK_avg) - 12; // Fix?
@@ -137,3 +137,4 @@ namespace ams::ldr::oc {
     }
 
 }
+
