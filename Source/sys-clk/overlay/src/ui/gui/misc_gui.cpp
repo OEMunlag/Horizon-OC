@@ -1256,8 +1256,11 @@ void MiscGui::refresh() {
     if (this->context && ++frameCounter >= 60) {
         frameCounter = 0;
 
-        sysclkIpcGetConfigValues(this->configList);
-
+        Result rc = sysclkIpcGetConfigValues(this->configList);
+        if (R_FAILED(rc)) [[unlikely]] {
+            FatalGui::openWithResultCode("sysclkIpcGetConfigValues", rc);
+            return;
+        }
         updateConfigToggles();
 
         for (const auto& [configVal, button] : this->configButtons) {
