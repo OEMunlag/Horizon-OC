@@ -81,6 +81,7 @@ namespace ams::ldr::oc {
 
     namespace pcv::mariko {
         const double tCK_avg = 1000'000.0 / C.marikoEmcMaxClock;
+        const double ramFreqMhz = C.marikoEmcMaxClock / 1000.0;
 
         const u32 tRCD    = tRCD_values[C.t1_tRCD];
         const u32 tRPpb   = tRP_values[C.t2_tRP];
@@ -95,44 +96,44 @@ namespace ams::ldr::oc {
         const u32 tFAW     = static_cast<u32>(tRRD * 4.0);
         const double tRPab = tRPpb + 3;
 
-        const u32 tR2P = 12 + (C.mem_burst_read_latency / 2);
+        const u32 tR2P   = 12 + (C.mem_burst_read_latency / 2);
         inline u32 tR2W;
         const u32 tRTM   = RL + 9 + (tDQSCK_max / tCK_avg) + FLOOR(tRPST) + CEIL(10 / tCK_avg); // Fix?
         const u32 tRATM  = tRTM + CEIL(10 / tCK_avg) - 12; // Fix?
-        const u32 rdv    = FLOOR(17.02046755653219 + (RL_DBI + ((C.marikoEmcMaxClock / 1000.0) * 0.00510056573299173)));
-        const u32 quse   = FLOOR((-0.0048159 * (C.marikoEmcMaxClock / 1000.0)) + RL_DBI) + (FLOOR((C.marikoEmcMaxClock / 1000.0) * 0.0050997) * 1.5134);
-        const u32 einput = quse - ((C.marikoEmcMaxClock / 1000.0) * 0.01);
-
-        inline u32 einput_duration;
-        inline u32 ibdly;
-
-        const u32 obdly            = 0x10000000 + CEIL(MAX((WL + (2.072347067198409 * CEIL(((C.marikoEmcMaxClock / 1000.0) * -0.0008701518090699537) + 1.1926184709583145))) - 12.368815500608948, -1.8792921762826563e-9));
-        const u32 quse_width       = CEIL(((3.7165006256863955 - (C.marikoEmcMaxClock / 1000.0)) + (-0.002446584377651142 * (C.marikoEmcMaxClock / 1000.0))) - FLOOR((C.marikoEmcMaxClock / 1000.0) / -0.9952024303111688));
         inline u32 rext;
-        const u32 qrstHighDuration = FLOOR(((C.marikoEmcMaxClock / 1000.0) * 0.001477125119082522) + 4.272302254983803);
-        const u32 qrstLow          = CEIL(MAX(((C.marikoEmcMaxClock / 1000.0) * -0.010085158701622026) + ((rdv + (-15.612107759528982 - quse_width)) - qrstHighDuration), -0.0004475366008085334));
-        const u32 qrst             = PACK_U32(qrstHighDuration, qrstLow);
 
-        inline u32 qsafe;
-        inline u32 qpop;
+        const u32 rdv              = FLOOR(17.02046755653219 + (RL_DBI + (ramFreqMhz * 0.00510056573299173)));
+        const u32 qpop             = rdv - 14;
+        const u32 quse_width       = CEIL(((3.7165006256863955 - ramFreqMhz) + (-0.002446584377651142 * ramFreqMhz)) - FLOOR(ramFreqMhz / -0.9952024303111688));
+        const u32 quse             = CEIL(MIN(RL_DBI + (2.991255208275918 - (quse_width + (-0.00511180626826906 * ramFreqMhz))), ramFreqMhz * 0.021333773138874437));
+        const u32 einput_duration  = CEIL(quse_width + (ramFreqMhz * 0.01) + 4);
+        const u32 einput           = 5 + qpop - einput_duration;
+        const u32 ibdly            = 0x10000000 + FLOOR(MAX(RL_DBI - 1.9999956603408224, quse - 5.9999987787411175) + (-0.0011929079761504341 * ramFreqMhz));
+        const u32 qrst_duration    = FLOOR((ramFreqMhz * 0.001477125119082522) + 4.272302254983803);
+        const u32 qrstLow          = MAX((einput - qrst_duration) - 2, static_cast<u32>(0));
+        const u32 qrst             = PACK_U32(qrst_duration, qrstLow);
+        const u32 qsafe            = (einput_duration + 3) + MAX(MIN(qrstLow * rdv, qrst_duration + qrst_duration), einput);
 
         const u32 tW2P  = (CEIL(WL * 1.7303) * 2) - 5;
         inline u32 tWTPDEN;
-        const u32 tW2R  = CEIL(MAX(WL + (0.010322547033278747 * (C.marikoEmcMaxClock / 1000.0)), (WL * -0.2067922202979121) + FLOOR(((RL_DBI * -0.1331159971685554) + WL) * 3.654131957826108)) - (tWTR / tCK_avg));
+        const u32 tW2R  = CEIL(MAX(WL + (0.010322547033278747 * ramFreqMhz), (WL * -0.2067922202979121) + FLOOR(((RL_DBI * -0.1331159971685554) + WL) * 3.654131957826108)) - (tWTR / tCK_avg));
         const u32 tWTM  = WL + (BL / 2) + 1 + CEIL(7.5 / tCK_avg);
         const u32 tWATM = tWTM + CEIL(tWR / tCK_avg);
 
         const u32 wdv = WL;
         const u32 wsv = WL - 2;
         const u32 wev = 0xA + C.mem_burst_write_latency;
+        const u32 obdly = 0x10000000 + WL - MIN(static_cast<double>(WL), 12 - (CEIL(-0.0003991 * ramFreqMhz) * 2));
 
         inline u32 pdex2rw;
         inline u32 cke2pden;
 
-        const u32 tCKE = CEIL(1.0795 * CEIL(0.0074472 * (C.marikoEmcMaxClock / 1000.0)));
+        const u32 tCKE = CEIL(1.0795 * CEIL(0.0074472 * ramFreqMhz));
 
         const double tMMRI    = tRCD + (tCK_avg * 3);
         const double pdex2mrr = tMMRI + 10; /* Do this properly? */
+
+        inline u8 mrw2;
     }
 
 }

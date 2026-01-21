@@ -27,29 +27,6 @@ namespace ams::ldr::oc::pcv::mariko {
         return 0x1A;
     }
 
-    /* TODO: This function is quite uggly, refactor! */
-    void CalculateMiscTimings() {
-        einput_duration = 0x1C;
-
-        for (u32 i = 0; i < g_misc_table_size; i++) {
-            const auto& e = g_misc_table[i];
-            if (C.marikoEmcMaxClock >= e.min_freq) {
-                if (e.einput) einput_duration = e.einput;
-            }
-        }
-
-        rext = GetRext();
-    }
-
-    void CalculateIbdly() {
-        /* Ibdly is so inconsistent, I am using the most common value and then checking with a lookup table. */
-        ibdly = 0x1000001D + C.mem_burst_read_latency;
-
-        if (auto patch = FindIbdlyPatch()) {
-            ibdly += patch->adjust;
-        }
-    }
-
     void CalculateTWTPDEN() {
         tWTPDEN = tW2P + 1 + CEIL(tDQSS_max / tCK_avg) + CEIL(tDQS2DQ_max / tCK_avg) + 6;
         if (C.marikoEmcMaxClock >= 2'233'000 && C.marikoEmcMaxClock < 2'533'000) tWTPDEN++;
@@ -62,19 +39,6 @@ namespace ams::ldr::oc::pcv::mariko {
         if (auto patch = FindTR2WPatch()) {
             tR2W += patch->adjust;
         }
-    }
-
-    void CalculateQsafe() {
-        qsafe = ROUND((C.marikoEmcMaxClock / 1000.0) / 138.0 + 37.4) + C.mem_burst_read_latency;
-        if (auto patch = FindQsafePatch()) {
-            qsafe += patch->adjust;
-        }
-    }
-
-    void CalculateQpop() {
-        qpop = FLOOR(((C.marikoEmcMaxClock / 1000.0) - 2133 + 167) / 200.0) + 0x2D + C.mem_burst_read_latency;
-
-        if (C.marikoEmcMaxClock >= 3'133'000) qpop++;
     }
 
     void CalculatePdex2rw() {
@@ -99,15 +63,42 @@ namespace ams::ldr::oc::pcv::mariko {
         }
     }
 
+    void CalculateMrw2() {
+        static const u8 rlMapDBI[8] = {
+            6, 12, 16, 22, 28, 32, 36, 40
+        };
+
+        static const u8 wlMapSetA[8] = {
+            4, 6, 8, 10, 12, 14, 16, 18
+        };
+
+        u32 rlIndex = 0;
+        u32 wlIndex = 0;
+
+        for (u32 i = 0; i < std::size(rlMapDBI); ++i) {
+            if (rlMapDBI[i] == RL_DBI) {
+                rlIndex = i;
+                break;
+            }
+        }
+
+        for (u32 i = 0; i < std::size(wlMapSetA); ++i) {
+            if (wlMapSetA[i] == WL) {
+                wlIndex = i;
+                break;
+            }
+        }
+
+        mrw2 = static_cast<u8>(((rlIndex & 0x7) | ((wlIndex & 0x7) << 3) | ((0 & 0x1) << 6)));
+    }
+
     void CalculateTimings() {
-        CalculateMiscTimings();
-        CalculateIbdly();
+        rext = GetRext();
         CalculateTWTPDEN();
         CalculateTR2W();
-        CalculateQsafe();
-        CalculateQpop();
         CalculatePdex2rw();
         CalculateCke2pden();
+        CalculateMrw2();
     }
 
 }

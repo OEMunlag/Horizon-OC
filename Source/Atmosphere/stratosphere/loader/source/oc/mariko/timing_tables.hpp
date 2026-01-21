@@ -33,17 +33,9 @@ namespace ams::ldr::oc::pcv::mariko {
         s32 adjust;
     };
 
-    extern const AdjustPatch g_ibdly_patches[];
-    extern const u32         g_ibdly_table_size;
-    const AdjustPatch       *FindIbdlyPatch();
-
     extern const AdjustPatch g_tr2w_patches[];
     extern const u32         g_tr2w_table_size;
     const AdjustPatch       *FindTR2WPatch();
-
-    extern const AdjustPatch g_qsafe_patches[];
-    extern const u32         g_qsafe_table_size;
-    const AdjustPatch       *FindQsafePatch();
 
     extern const AdjustPatch g_pdex2rw_patches[];
     extern const u32         g_pdex2rw_table_size;
@@ -52,13 +44,5 @@ namespace ams::ldr::oc::pcv::mariko {
     extern const AdjustPatch g_cke2pden_patches[];
     extern const u32         g_cke2pden_table_size;
     const AdjustPatch       *FindCke2pdenPatch();
-
-    struct MiscTimings {
-        u32 min_freq;
-        u32 einput;
-    };
-
-    extern const MiscTimings g_misc_table[];
-    extern const u32         g_misc_table_size;
 
 }

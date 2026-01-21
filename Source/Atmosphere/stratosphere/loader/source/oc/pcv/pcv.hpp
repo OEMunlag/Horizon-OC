@@ -206,7 +206,7 @@ namespace ams::ldr::oc::pcv {
         constexpr u32 CpuVoltL4T = 1235'000;
 
         static const u32 cpuVoltDvfsPattern[] = { 1227, 1000, 100, 1000, 0 };
-        static const u32 cpuVoltDvfsOffsets[] = {    5,    6,   7,    9, 8 };
+        static const u32 cpuVoltDvfsOffsets[] = {    5,    6,   7,    8, 9 };
         static_assert(sizeof(cpuVoltDvfsPattern) == sizeof(cpuVoltDvfsOffsets), "Invalid cpuVoltDvfsPattern");
 
         static const u32 cpuVoltageThermalPattern[] = { 950, 1132, 0, 950, 1227, 0, 825, 1227, 15000, 825, 1170, 60000, 825, 1132, 80000 };
@@ -216,7 +216,7 @@ namespace ams::ldr::oc::pcv {
         constexpr u32 GpuVminOfficial = 810;
 
         static const u32 gpuVoltDvfsPattern[] = { 1150, 1000, 100, 1000, 10, };
-        static const u32 gpuVoltDvfsOffsets[] = {     1,   2,   3,    4,  5, };
+        static const u32 gpuVoltDvfsOffsets[] = {    1,    2,   3,    4,  5, };
         static_assert(sizeof(gpuVoltDvfsPattern) == sizeof(gpuVoltDvfsOffsets), "Invalid gpuVoltDvfsPattern");
 
         static const u32 gpuVoltThermalPattern[] = { 950, 1132, 0, 810, 1132, 15000, 810, 1132, 30000, 810, 1132, 50000, 810, 1132, 70000, 810, 1132, 105000 };

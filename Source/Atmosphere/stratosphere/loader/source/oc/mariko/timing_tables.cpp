@@ -19,34 +19,6 @@
 
 namespace ams::ldr::oc::pcv::mariko {
 
-    const MiscTimings g_misc_table[] = {
-        {1'866'000, 0x20, },
-        {2'133'000, 0x24, },
-        {2'166'000,    0, },
-        {2'233'000, 0x25, },
-        {2'300'000, 0x26, },
-        {2'333'000, 0x27, },
-        {2'366'000, 0x26, },
-        {2'433'000, 0x27, },
-        {2'466'000, 0x2A, },
-        {2'500'000, 0x28, },
-        {2'533'000, 0x29, },
-        {2'566'000,    0, },
-        {2'633'000, 0x2A, },
-        {2'700'000, 0x2B, },
-        {2'733'000, 0x2C, },
-        {2'766'000, 0x2B, },
-        {2'833'000, 0x2C, },
-        {2'866'000,    0, },
-        {2'900'000,    0, },
-        {2'933'000, 0x2E, },
-        {2'966'000,    0, },
-        {3'033'000, 0x2F, },
-        {3'133'000, 0x31, },
-    };
-
-    const u32 g_misc_table_size = sizeof(g_misc_table) / sizeof(g_misc_table[0]);
-
     const ReplacePatch g_rext_table[] = {
         {2'133'000, 0x1A}, {2'166'000, 0x19}, {2'200'000, 0x19},
         {2'233'000, 0x19}, {2'266'000, 0x1A}, {2'300'000, 0x1B},
@@ -70,34 +42,6 @@ namespace ams::ldr::oc::pcv::mariko {
         return nullptr;
     }
 
-    const AdjustPatch g_ibdly_patches[] = {
-        {2'133'000, -2},
-        {2'166'000, -1},
-        {2'200'000, -1},
-        {2'233'000, -1},
-        {2'266'000, -1},
-        {2'300'000, -2},
-        {2'333'000, -2},
-        {2'500'000, -1},
-        {2'533'000, -2},
-        {2'566'000, -1},
-        {2'600'000, -1},
-        {2'633'000, -1},
-        {2'666'000, -1},
-        {2'700'000, -2},
-        {2'733'000, -2},
-        {2'933'000, -1},
-    };
-
-    const u32 g_ibdly_table_size = sizeof(g_ibdly_patches) / sizeof(g_ibdly_patches[0]);
-
-    const AdjustPatch *FindIbdlyPatch() {
-        for (u32 i = 0; i < g_ibdly_table_size; i++)
-            if (g_ibdly_patches[i].freq == C.marikoEmcMaxClock)
-                return &g_ibdly_patches[i];
-        return nullptr;
-    }
-
     const AdjustPatch g_tr2w_patches[] = {
         {2'500'000,  1},
         {2'533'000,  1},
@@ -113,37 +57,6 @@ namespace ams::ldr::oc::pcv::mariko {
         for (u32 i = 0; i < g_tr2w_table_size; i++)
             if (g_tr2w_patches[i].freq == C.marikoEmcMaxClock)
                 return &g_tr2w_patches[i];
-        return nullptr;
-    }
-
-    const AdjustPatch g_qsafe_patches[] = {
-        {2'166'000,  1},
-        {2'200'000,  1},
-        {2'500'000, -1},
-        {2'533'000, -1},
-        {2'666'000, -1},
-        {2'700'000, -1},
-        {2'733'000, -1},
-        {2'800'000, -1},
-        {2'833'000, -1},
-        {2'866'000, -1},
-        {2'900'000, -1},
-        {2'933'000, -2},
-        {2'966'000, -1},
-        {3'000'000, -1},
-        {3'033'000, -1},
-        {3'066'000, -2},
-        {3'100'000, -2},
-        {3'166'000, -1},
-        {3'200'000, -1},
-    };
-
-    const u32 g_qsafe_table_size = sizeof(g_qsafe_patches) / sizeof(g_qsafe_patches[0]);
-
-    const AdjustPatch *FindQsafePatch() {
-        for (u32 i = 0; i < g_qsafe_table_size; i++)
-            if (g_qsafe_patches[i].freq == C.marikoEmcMaxClock)
-                return &g_qsafe_patches[i];
         return nullptr;
     }
 

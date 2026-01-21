@@ -434,7 +434,7 @@ namespace ams::ldr::oc::pcv::mariko {
         WRITE_PARAM_ALL_REG(table, emc_tckesr, GET_CYCLE_CEIL(tSR));
         WRITE_PARAM_ALL_REG(table, emc_tcke, tCKE);
         WRITE_PARAM_ALL_REG(table, emc_tpd, GET_CYCLE_CEIL(tXP));
-        WRITE_PARAM_ALL_REG(table, emc_tclkstop, GET_CYCLE_CEIL(tXP) + 8);
+        WRITE_PARAM_ALL_REG(table, emc_tclkstop, GET_CYCLE_CEIL(tXP) + 8); // TODO analyse
         WRITE_PARAM_ALL_REG(table, emc_r2p, tR2P);
         WRITE_PARAM_ALL_REG(table, emc_r2w, tR2W);
         WRITE_PARAM_ALL_REG(table, emc_trtm, tRTM);
@@ -484,8 +484,6 @@ namespace ams::ldr::oc::pcv::mariko {
         WRITE_PARAM_ALL_REG(table, emc_tr_rdv, rdv);
         WRITE_PARAM_ALL_REG(table, emc_cmd_brlshft_2, 0x24)
         WRITE_PARAM_ALL_REG(table, emc_cmd_brlshft_3, 0x24)
-        // WRITE_PARAM_ALL_REG(table, emc_mrs_wait_cnt, 0x07FF003C);
-        // WRITE_PARAM_ALL_REG(table, emc_mrs_wait_cnt2, 0x02DE002A);
 
         /* This needs some clean up. */
         constexpr double MC_ARB_DIV = 4.0;
@@ -574,7 +572,8 @@ namespace ams::ldr::oc::pcv::mariko {
         table->dram_timings.t_rp = tRFCpb;
         table->dram_timings.t_rfc = tRFCab;
         table->dram_timings.rl = RL_DBI;
-        table->emc_mrw2 = 0x8802003F;
+
+        table->emc_mrw2 = (table->emc_mrw2 & ~0xFFu) | static_cast<u32>(mrw2);
         table->emc_cfg_2 = 0x11083D;
     }
 
@@ -776,10 +775,14 @@ namespace ams::ldr::oc::pcv::mariko {
         PATCH_OFFSET(ptr, emc_uv);
 
         i2cInitialize();
-        I2cSet_U8(I2cDevice_Max77812_2, 0x25, (emc_uv - uv_min) / uv_step);
+        Result resultI2C = I2cSet_U8(I2cDevice_Max77812_2, 0x25, (emc_uv - uv_min) / uv_step);
         i2cExit();
 
-        R_SUCCEED();
+        if (R_SUCCEEDED(resultI2C)) {
+            R_SUCCEED();
+        }
+
+        return resultI2C;
     }
 
     void Patch(uintptr_t mapped_nso, size_t nso_size) {
