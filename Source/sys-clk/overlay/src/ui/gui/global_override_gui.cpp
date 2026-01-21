@@ -89,7 +89,8 @@ void GlobalOverrideGui::addModuleListItemValue(
     std::uint32_t step,
     const std::string& suffix,
     std::uint32_t divisor,
-    int decimalPlaces
+    int decimalPlaces, 
+    ValueThresholds thresholds
 )
 {
 
@@ -110,7 +111,8 @@ void GlobalOverrideGui::addModuleListItemValue(
          step,
          suffix,
          divisor,
-         decimalPlaces](u64 keys)
+         decimalPlaces,
+         thresholds](u64 keys)
         {
             if ((keys & HidNpadButton_A) == HidNpadButton_A)
             {
@@ -136,7 +138,7 @@ void GlobalOverrideGui::addModuleListItemValue(
                     range,
                     categoryName,
                     
-                    [this, listItem, module, divisor, suffix, decimalPlaces](std::uint32_t value) -> bool
+                    [this, listItem, module, divisor, suffix, decimalPlaces, thresholds](std::uint32_t value) -> bool
                     {
                         if (!this->context) {
                             return false;
@@ -174,7 +176,7 @@ void GlobalOverrideGui::addModuleListItemValue(
                         return true;
                     },
                     
-                    ValueThresholds(),
+                    thresholds,
                     false,
                     std::map<std::uint32_t, std::string>(),
                     std::vector<NamedValue>(),
@@ -273,8 +275,9 @@ void GlobalOverrideGui::listUI()
     this->addModuleListItem(SysClkModule_GPU);
     this->addModuleListItem(SysClkModule_MEM);
     #if IS_MINIMAL == 0
+        ValueThresholds lcdThresholds(60, 65);
         if(!IsHoag())
-            this->addModuleListItemValue(HorizonOCModule_Display, "Display", 40, 72, 1, " Hz", 1, 0);
+            this->addModuleListItemValue(HorizonOCModule_Display, "Display", 40, 72, 1, " Hz", 1, 0, lcdThresholds);
     #endif
     this->addModuleToggleItem(HorizonOCModule_Governor);
 }

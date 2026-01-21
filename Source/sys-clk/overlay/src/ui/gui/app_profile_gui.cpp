@@ -150,7 +150,8 @@ void AppProfileGui::addModuleListItemValue(
     std::uint32_t step,
     const std::string& suffix,
     std::uint32_t divisor,
-    int decimalPlaces
+    int decimalPlaces,
+    ValueThresholds thresholds
 )
 {
     tsl::elm::ListItem* listItem =
@@ -181,7 +182,8 @@ void AppProfileGui::addModuleListItemValue(
          step,
          suffix,
          divisor,
-         decimalPlaces](u64 keys)
+         decimalPlaces,
+         thresholds](u64 keys)
         {
             if ((keys & HidNpadButton_A) == HidNpadButton_A)
             {
@@ -203,7 +205,7 @@ void AppProfileGui::addModuleListItemValue(
                     range,
                     categoryName,
 
-                    [this, listItem, profile, module, divisor, suffix, decimalPlaces](std::uint32_t value) -> bool
+                    [this, listItem, profile, module, divisor, suffix, decimalPlaces, thresholds](std::uint32_t value) -> bool
                     {
                         this->profileList->mhzMap[profile][module] = value / divisor;
 
@@ -235,7 +237,7 @@ void AppProfileGui::addModuleListItemValue(
                         return true;
                     },
 
-                    ValueThresholds(),
+                    thresholds,
                     false
                 );
 
@@ -272,9 +274,10 @@ void AppProfileGui::addProfileUI(SysClkProfile profile)
     this->addModuleListItem(profile, SysClkModule_GPU);
     this->addModuleListItem(profile, SysClkModule_MEM);
     #if IS_MINIMAL == 0
+        ValueThresholds lcdThresholds(60, 65);
         if(!IsHoag()) {
             if(profile != SysClkProfile_Docked)
-                this->addModuleListItemValue(profile, HorizonOCModule_Display, "Display", 40, 72, 1, " Hz", 1, 0);
+                this->addModuleListItemValue(profile, HorizonOCModule_Display, "Display", 40, 72, 1, " Hz", 1, 0, lcdThresholds);
             else
                 this->addModuleListItemValue(profile, HorizonOCModule_Display, "Display", 50, 120, 5, " Hz", 1, 0);
         }

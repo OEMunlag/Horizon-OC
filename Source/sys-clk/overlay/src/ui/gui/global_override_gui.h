@@ -62,7 +62,8 @@ class GlobalOverrideGui : public BaseMenuGui
             std::uint32_t step,
             const std::string& suffix,
             std::uint32_t divisor,
-            int decimalPlaces
+            int decimalPlaces,
+            ValueThresholds thresholds = {}
         );
     public:
         GlobalOverrideGui();

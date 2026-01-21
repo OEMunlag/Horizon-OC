@@ -889,6 +889,32 @@ protected:
             NamedValue("HiOPT Table", 2),
         };
 
+        std::vector<NamedValue> mGpuVoltsVmin = {
+            NamedValue("Auto", 0),
+            NamedValue("480mV", 480), NamedValue("485mV", 485), NamedValue("490mV", 490),
+            NamedValue("495mV", 495), NamedValue("500mV", 500), NamedValue("505mV", 505),
+            NamedValue("510mV", 510), NamedValue("515mV", 515), NamedValue("520mV", 520),
+            NamedValue("525mV", 525), NamedValue("530mV", 530), NamedValue("535mV", 535),
+            NamedValue("540mV", 540), NamedValue("545mV", 545), NamedValue("550mV", 550),
+            NamedValue("555mV", 555), NamedValue("560mV", 560), NamedValue("565mV", 565),
+            NamedValue("570mV", 570), NamedValue("575mV", 575), NamedValue("580mV", 580),
+            NamedValue("585mV", 585), NamedValue("590mV", 590), NamedValue("595mV", 595),
+            NamedValue("600mV", 600), NamedValue("605mV", 605), NamedValue("610mV", 610),
+            NamedValue("615mV", 615), NamedValue("620mV", 620), NamedValue("625mV", 625),
+            NamedValue("630mV", 630), NamedValue("635mV", 635), NamedValue("640mV", 640),
+            NamedValue("645mV", 645), NamedValue("650mV", 650), NamedValue("655mV", 655),
+            NamedValue("660mV", 660), NamedValue("665mV", 665), NamedValue("670mV", 670),
+            NamedValue("675mV", 675), NamedValue("680mV", 680), NamedValue("685mV", 685),
+            NamedValue("690mV", 690), NamedValue("695mV", 695), NamedValue("700mV", 700),
+            NamedValue("705mV", 705), NamedValue("710mV", 710), NamedValue("715mV", 715),
+            NamedValue("720mV", 720), NamedValue("725mV", 725), NamedValue("730mV", 730),
+            NamedValue("735mV", 735), NamedValue("740mV", 740), NamedValue("745mV", 745),
+            NamedValue("750mV", 750), NamedValue("755mV", 755), NamedValue("760mV", 760),
+            NamedValue("765mV", 765), NamedValue("770mV", 770), NamedValue("775mV", 775),
+            NamedValue("780mV", 780), NamedValue("785mV", 785), NamedValue("790mV", 790),
+            NamedValue("795mV", 795), NamedValue("800mV", 800)
+        };
+
         if(IsErista()) {
             addConfigButton(
                 KipConfigValue_eristaGpuUV,
@@ -922,30 +948,20 @@ protected:
                 false
             );
 
-            tsl::elm::ListItem* vminCalcBtn = new tsl::elm::ListItem("Calculate GPU Vmin");
-            vminCalcBtn->setClickListener([this](u64 keys) {
-                if (keys & HidNpadButton_A) {
-                    Result rc = hocClkIpcCalculateGpuVmin();
-                    if (R_FAILED(rc)) {
-                        FatalGui::openWithResultCode("hocClkIpcCalculateGpuVmin", rc);
-                        return false;
-                    }
-                    return true;
-                }
-                return false;
-            });
+            // tsl::elm::ListItem* vminCalcBtn = new tsl::elm::ListItem("Calculate GPU Vmin");
+            // vminCalcBtn->setClickListener([this](u64 keys) {
+            //     if (keys & HidNpadButton_A) {
+            //         Result rc = hocClkIpcCalculateGpuVmin();
+            //         if (R_FAILED(rc)) {
+            //             FatalGui::openWithResultCode("hocClkIpcCalculateGpuVmin", rc);
+            //             return false;
+            //         }
+            //         return true;
+            //     }
+            //     return false;
+            // });
 
-            addConfigButton(
-                KipConfigValue_marikoGpuVmin,
-                "GPU VMIN",
-                ValueRange(480, 825, 5, "mV", 1),
-                "GPU VMIN",
-                &thresholdsDisabled,
-                {},
-                {},
-                false
-            );
-
+            addConfigButton(KipConfigValue_marikoGpuVmin, "GPU VMIN", ValueRange(0, 0, 0, "0", 1), "GPU VMIN", &thresholdsDisabled, {}, mGpuVoltsVmin, false);
             ValueThresholds MgpuVmaxThresholds(800, 850);
             addConfigButton(
                 KipConfigValue_marikoGpuVmax,
@@ -1122,9 +1138,9 @@ protected:
             tsl::elm::CustomDrawer* warningText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
                 renderer->drawString("\uE150 Setting GPU Clocks past", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
                 renderer->drawString("1075MHz without UV, 1152MHz on SLT", false, x + 20, y + 50, 18, tsl::style::color::ColorText);
-                renderer->drawString("or 1228MHz on HiOPT can cause ", false, x + 20, y + 80, 18, tsl::style::color::ColorText);
-                renderer->drawString("permanent damage to your Switch!", false, x + 20, y + 100, 18, tsl::style::color::ColorText);
-                renderer->drawString("Proceed at your own risk!", false, x + 20, y + 120, 18, tsl::style::color::ColorText);
+                renderer->drawString("or 1228MHz on HiOPT can cause ", false, x + 20, y + 70, 18, tsl::style::color::ColorText);
+                renderer->drawString("permanent damage to your Switch!", false, x + 20, y + 900, 18, tsl::style::color::ColorText);
+                renderer->drawString("Proceed at your own risk!", false, x + 20, y + 110, 18, tsl::style::color::ColorText);
             });
             warningText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 150);
             this->listElement->addItem(warningText);
@@ -1144,23 +1160,23 @@ protected:
             addConfigButton(KipConfigValue_g_volt_998400, "998.4MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
             addConfigButton(KipConfigValue_g_volt_1075200, "1075.2MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
             addConfigButton(KipConfigValue_g_volt_1152000, "1152.0MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
-            addConfigButton(KipConfigValue_g_volt_1228800, "1228.8MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
-            addConfigButton(KipConfigValue_g_volt_1267200, "1267.2MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
-            addConfigButton(KipConfigValue_g_volt_1305600, "1305.6MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
-            addConfigButton(KipConfigValue_g_volt_1344000, "1344.0MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
-            addConfigButton(KipConfigValue_g_volt_1382400, "1382.4MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
-            addConfigButton(KipConfigValue_g_volt_1420800, "1420.8MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
-            addConfigButton(KipConfigValue_g_volt_1459200, "1459.2MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
-            addConfigButton(KipConfigValue_g_volt_1497600, "1497.6MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
-            addConfigButton(KipConfigValue_g_volt_1536000, "1536.0MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
+            addConfigButton(KipConfigValue_g_volt_1228800, "1228.8MHz (SLT/HiOPT Only)", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
+            addConfigButton(KipConfigValue_g_volt_1267200, "1267.2MHz (HiOPT Only)", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
+            addConfigButton(KipConfigValue_g_volt_1305600, "1305.6MHz (HiOPT Only)", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
+            addConfigButton(KipConfigValue_g_volt_1344000, "1344.0MHz (HiOPT Only)", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
+            addConfigButton(KipConfigValue_g_volt_1382400, "1382.4MHz (HiOPT Only)", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
+            addConfigButton(KipConfigValue_g_volt_1420800, "1420.8MHz (HiOPT Only)", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
+            addConfigButton(KipConfigValue_g_volt_1459200, "1459.2MHz (HiOPT Only)", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
+            addConfigButton(KipConfigValue_g_volt_1497600, "1497.6MHz (HiOPT Only)", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
+            addConfigButton(KipConfigValue_g_volt_1536000, "1536.0MHz (HiOPT Only)", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
         } else {
 
             tsl::elm::CustomDrawer* warningText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
                 renderer->drawString("\uE150 Setting GPU Clocks past", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
                 renderer->drawString("921MHz without UV and 960MHz on", false, x + 20, y + 50, 18, tsl::style::color::ColorText);
-                renderer->drawString("SLT or HiOPT can cause ", false, x + 20, y + 80, 18, tsl::style::color::ColorText);
-                renderer->drawString("permanent damage to your Switch!", false, x + 20, y + 100, 18, tsl::style::color::ColorText);
-                renderer->drawString("Proceed at your own risk!", false, x + 20, y + 120, 18, tsl::style::color::ColorText);
+                renderer->drawString("SLT or HiOPT can cause ", false, x + 20, y + 70, 18, tsl::style::color::ColorText);
+                renderer->drawString("permanent damage to your Switch!", false, x + 20, y + 90, 18, tsl::style::color::ColorText);
+                renderer->drawString("Proceed at your own risk!", false, x + 20, y + 110, 18, tsl::style::color::ColorText);
             });
             warningText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 150);
             this->listElement->addItem(warningText);
@@ -1188,10 +1204,10 @@ protected:
             addConfigButton(KipConfigValue_g_volt_e_844800, "844.8MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts, false);
             addConfigButton(KipConfigValue_g_volt_e_883200, "883.2MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts, false);
             addConfigButton(KipConfigValue_g_volt_e_921600, "921.6MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts, false);
-            addConfigButton(KipConfigValue_g_volt_e_960000, "960.0MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts, false);
-            addConfigButton(KipConfigValue_g_volt_e_998400, "998.4MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts, false);
-            addConfigButton(KipConfigValue_g_volt_e_1036800, "1036.8MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts_noAuto, false);
-            addConfigButton(KipConfigValue_g_volt_e_1075200, "1075.2MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts_noAuto, false);
+            addConfigButton(KipConfigValue_g_volt_e_960000, "960.0MHz (SLT/HiOPT Only)", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts, false);
+            addConfigButton(KipConfigValue_g_volt_e_998400, "998.4MHz (HiOPT Only)", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts, false);
+            addConfigButton(KipConfigValue_g_volt_e_1036800, "1036.8MHz (HiOPT Only)", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts_noAuto, false);
+            addConfigButton(KipConfigValue_g_volt_e_1075200, "1075.2MHz (HiOPT Only)", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts_noAuto, false);
         }
     }
 };
