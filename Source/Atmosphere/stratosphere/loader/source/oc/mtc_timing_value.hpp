@@ -122,7 +122,7 @@ namespace ams::ldr::oc {
 
         const u32 wdv = WL;
         const u32 wsv = WL - 2;
-        const u32 wev = 0xA + C.mem_burst_write_latency;
+        const u32 wev = 0xA + (WL - 14);
         const u32 obdly = 0x10000000 + WL - MIN(static_cast<double>(WL), 12 - (CEIL(-0.0003991 * ramFreqMhz) * 2));
 
         inline u32 pdex2rw;
