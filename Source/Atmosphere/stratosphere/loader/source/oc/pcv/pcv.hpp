@@ -101,6 +101,7 @@ namespace ams::ldr::oc::pcv {
         };
 
         static const SpeedoVminTable vminTable[] {
+            {1400,       610}, // LOW SPEEDO -> use stock vmin
             {1560,       590},
             {1583,       570},
             {1620,       565},
