@@ -35,5 +35,5 @@ typedef enum
     SysClkError_Generic = 0,
     SysClkError_ConfigNotLoaded = 1,
     SysClkError_ConfigSaveFailed = 2,
-    HocClkError_SocThermFail = 3,
+    // HocClkError_SocThermFail = 3,
 } SysClkError;
