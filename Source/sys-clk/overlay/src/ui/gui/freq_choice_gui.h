@@ -34,8 +34,6 @@
 
 using FreqChoiceListener = std::function<bool(std::uint32_t hz)>;
 
-#define FREQ_DEFAULT_TEXT "Default"
-
 class FreqChoiceGui : public BaseMenuGui
 {
 protected:
