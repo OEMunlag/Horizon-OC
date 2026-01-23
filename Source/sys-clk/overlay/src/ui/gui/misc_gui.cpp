@@ -701,17 +701,17 @@ protected:
         this->listElement->addItem(new tsl::elm::CategoryHeader("Memory Latencies"));
 
         std::vector<NamedValue> rlLabels = {
-            NamedValue("2133RL", 40),
-            NamedValue("1866RL", 36),
+            NamedValue("1333RL", 28),
             NamedValue("1600RL", 32),
-            NamedValue("1333RL", 28)
+            NamedValue("1866RL", 36),
+            NamedValue("2133RL", 40)
         };
 
         std::vector<NamedValue> wlLabels = {
-            NamedValue("2133WL", 18),
-            NamedValue("1866WL", 16),
+            NamedValue("1333WL", 12),
             NamedValue("1600WL", 14),
-            NamedValue("1333WL", 12)
+            NamedValue("1866WL", 16),
+            NamedValue("2133WL", 18)
         };
 
         addConfigButton(

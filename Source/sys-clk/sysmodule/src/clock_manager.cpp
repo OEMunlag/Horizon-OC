@@ -113,40 +113,25 @@ ClockManager::ClockManager()
 }
 
 void ClockManager::FixCpuBug() {
-    Board::SetHz(SysClkModule_CPU, 1785000000); // this will just set to the max when kip is unloaded so idgaf
-    Board::SetHz(SysClkModule_CPU, 1887000000);
-    Board::SetHz(SysClkModule_CPU, 1963000000);
-    Board::SetHz(SysClkModule_CPU, 2091000000);
-    Board::SetHz(SysClkModule_CPU, 2193000000);
-    Board::SetHz(SysClkModule_CPU, 2295000000);
-    Board::SetHz(SysClkModule_CPU, 2397000000);
-    Board::SetHz(SysClkModule_CPU, 2499000000);
-    Board::SetHz(SysClkModule_CPU, 2601000000);
-    Board::SetHz(SysClkModule_CPU, 2703000000); // i am just replicating what the user would manually do to fix the bug. if 2703 is unstable it will reset to 1020 due to how fast this runs
-    Board::SetHz(SysClkModule_CPU, 1020000000);
+    static u32 cpuFreqs[] = {
+        1785000000,
+        1887000000,
+        1963000000,
+        2091000000,
+        2193000000,
+        2295000000,
+        2397000000,
+        2499000000,
+        2601000000,
+        2703000000,
+        1020000000
+    };
+    static u32 cpuFreqsSize = sizeof(cpuFreqs) / sizeof(u32);
+    for(int i = 0; i < cpuFreqsSize; i++) {
+        Board::SetHz(SysClkModule_CPU, cpuFreqs[i]);
+        svcSleepThread(2'500'000); // 2.5ms
+    }
     ResetToStockClocks();
-    u32 targetHz = 0;
-    u32 maxHz = 0;
-    u32 nearestHz = 0;
-    targetHz = this->context->overrideFreqs[SysClkModule_CPU];
-    if (!targetHz)
-    {
-        targetHz = this->config->GetAutoClockHz(this->context->applicationId, SysClkModule_CPU, this->context->profile, false);
-        if(!targetHz)
-            targetHz = this->config->GetAutoClockHz(GLOBAL_PROFILE_ID, SysClkModule_CPU, this->context->profile, false);
-    }
-
-    if (targetHz)
-    {
-        maxHz = this->GetMaxAllowedHz(SysClkModule_CPU, this->context->profile);
-        nearestHz = this->GetNearestHz(SysClkModule_CPU, targetHz, maxHz);
-
-        if (nearestHz != this->context->freqs[SysClkModule_CPU]) {
-
-            Board::SetHz(SysClkModule_CPU, nearestHz);
-            this->context->freqs[SysClkModule_CPU] = nearestHz;
-        }
-    }
 }
 
 ClockManager::~ClockManager()
@@ -450,11 +435,6 @@ void ClockManager::Tick()
     }
     bool isBoost = apmExtIsBoostMode(mode);
 
-    if (prevBoostMode && !isBoost) {
-        if(this->config->GetConfigValue(HocClkConfigValue_FixCpuVoltBug))
-            FixCpuBug();
-    }
-
     prevBoostMode = isBoost;
 
     bool noGPU = false;
@@ -537,6 +517,9 @@ void ClockManager::Tick()
 
                     Board::SetHz((SysClkModule)module, nearestHz);
                     this->context->freqs[module] = nearestHz;
+                }
+                if(module == SysClkModule_CPU) {
+                    FixCpuBug();
                 }
             }
         }
