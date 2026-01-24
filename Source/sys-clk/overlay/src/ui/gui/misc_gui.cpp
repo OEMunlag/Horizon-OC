@@ -747,11 +747,49 @@ protected:
         ValueThresholds thresholdsDisabled(0, 0);
 
         this->listElement->addItem(new tsl::elm::CategoryHeader("CPU Settings"));
-        if(IsMariko())
-            addFreqButton(KipConfigValue_marikoCpuBoostClock, nullptr, SysClkModule_CPU, cpu_freq_label_m);
-        else
-            addFreqButton(KipConfigValue_eristaCpuBoostClock, nullptr, SysClkModule_CPU, cpu_freq_label_e);
-
+        if(IsMariko()) {
+            std::vector<NamedValue> ClkOptions = {
+                NamedValue("1963 MHz", 1963000),
+                NamedValue("2091 MHz", 2091000),
+                NamedValue("2193 MHz", 2193000),
+                NamedValue("2295 MHz", 2295000),
+                NamedValue("2397 MHz", 2397000),
+                NamedValue("2499 MHz", 2499000),
+                NamedValue("2601 MHz", 2601000),
+                NamedValue("2703 MHz", 2703000),
+            };
+            ValueThresholds mCpuClockThresholds(1963000, 2397000);
+            addConfigButton(
+                KipConfigValue_marikoCpuBoostClock,
+                "CPU Boost Clock",
+                ValueRange(0, 0, 1, "", 1),
+                "CPU Boost Clock",
+                &mCpuClockThresholds,
+                {},
+                ClkOptions,
+                false
+            );
+        } else {
+            std::vector<NamedValue> ClkOptionsE = {
+                NamedValue("1785 MHz", 1785000),
+                NamedValue("1887 MHz", 1887000),
+                NamedValue("1963 MHz", 1963000),
+                NamedValue("2091 MHz", 2091000),
+                NamedValue("2193 MHz", 2193000),
+                NamedValue("2295 MHz", 2295000),
+            };
+            ValueThresholds eCpuClockThresholds(1785000, 2091000);
+            addConfigButton(
+                KipConfigValue_eristaCpuBoostClock,
+                "CPU Boost Clock",
+                ValueRange(0, 0, 1, "", 1),
+                "CPU Boost Clock",
+                &eCpuClockThresholds,
+                {},
+                ClkOptionsE,
+                false
+            );
+        }
         if(IsErista()) {
             addConfigButton(
                 KipConfigValue_eristaCpuUV,

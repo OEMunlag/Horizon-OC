@@ -440,7 +440,9 @@ void ClockManager::Tick()
         return;
     }
     bool isBoost = apmExtIsBoostMode(mode);
-
+    // if(isBoost) {
+    //     Board::SetHz(SysClkModule_CPU, Board::GetSocType() == SysClkSocType_Mariko ? this->config->GetConfigValue(HocClkConfigValue_MarikoBoostCpuClock) * 1000'000 : this->config->GetConfigValue(HocClkConfigValue_EristaBoostCpuClock) * 1000'000);
+    // }
     prevBoostMode = isBoost;
 
     bool noGPU = false;
@@ -455,9 +457,10 @@ void ClockManager::Tick()
         std::uint32_t nearestHz = 0;
 
         if(apmExtIsBoostMode(mode) && !this->config->GetConfigValue(HocClkConfigValue_OverwriteBoostMode)) {
-            ResetToStockClocks();
+            // ResetToStockClocks();
             return;
         }
+
         bool returnRaw = false;
         for (unsigned int module = 0; module < SysClkModule_EnumMax; module++)
         {
@@ -548,6 +551,10 @@ void ClockManager::WaitForNextTick()
 bool ClockManager::RefreshContext()
 {
     bool hasChanged = false;
+    
+    std::uint32_t mode = 0;
+    Result rc = apmExtGetCurrentPerformanceConfiguration(&mode);
+    ASSERT_RESULT_OK(rc, "apmExtGetCurrentPerformanceConfiguration");
 
     std::uint64_t applicationId = ProcessManagement::GetCurrentApplicationId();
     if (applicationId != this->context->applicationId)
@@ -598,7 +605,8 @@ bool ClockManager::RefreshContext()
                 switch (module)
                 {
                 case SysClkModule_CPU:
-                    Board::ResetToStockCpu();
+                    if(!(apmExtIsBoostMode(mode) || (this->config->GetConfigValue(HocClkConfigValue_OverwriteBoostMode) && apmExtIsBoostMode(mode))))
+                        Board::ResetToStockCpu();
                     break;
                 case SysClkModule_GPU:
                     Board::ResetToStockGpu();
@@ -754,10 +762,10 @@ void ClockManager::SetKipData() {
     CUST_WRITE_FIELD_BATCH(&table, marikoCpuLowVmin, this->config->GetConfigValue(KipConfigValue_marikoCpuLowVmin));
     CUST_WRITE_FIELD_BATCH(&table, marikoCpuHighVmin, this->config->GetConfigValue(KipConfigValue_marikoCpuHighVmin));
     CUST_WRITE_FIELD_BATCH(&table, marikoCpuMaxVolt, this->config->GetConfigValue(KipConfigValue_marikoCpuMaxVolt));
-    CUST_WRITE_FIELD_BATCH(&table, marikoCpuMaxClock, this->config->GetConfigValue(KipConfigValue_marikoCpuMaxClock) * 1000);
+    CUST_WRITE_FIELD_BATCH(&table, marikoCpuMaxClock, this->config->GetConfigValue(KipConfigValue_marikoCpuMaxClock));
 
-    CUST_WRITE_FIELD_BATCH(&table, eristaCpuBoostClock, this->config->GetConfigValue(KipConfigValue_eristaCpuBoostClock) * 1000);
-    CUST_WRITE_FIELD_BATCH(&table, marikoCpuBoostClock, this->config->GetConfigValue(KipConfigValue_marikoCpuBoostClock) * 1000);
+    CUST_WRITE_FIELD_BATCH(&table, eristaCpuBoostClock, this->config->GetConfigValue(KipConfigValue_eristaCpuBoostClock));
+    CUST_WRITE_FIELD_BATCH(&table, marikoCpuBoostClock, this->config->GetConfigValue(KipConfigValue_marikoCpuBoostClock));
 
     CUST_WRITE_FIELD_BATCH(&table, eristaGpuUV, this->config->GetConfigValue(KipConfigValue_eristaGpuUV));
     CUST_WRITE_FIELD_BATCH(&table, eristaGpuVmin, this->config->GetConfigValue(KipConfigValue_eristaGpuVmin));
@@ -846,9 +854,9 @@ void ClockManager::GetKipData() {
             initialConfigValues[KipConfigValue_marikoCpuLowVmin] = cust_get_mariko_cpu_low_vmin(&table);
             initialConfigValues[KipConfigValue_marikoCpuHighVmin] = cust_get_mariko_cpu_high_vmin(&table);
             initialConfigValues[KipConfigValue_marikoCpuMaxVolt] = cust_get_mariko_cpu_max_volt(&table);
-            initialConfigValues[KipConfigValue_marikoCpuMaxClock] = cust_get_marikoCpuMaxClock(&table) / 1000;
-            initialConfigValues[KipConfigValue_eristaCpuBoostClock] = cust_get_erista_cpu_boost(&table) / 1000;
-            initialConfigValues[KipConfigValue_marikoCpuBoostClock] = cust_get_mariko_cpu_boost(&table) / 1000;
+            initialConfigValues[KipConfigValue_marikoCpuMaxClock] = cust_get_marikoCpuMaxClock(&table);
+            initialConfigValues[KipConfigValue_eristaCpuBoostClock] = cust_get_erista_cpu_boost(&table);
+            initialConfigValues[KipConfigValue_marikoCpuBoostClock] = cust_get_mariko_cpu_boost(&table);
 
             initialConfigValues[KipConfigValue_eristaGpuUV] = cust_get_erista_gpu_uv(&table);
             initialConfigValues[KipConfigValue_eristaGpuVmin] = cust_get_erista_gpu_vmin(&table);
@@ -899,9 +907,9 @@ void ClockManager::GetKipData() {
         configValues.values[KipConfigValue_marikoCpuLowVmin] = cust_get_mariko_cpu_low_vmin(&table);
         configValues.values[KipConfigValue_marikoCpuHighVmin] = cust_get_mariko_cpu_high_vmin(&table);
         configValues.values[KipConfigValue_marikoCpuMaxVolt] = cust_get_mariko_cpu_max_volt(&table);
-        configValues.values[KipConfigValue_marikoCpuMaxClock] = cust_get_marikoCpuMaxClock(&table) / 1000;
-        configValues.values[KipConfigValue_eristaCpuBoostClock] = cust_get_erista_cpu_boost(&table) / 1000;
-        configValues.values[KipConfigValue_marikoCpuBoostClock] = cust_get_mariko_cpu_boost(&table) / 1000;
+        configValues.values[KipConfigValue_marikoCpuMaxClock] = cust_get_marikoCpuMaxClock(&table);
+        configValues.values[KipConfigValue_eristaCpuBoostClock] = cust_get_erista_cpu_boost(&table);
+        configValues.values[KipConfigValue_marikoCpuBoostClock] = cust_get_mariko_cpu_boost(&table);
 
         configValues.values[KipConfigValue_eristaGpuUV] = cust_get_erista_gpu_uv(&table);
         configValues.values[KipConfigValue_eristaGpuVmin] = cust_get_erista_gpu_vmin(&table);
