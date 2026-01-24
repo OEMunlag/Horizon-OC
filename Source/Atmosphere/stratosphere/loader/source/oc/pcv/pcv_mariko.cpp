@@ -489,7 +489,7 @@ namespace ams::ldr::oc::pcv::mariko {
         constexpr double MC_ARB_DIV = 4.0;
         constexpr u32 MC_ARB_SFA = 2;
 
-        table->burst_mc_regs.mc_emem_arb_cfg          = C.marikoEmcMaxClock           / (33.3 * 1000) / MC_ARB_DIV;
+        table->burst_mc_regs.mc_emem_arb_cfg          = C.marikoEmcMaxClock         / (33.3 * 1000) / MC_ARB_DIV;
         table->burst_mc_regs.mc_emem_arb_timing_rcd   = CEIL(GET_CYCLE_CEIL(tRCD)   / MC_ARB_DIV) - 2;
         table->burst_mc_regs.mc_emem_arb_timing_rp    = CEIL(GET_CYCLE_CEIL(tRPpb)  / MC_ARB_DIV) - 1;
         table->burst_mc_regs.mc_emem_arb_timing_rc    = CEIL(GET_CYCLE_CEIL(tRC)    / MC_ARB_DIV) - 1;

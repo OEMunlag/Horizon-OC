@@ -45,7 +45,6 @@ namespace ams::ldr::oc::pcv::erista {
 
     Result CpuVoltThermals(u32 *ptr) {
         if (std::memcmp(ptr - 6, cpuVoltageThermalPattern, sizeof(cpuVoltageThermalPattern))) {
-           // AMS_ABORT_UNLESS(0);
             R_THROW(ldr::ResultInvalidCpuMinVolt());
         }
 
@@ -67,7 +66,6 @@ namespace ams::ldr::oc::pcv::erista {
 
     Result CpuVoltDfll(u32* ptr) {
         cvb_cpu_dfll_data *entry = reinterpret_cast<cvb_cpu_dfll_data *>(ptr);
-
         R_UNLESS(entry->tune0_low == 0x0000FFCF,   ldr::ResultInvalidCpuVoltDfllEntry());
         R_UNLESS(entry->tune0_high == 0x00000000,    ldr::ResultInvalidCpuVoltDfllEntry());
         R_UNLESS(entry->tune1_low == 0x012207FF,   ldr::ResultInvalidCpuVoltDfllEntry());

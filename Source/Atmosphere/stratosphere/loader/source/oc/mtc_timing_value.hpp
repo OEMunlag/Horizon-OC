@@ -27,7 +27,8 @@ namespace ams::ldr::oc {
     #define FLOOR(A)    std::floor(A)
     #define ROUND(A)    std::lround(A)
 
-    #define PACK_U32(high, low) ((static_cast<uint32_t>(high) << 16) | (static_cast<uint32_t>(low) & 0xFFFF))
+    #define PACK_U32(high, low) ((static_cast<u32>(high) << 16) | (static_cast<u32>(low) & 0xFFFF))
+    #define PACK_U32_NIBBLE_HIGH_BYTE_LOW(high, low) ((static_cast<u32>(high & 0xF) << 28) | (static_cast<u32>(low) & 0xFF))
 
     /* Primary timings. */
     const std::array<u32,  8> tRCD_values  =  { 18, 17, 16, 15, 14, 13, 12, 11 };
@@ -110,7 +111,7 @@ namespace ams::ldr::oc {
         const u32 einput           = 5 + qpop - einput_duration;
         const u32 ibdly            = 0x10000000 + FLOOR(MAX(RL_DBI - 1.9999956603408224, quse - 5.9999987787411175) + (-0.0011929079761504341 * ramFreqMhz));
         const u32 qrst_duration    = FLOOR((ramFreqMhz * 0.001477125119082522) + 4.272302254983803);
-        const u32 qrstLow          = MAX((einput - qrst_duration) - 2, static_cast<u32>(0));
+        const u32 qrstLow          = MAX(static_cast<s32>(einput - qrst_duration - 2), static_cast<s32>(0));
         const u32 qrst             = PACK_U32(qrst_duration, qrstLow);
         const u32 qsafe            = (einput_duration + 3) + MAX(MIN(qrstLow * rdv, qrst_duration + qrst_duration), einput);
 
@@ -123,7 +124,11 @@ namespace ams::ldr::oc {
         const u32 wdv = WL;
         const u32 wsv = WL - 2;
         const u32 wev = 0xA + (WL - 14);
-        const u32 obdly = 0x10000000 + WL - MIN(static_cast<double>(WL), 12 - (CEIL(-0.0003991 * ramFreqMhz) * 2));
+
+        const u32 obdlyHigh = 3 / FLOOR(MIN(static_cast<double>(2), tCK_avg * (WL - 7)));
+        const u32 obdlyLow = WL - MIN(static_cast<double>(WL), 12 - (CEIL(-0.0003991 * ramFreqMhz) * 2));
+
+        const u32 obdly = PACK_U32_NIBBLE_HIGH_BYTE_LOW(obdlyHigh, obdlyLow);
 
         inline u32 pdex2rw;
         inline u32 cke2pden;
