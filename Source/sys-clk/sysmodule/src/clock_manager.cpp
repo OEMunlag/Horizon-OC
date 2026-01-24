@@ -12,9 +12,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
- 
+
 /* --------------------------------------------------------------------------
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <p-sam@d3vs.net>, <natinusala@gmail.com>, <m4x@m4xw.net>
@@ -90,7 +90,7 @@ ClockManager::ClockManager()
 
     this->rnxSync = new ReverseNXSync;
     memset(&initialConfigValues, 0, sizeof(initialConfigValues));
-    this->GetKipData();   
+    this->GetKipData();
     threadCreate(
         &governorTHREAD,
         ClockManager::GovernorThread,
@@ -100,9 +100,9 @@ ClockManager::ClockManager()
         0x3F,
         -2
     );
-    
+
 	threadStart(&governorTHREAD);
-    
+
     for(int i = 0; i < HorizonOCSpeedo_EnumMax; i++) {
         this->context->speedos[i] = Board::getSpeedo((HorizonOCSpeedo)i);
         this->context->iddq[i] = Board::getIDDQ((HorizonOCSpeedo)i);
@@ -112,26 +112,32 @@ ClockManager::ClockManager()
     this->context->isDram8GB = Board::IsDram8GB();
 }
 
+
 void ClockManager::FixCpuBug() {
-    static u32 cpuFreqs[] = {
-        1785000000,
-        1887000000,
-        1963000000,
-        2091000000,
-        2193000000,
-        2295000000,
-        2397000000,
-        2499000000,
-        2601000000,
-        2703000000,
-        1020000000
-    };
-    static u32 cpuFreqsSize = sizeof(cpuFreqs) / sizeof(u32);
-    for(int i = 0; i < cpuFreqsSize; i++) {
-        Board::SetHz(SysClkModule_CPU, cpuFreqs[i]);
-        svcSleepThread(2'500'000); // 2.5ms
-    }
+    u32 targetHz = 0;
+    u32 maxHz = 0;
+    u32 nearestHz = 0;
+
     ResetToStockClocks();
+
+    targetHz = this->context->overrideFreqs[SysClkModule_CPU];
+    if (!targetHz) {
+        targetHz = this->config->GetAutoClockHz(this->context->applicationId, SysClkModule_CPU, this->context->profile, false);
+        if(!targetHz)
+            targetHz = this->config->GetAutoClockHz(GLOBAL_PROFILE_ID, SysClkModule_CPU, this->context->profile, false);
+    }
+
+    if (targetHz) {
+        maxHz = this->GetMaxAllowedHz(SysClkModule_CPU, this->context->profile);
+        nearestHz = this->GetNearestHz(SysClkModule_CPU, targetHz, maxHz);
+
+        while ((nearestHz = this->GetNearestHz(SysClkModule_CPU, targetHz, maxHz)) != targetHz) {
+            Board::SetHz(SysClkModule_CPU, 1020000000);
+            svcSleepThread(2'500'000);
+            Board::SetHz(SysClkModule_CPU, nearestHz);
+            this->context->freqs[SysClkModule_CPU] = nearestHz;
+        }
+    }
 }
 
 ClockManager::~ClockManager()
@@ -478,7 +484,7 @@ void ClockManager::Tick()
                 }
                 isGovernorEnabled = newGovernorState;
             }
-            
+
             if(module == HorizonOCModule_Display && this->config->GetConfigValue(HorizonOCConfigValue_OverwriteRefreshRate) && Board::GetConsoleType() != HorizonOCConsoleType_Hoag) {
                 if(targetHz)
                     Board::SetHz(HorizonOCModule_Display, targetHz);
@@ -535,7 +541,7 @@ void ClockManager::WaitForNextTick()
 {
     if(!(Board::GetHz(SysClkModule_MEM) < 665000000))
         svcSleepThread(this->GetConfig()->GetConfigValue(SysClkConfigValue_PollingIntervalMs) * 1000000ULL);
-    else 
+    else
         svcSleepThread(5000 * 1000000ULL); // 5 seconds in sleep mode
 }
 
@@ -796,15 +802,15 @@ void ClockManager::GetKipData() {
 
         SysClkConfigValueList configValues;
         this->config->GetConfigValues(&configValues);
-        
+
         CustomizeTable table;
-        
+
         if (!cust_read_and_cache("sdmc:/atmosphere/kips/hoc.kip", &table)) {
             FileUtils::LogLine("[clock_manager] Failed to read KIP file for GetKipData");
             writeNotification("Horizon OC\nKip read failed");
             return;
         }
-        
+
         if(writeBootConfigValues) {
             writeBootConfigValues = false;
 
