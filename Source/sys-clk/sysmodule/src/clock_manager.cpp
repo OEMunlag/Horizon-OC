@@ -518,7 +518,7 @@ void ClockManager::Tick()
                     Board::SetHz((SysClkModule)module, nearestHz);
                     this->context->freqs[module] = nearestHz;
                 }
-                if(module == SysClkModule_CPU) {
+                if(module == SysClkModule_CPU && this->config->GetConfigValue(HocClkConfigValue_FixCpuVoltBug)) {
                     FixCpuBug();
                 }
             }
