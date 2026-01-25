@@ -143,7 +143,7 @@ void SafetyCheck() {
     sValidator validators[] = {
         { C.eristaCpuBoostClock, 1020'000, 2295'000, true },
         { C.marikoCpuBoostClock, 1020'000, 2703'000, true },
-        { C.commonEmcMemVolt,    1100'000, 1350'000 }, // Official burst vmax for the RAMs is 1500mV
+        { C.commonEmcMemVolt,    1000'000, 1350'000 }, // Official burst vmax for the RAMs is 1500mV
         { C.eristaCpuMaxVolt,        1100,     1257 },
         { C.eristaEmcMaxClock,   1600'000, 2600'200 },
         { C.marikoCpuMaxVolt,        1100,     1235 },
