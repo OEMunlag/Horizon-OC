@@ -118,7 +118,7 @@ void ClockManager::FixCpuBug() {
     u32 maxHz = 0;
     u32 nearestHz = 0;
 
-    ResetToStockClocks();
+    // ResetToStockClocks();
 
     targetHz = this->context->overrideFreqs[SysClkModule_CPU];
     if (!targetHz) {
@@ -134,9 +134,10 @@ void ClockManager::FixCpuBug() {
         while ((nearestHz = this->GetNearestHz(SysClkModule_CPU, targetHz, maxHz)) != targetHz) {
             Board::SetHz(SysClkModule_CPU, 1020000000);
             svcSleepThread(2'500'000);
-            Board::SetHz(SysClkModule_CPU, nearestHz);
-            this->context->freqs[SysClkModule_CPU] = nearestHz;
+            Board::SetHz(SysClkModule_CPU, maxHz);
+            this->context->freqs[SysClkModule_CPU] = maxHz;
         }
+        Board::SetHz(SysClkModule_CPU, targetHz);
     }
 }
 
