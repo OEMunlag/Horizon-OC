@@ -133,7 +133,7 @@ void ClockManager::FixCpuBug() {
 
         while ((nearestHz = this->GetNearestHz(SysClkModule_CPU, targetHz, maxHz)) != targetHz) {
             Board::SetHz(SysClkModule_CPU, 1020000000);
-            svcSleepThread(2'500'000);
+            svcSleepThread(1'000'000);
             Board::SetHz(SysClkModule_CPU, maxHz);
             this->context->freqs[SysClkModule_CPU] = maxHz;
         }
