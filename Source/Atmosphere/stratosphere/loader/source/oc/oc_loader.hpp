@@ -1,7 +1,7 @@
 /*
  * Copyright (C) Switch-OC-Suite
  *
- * Copyright (c) Souldbminer and Horizon OC Contributors
+ * Copyright (c) Souldbminer, Lightos_ and Horizon OC Contributors
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
