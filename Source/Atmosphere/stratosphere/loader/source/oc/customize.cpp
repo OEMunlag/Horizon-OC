@@ -37,7 +37,7 @@ volatile CustomizeTable C = {
 .commonEmcMemVolt  = 1175000, // LPDDR4X JEDEC Specification
 .eristaEmcMaxClock = 1600000, // Maximum HB-MGCH ram rating
 
-.marikoEmcMaxClock = 1866000,
+.marikoEmcMaxClock = 1866000, // 1866MHz @ 1866tWRL is guaranteed to work on all Mariko units
 .marikoEmcVddqVolt = 600000,
 .emcDvbShift = 0,
 
