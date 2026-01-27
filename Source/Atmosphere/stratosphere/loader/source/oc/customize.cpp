@@ -327,7 +327,7 @@ volatile CustomizeTable C = {
     { 2703000, { 1838820, -36648, 113, }, { CPU_MAX_MAX_VOLT, } },
 },
 
-.marikoCpuDvfsTableHelios {
+.marikoCpuDvfsTableExtreme {
     {  204000, {  732856, -17335, 113, }, {                   } },
     {  306000, {  760024, -18195, 113, }, {                   } },
     {  408000, {  789258, -19055, 113, }, {                   } },

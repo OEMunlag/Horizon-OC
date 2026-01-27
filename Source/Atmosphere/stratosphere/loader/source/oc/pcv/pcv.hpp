@@ -309,8 +309,8 @@ namespace ams::ldr::oc::pcv {
                     customize_table = const_cast<cvb_entry_t *>(C.marikoCpuDvfsTable1581Tbreak);
                     break;
                 }
-                case HELIOS_TABLE: {
-                    customize_table = const_cast<cvb_entry_t *>(C.marikoCpuDvfsTableHelios);
+                case EXTREME_TABLE: {
+                    customize_table = const_cast<cvb_entry_t *>(C.marikoCpuDvfsTableExtreme);
                     break;
                 }
                 case DEFAULT_TABLE:
