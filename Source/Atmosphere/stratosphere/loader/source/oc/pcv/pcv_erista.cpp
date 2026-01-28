@@ -740,7 +740,7 @@ namespace ams::ldr::oc::pcv::erista {
             {"GPU Volt Thermals", &GpuVoltThermals, 1, nullptr, 810},
             {"GPU Freq Table", GpuFreqCvbTable<false>, 1, nullptr, static_cast<u32>(GetDvfsTableLastEntry(GpuCvbTableDefault)->freq)},
             {"GPU Freq Asm", &GpuFreqMaxAsm, 2, &GpuMaxClockPatternFn},
-            {"GPU Freq PLL", &GpuFreqPllLimit, 1, nullptr, GpuClkPllLimit}, // NOT ISSUE
+            {"GPU Freq PLL", &GpuFreqPllLimit, 1, nullptr, GpuClkPllLimit},
             {"MEM Freq Mtc", &MemFreqMtcTable, 0, nullptr, EmcClkOSLimit},
             {"MEM Freq Max", &MemFreqMax, 0, nullptr, EmcClkOSLimit},
             {"MEM Freq PLLM", &MemFreqPllmLimit, 2, nullptr, EmcClkPllmLimit},
