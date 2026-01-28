@@ -96,7 +96,7 @@ volatile CustomizeTable C = {
 .marikoCpuBoostClock = 1963000, // Default boost clock
 
 .eristaGpuUV = 0,
-.eristaGpuVmin = 800,
+.eristaGpuVmin = 810,
 
 .marikoGpuUV = 0,
 /* For automatic vmin detection, set this to AUTO. */
