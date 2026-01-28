@@ -216,9 +216,8 @@ namespace ams::ldr::oc::pcv {
         constexpr u32 GpuClkPllLimit = 921'600'000;
         constexpr u32 GpuVminOfficial = 810;
 
-        static const u32 gpuVoltDvfsPattern[] = { 1150, 1000, 100, 1000, 10, };
-        static const u32 gpuVoltDvfsOffsets[] = {    1,    2,   3,    4,  5, };
-        static_assert(sizeof(gpuVoltDvfsPattern) == sizeof(gpuVoltDvfsOffsets), "Invalid gpuVoltDvfsPattern");
+        static const u32 gpuVoltDvfsPattern[] = { 810, 1150, 1000, 100, 1000, 10, };
+        static_assert(sizeof(gpuVoltDvfsPattern) == (sizeof(u32) * 6), "Invalid gpuVoltDvfsPattern");
 
         static const u32 gpuVoltThermalPattern[] = { 950, 1132, 0, 810, 1132, 15000, 810, 1132, 30000, 810, 1132, 50000, 810, 1132, 70000, 810, 1132, 105000 };
         static_assert(sizeof(gpuVoltThermalPattern) == 0x48, "invalid gpuVoltageThermalPattern size");

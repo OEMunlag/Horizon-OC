@@ -103,14 +103,15 @@ namespace ams::ldr::oc::pcv::erista {
     }
 
     Result GpuVoltDVFS(u32 *ptr) {
-        if (MatchesPattern(ptr, gpuVoltDvfsPattern, gpuVoltDvfsOffsets)) {
-            if (C.eristaGpuVmin) {
-                PATCH_OFFSET(ptr, C.eristaGpuVmin);
-            }
-            R_SUCCEED();
-        }
+        u32 result = std::memcmp(ptr, gpuVoltDvfsPattern, sizeof(gpuVoltDvfsPattern));
 
-        R_THROW(ldr::ResultInvalidGpuDvfs());
+        if (result)
+            R_THROW(ldr::ResultInvalidGpuDvfs());
+
+        if (C.eristaGpuVmin)
+            PATCH_OFFSET(ptr, C.eristaGpuVmin);
+
+        R_SUCCEED();
     }
 
     Result GpuVoltThermals(u32 *ptr) {
@@ -730,19 +731,16 @@ namespace ams::ldr::oc::pcv::erista {
     }
 
     void Patch(uintptr_t mapped_nso, size_t nso_size) {
-        u32 CpuCvbDefaultMaxFreq = static_cast<u32>(GetDvfsTableLastEntry(CpuCvbTableDefault)->freq);
-        u32 GpuCvbDefaultMaxFreq = static_cast<u32>(GetDvfsTableLastEntry(GpuCvbTableDefault)->freq);
-
         PatcherEntry<u32> patches[] = {
-            {"CPU Freq Table", CpuFreqCvbTable<false>, 1, nullptr, CpuCvbDefaultMaxFreq},
+            {"CPU Freq Table", CpuFreqCvbTable<false>, 1, nullptr, static_cast<u32>(GetDvfsTableLastEntry(CpuCvbTableDefault)->freq)},
             {"CPU Volt DVFS", &CpuVoltDvfs, 1, nullptr, 825},
             {"CPU Volt Thermals", &CpuVoltThermals, 1, nullptr, 825},
             {"CPU Volt Dfll",  &CpuVoltDfll, 1, nullptr, 0xFFD0EAFF},
             {"GPU Volt DVFS", &GpuVoltDVFS, 1, nullptr, 810},
             {"GPU Volt Thermals", &GpuVoltThermals, 1, nullptr, 810},
-            {"GPU Freq Table", GpuFreqCvbTable<false>, 1, nullptr, GpuCvbDefaultMaxFreq},
+            {"GPU Freq Table", GpuFreqCvbTable<false>, 1, nullptr, static_cast<u32>(GetDvfsTableLastEntry(GpuCvbTableDefault)->freq)},
             {"GPU Freq Asm", &GpuFreqMaxAsm, 2, &GpuMaxClockPatternFn},
-            {"GPU Freq PLL", &GpuFreqPllLimit, 1, nullptr, GpuClkPllLimit},
+            {"GPU Freq PLL", &GpuFreqPllLimit, 1, nullptr, GpuClkPllLimit}, // NOT ISSUE
             {"MEM Freq Mtc", &MemFreqMtcTable, 0, nullptr, EmcClkOSLimit},
             {"MEM Freq Max", &MemFreqMax, 0, nullptr, EmcClkOSLimit},
             {"MEM Freq PLLM", &MemFreqPllmLimit, 2, nullptr, EmcClkPllmLimit},
