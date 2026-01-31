@@ -10,25 +10,37 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    # Minimal devkitA64 container
     container:
-      image: devkitpro/devkitpro-ci:latest
+      image: devkitpro/devkita64:latest
 
     steps:
       # -------------------------------------------------
-      # Verify toolchain
+      # Verify container
       # -------------------------------------------------
-      - name: Check environment
+      - name: Check basic tools
         run: |
           echo "DEVKITPRO = $DEVKITPRO"
-          aarch64-none-elf-gcc --version
-          arm-none-eabi-gcc --version
           python3 --version
           make --version
           hactool --help >/dev/null
           zip --version >/dev/null
 
       # -------------------------------------------------
-      # Get short commit SHA for naming
+      # Fix PATH for devkitA64 and devkitARM
+      # -------------------------------------------------
+      - name: Set devkitPro PATH
+        run: |
+          export DEVKITPRO=/opt/devkitpro
+          export DEVKITA64=$DEVKITPRO/devkitA64
+          export DEVKITARM=$DEVKITPRO/devkitARM
+          export PATH=$DEVKITA64/bin:$DEVKITARM/bin:$PATH
+          aarch64-none-elf-gcc --version
+          arm-none-eabi-gcc --version
+        shell: bash
+
+      # -------------------------------------------------
+      # Get short commit SHA
       # -------------------------------------------------
       - name: Set commit SHA
         id: vars
