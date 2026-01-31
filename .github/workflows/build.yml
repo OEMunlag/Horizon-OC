@@ -15,7 +15,7 @@ jobs:
 
     steps:
       # -------------------------------------------------
-      # Base environment validation
+      # Validate base tools
       # -------------------------------------------------
       - name: Ensure required tools exist
         run: |
@@ -24,13 +24,24 @@ jobs:
           python3 --version
           command -v zip
 
+      # -------------------------------------------------
+      # Set devkitPro environment
+      # -------------------------------------------------
       - name: Set devkitPro environment
         run: |
           echo "DEVKITPRO=/opt/devkitpro" >> $GITHUB_ENV
           echo "DEVKITA64=/opt/devkitpro/devkitA64" >> $GITHUB_ENV
           echo "DEVKITARM=/opt/devkitpro/devkitARM" >> $GITHUB_ENV
 
-      - name: Sync devkitPro and install switch-dev
+      # -------------------------------------------------
+      # FIX: devkitPro pacman 403 error
+      # -------------------------------------------------
+      - name: Initialize devkitPro pacman keyring
+        run: |
+          dkp-pacman-key --init
+          dkp-pacman-key --populate devkitpro
+
+      - name: Sync devkitPro and install dependencies
         run: |
           dkp-pacman -Sy --noconfirm
           dkp-pacman -S --noconfirm --needed \
@@ -57,16 +68,16 @@ jobs:
       # -------------------------------------------------
       # Create build folder and copy Atmosphere
       # -------------------------------------------------
-      - name: Create build directory and copy Atmosphere
+      - name: Prepare build directory
         working-directory: horizon-oc
         run: |
           mkdir -p build
           cp -r ../atmosphere/. build/
 
       # -------------------------------------------------
-      # Override ldr_process_creation.cpp
+      # Override Atmosphere loader source
       # -------------------------------------------------
-      - name: Override Atmosphere loader source
+      - name: Override ldr_process_creation.cpp
         working-directory: horizon-oc
         run: |
           cp -f \
@@ -74,7 +85,7 @@ jobs:
             build/stratosphere/loader/source/ldr_process_creation.cpp
 
       # -------------------------------------------------
-      # Run the Horizon OC build script
+      # Build Horizon OC
       # -------------------------------------------------
       - name: Build Horizon OC
         working-directory: horizon-oc
@@ -85,7 +96,7 @@ jobs:
       # -------------------------------------------------
       # Zip dist folder
       # -------------------------------------------------
-      - name: Package dist as zip
+      - name: Package dist folder
         working-directory: horizon-oc
         run: |
           zip -r horizon-oc-dist.zip dist
@@ -93,7 +104,7 @@ jobs:
       # -------------------------------------------------
       # Upload zip artifact
       # -------------------------------------------------
-      - name: Upload dist zip artifact
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: horizon-oc-dist
