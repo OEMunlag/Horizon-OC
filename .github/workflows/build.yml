@@ -16,17 +16,6 @@ jobs:
 
     steps:
       # -------------------------------------------------
-      # Verify container
-      # -------------------------------------------------
-      - name: Check basic tools
-        run: |
-          echo "DEVKITPRO = $DEVKITPRO"
-          python3 --version
-          make --version
-          hactool --help >/dev/null
-          zip --version >/dev/null
-
-      # -------------------------------------------------
       # Fix PATH for devkitA64 and devkitARM
       # -------------------------------------------------
       - name: Set devkitPro PATH
