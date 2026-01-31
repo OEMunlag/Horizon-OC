@@ -10,79 +10,64 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # Use Atmosphère's CI container (devkitA64, devkitARM, hactool preinstalled)
-    container:
-      image: ghcr.io/atmosphere-nx/atmosphere-ci:latest
-
     steps:
-      # -------------------------------------------------
-      # Verify basic tools
-      # -------------------------------------------------
-      - name: Verify environment
+      - name: Install dependencies
         run: |
-          echo "DEVKITPRO = $DEVKITPRO"
+          sudo apt-get update
+          sudo apt-get install -y git make python3 zip wget tar
+
+      - name: Install devkitPro + toolchains
+        run: |
+          # Install devkitPro base
+          wget https://devkitpro.org/packages/devkitpro-pacman.install
+          sudo bash devkitpro-pacman.install
+
+          # Initialize keyring
+          sudo dkp-pacman-key --init
+          sudo dkp-pacman-key --populate devkitpro
+
+          # Sync and install packages
+          sudo dkp-pacman -Sy --noconfirm
+          sudo dkp-pacman -S --noconfirm \
+            devkitA64 devkitARM libnx switch-tools hactool
+
+      - name: Check toolchain
+        run: |
           aarch64-none-elf-gcc --version
           arm-none-eabi-gcc --version
-          make --version
           python3 --version
+          make --version
           hactool --help >/dev/null
-          zip --version >/dev/null
 
-      # -------------------------------------------------
-      # Clone Atmosphère
-      # -------------------------------------------------
       - name: Clone Atmosphere
-        run: |
-          git clone https://github.com/Atmosphere-NX/Atmosphere.git atmosphere
+        run: git clone https://github.com/Atmosphere-NX/Atmosphere.git atmosphere
 
-      # -------------------------------------------------
-      # Clone Horizon OC (develop branch)
-      # -------------------------------------------------
       - name: Clone Horizon OC
-        run: |
-          git clone -b develop --single-branch \
-            https://github.com/Horizon-OC/Horizon-OC.git horizon-oc
+        run: git clone -b develop --single-branch https://github.com/Horizon-OC/Horizon-OC.git horizon-oc
 
-      # -------------------------------------------------
-      # Prepare build folder
-      # -------------------------------------------------
       - name: Prepare build folder
         working-directory: horizon-oc
         run: |
-          mkdir -p build
+          mkdir build
           cp -r ../atmosphere/. build/
 
-      # -------------------------------------------------
-      # Override Atmosphère loader source
-      # -------------------------------------------------
-      - name: Override ldr_process_creation.cpp
+      - name: Override loader source
         working-directory: horizon-oc
         run: |
-          cp -f \
-            Source/Atmosphere/stratosphere/loader/source/ldr_process_creation.cpp \
+          cp -f Source/Atmosphere/stratosphere/loader/source/ldr_process_creation.cpp \
             build/stratosphere/loader/source/ldr_process_creation.cpp
 
-      # -------------------------------------------------
-      # Build Horizon OC Zeus
-      # -------------------------------------------------
       - name: Build Horizon OC Zeus
         working-directory: horizon-oc
         run: |
           chmod +x build.sh
           ./build.sh
 
-      # -------------------------------------------------
-      # Package dist folder as ZIP
-      # -------------------------------------------------
-      - name: Package dist folder
+      - name: Zip dist
         working-directory: horizon-oc
-        run: |
-          zip -r horizon-oc-zeus-dist.zip dist
+        run: zip -r horizon-oc-zeus-dist.zip dist
 
-      # -------------------------------------------------
-      # Upload ZIP artifact
-      # -------------------------------------------------
-      - name: Upload build artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: horizon-oc-zeus-dist
