@@ -1,0 +1,84 @@
+name: Build Horizon OC Zeus
+
+on:
+  push:
+    branches: [ develop, main, master ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    # Use the official devkitPro container with devkitA64 + devkitARM preinstalled
+    container:
+      image: devkitpro/devkita64:latest
+
+    steps:
+      # -------------------------------------------------
+      # Verify environment
+      # -------------------------------------------------
+      - name: Check toolchain
+        run: |
+          echo "DEVKITPRO = $DEVKITPRO"
+          aarch64-none-elf-gcc --version
+          arm-none-eabi-gcc --version
+          python3 --version
+          make --version
+          hactool --help >/dev/null
+          zip --version >/dev/null
+
+      # -------------------------------------------------
+      # Clone Atmosphère
+      # -------------------------------------------------
+      - name: Clone Atmosphere
+        run: git clone https://github.com/Atmosphere-NX/Atmosphere.git atmosphere
+
+      # -------------------------------------------------
+      # Clone Horizon OC (develop branch)
+      # -------------------------------------------------
+      - name: Clone Horizon OC
+        run: git clone -b develop --single-branch https://github.com/Horizon-OC/Horizon-OC.git horizon-oc
+
+      # -------------------------------------------------
+      # Prepare build folder
+      # -------------------------------------------------
+      - name: Prepare build folder
+        working-directory: horizon-oc
+        run: |
+          mkdir -p build
+          cp -r ../atmosphere/. build/
+
+      # -------------------------------------------------
+      # Override loader source
+      # -------------------------------------------------
+      - name: Override ldr_process_creation.cpp
+        working-directory: horizon-oc
+        run: |
+          cp -f Source/Atmosphere/stratosphere/loader/source/ldr_process_creation.cpp \
+            build/stratosphere/loader/source/ldr_process_creation.cpp
+
+      # -------------------------------------------------
+      # Build Horizon OC Zeus
+      # -------------------------------------------------
+      - name: Build Horizon OC Zeus
+        working-directory: horizon-oc
+        run: |
+          chmod +x build.sh
+          ./build.sh
+
+      # -------------------------------------------------
+      # Package dist folder as ZIP
+      # -------------------------------------------------
+      - name: Package dist
+        working-directory: horizon-oc
+        run: zip -r horizon-oc-zeus-dist.zip dist
+
+      # -------------------------------------------------
+      # Upload ZIP artifact
+      # -------------------------------------------------
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: horizon-oc-zeus-dist
+          path: horizon-oc/horizon-oc-zeus-dist.zip
