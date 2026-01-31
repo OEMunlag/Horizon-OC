@@ -10,31 +10,33 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    # Use Atmosphère's CI container (devkitA64, devkitARM, hactool preinstalled)
     container:
-      image: devkitpro/devkita64:latest
+      image: ghcr.io/atmosphere-nx/atmosphere-ci:latest
 
     steps:
       # -------------------------------------------------
-      # Verify toolchain (no pacman!)
+      # Verify basic tools
       # -------------------------------------------------
       - name: Verify environment
         run: |
           echo "DEVKITPRO = $DEVKITPRO"
           aarch64-none-elf-gcc --version
+          arm-none-eabi-gcc --version
           make --version
           python3 --version
           hactool --help >/dev/null
           zip --version >/dev/null
 
       # -------------------------------------------------
-      # Clone Atmosphere
+      # Clone Atmosphère
       # -------------------------------------------------
       - name: Clone Atmosphere
         run: |
           git clone https://github.com/Atmosphere-NX/Atmosphere.git atmosphere
 
       # -------------------------------------------------
-      # Clone Horizon OC (develop)
+      # Clone Horizon OC (develop branch)
       # -------------------------------------------------
       - name: Clone Horizon OC
         run: |
@@ -42,7 +44,7 @@ jobs:
             https://github.com/Horizon-OC/Horizon-OC.git horizon-oc
 
       # -------------------------------------------------
-      # Prepare build directory
+      # Prepare build folder
       # -------------------------------------------------
       - name: Prepare build folder
         working-directory: horizon-oc
@@ -51,7 +53,7 @@ jobs:
           cp -r ../atmosphere/. build/
 
       # -------------------------------------------------
-      # Override Atmosphere loader source
+      # Override Atmosphère loader source
       # -------------------------------------------------
       - name: Override ldr_process_creation.cpp
         working-directory: horizon-oc
@@ -70,15 +72,15 @@ jobs:
           ./build.sh
 
       # -------------------------------------------------
-      # Zip dist folder
+      # Package dist folder as ZIP
       # -------------------------------------------------
-      - name: Package dist
+      - name: Package dist folder
         working-directory: horizon-oc
         run: |
           zip -r horizon-oc-zeus-dist.zip dist
 
       # -------------------------------------------------
-      # Upload artifact
+      # Upload ZIP artifact
       # -------------------------------------------------
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
