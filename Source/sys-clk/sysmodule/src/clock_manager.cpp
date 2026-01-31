@@ -182,7 +182,7 @@ bool ClockManager::IsAssignableHz(SysClkModule module, std::uint32_t hz)
     switch (module)
     {
     case SysClkModule_CPU:
-        return hz >= 400000000;
+        return hz >= 500000000;
     case SysClkModule_MEM:
         return hz >= 665600000;
     default:
@@ -213,7 +213,14 @@ std::uint32_t ClockManager::GetMaxAllowedHz(SysClkModule module, SysClkProfile p
             }
             else if (profile <= SysClkProfile_HandheldChargingUSB)
             {
-                return 768000000;
+                switch(Board::GetSocType()) {
+                    case SysClkSocType_Erista:
+                        return 768000000;
+                    case SysClkSocType_Mariko:
+                        return 921600000;
+                    default:
+                        return 4294967294;
+                }
             }
         }
     }
@@ -679,10 +686,7 @@ bool ClockManager::RefreshContext()
         FileUtils::WriteContextToCsv(this->context);
     }
 
-    if(this->context->profile == SysClkProfile_Docked && Board::GetConsoleType() != HorizonOCConsoleType_Hoag)
-        this->context->maxDisplayFreq = Board::GetHighestDockedDisplayRate();
-    else
-        this->context->maxDisplayFreq = 60;
+    this->context->maxDisplayFreq = Board::GetHighestDockedDisplayRate();
 
     u32 targetHz = this->context->overrideFreqs[HorizonOCModule_Display];
     if (!targetHz)
