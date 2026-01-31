@@ -10,15 +10,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # Use the official devkitPro container with devkitA64 + devkitARM preinstalled
     container:
-      image: devkitpro/devkita64:latest
+      image: devkitpro/devkitpro-ci:latest
 
     steps:
       # -------------------------------------------------
-      # Verify environment
+      # Verify toolchain
       # -------------------------------------------------
-      - name: Check toolchain
+      - name: Check environment
         run: |
           echo "DEVKITPRO = $DEVKITPRO"
           aarch64-none-elf-gcc --version
@@ -27,6 +26,13 @@ jobs:
           make --version
           hactool --help >/dev/null
           zip --version >/dev/null
+
+      # -------------------------------------------------
+      # Get short commit SHA for naming
+      # -------------------------------------------------
+      - name: Set commit SHA
+        id: vars
+        run: echo "SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
 
       # -------------------------------------------------
       # Clone Atmosphère
@@ -68,11 +74,14 @@ jobs:
           ./build.sh
 
       # -------------------------------------------------
-      # Package dist folder as ZIP
+      # Package dist folder as ZIP with commit SHA
       # -------------------------------------------------
       - name: Package dist
         working-directory: horizon-oc
-        run: zip -r horizon-oc-zeus-dist.zip dist
+        run: |
+          ZIP_NAME="horizon-oc-zeus-dist-${SHORT_SHA}.zip"
+          zip -r "$ZIP_NAME" dist
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
 
       # -------------------------------------------------
       # Upload ZIP artifact
@@ -81,4 +90,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: horizon-oc-zeus-dist
-          path: horizon-oc/horizon-oc-zeus-dist.zip
+          path: horizon-oc/${{ env.ZIP_NAME }}
