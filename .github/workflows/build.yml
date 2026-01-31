@@ -1,4 +1,4 @@
-name: Build Horizon OC
+name: Build Horizon OC Zeus
 
 on:
   push:
@@ -15,40 +15,16 @@ jobs:
 
     steps:
       # -------------------------------------------------
-      # Validate base tools
+      # Verify toolchain (no pacman!)
       # -------------------------------------------------
-      - name: Ensure required tools exist
+      - name: Verify environment
         run: |
-          command -v make
-          command -v python3
+          echo "DEVKITPRO = $DEVKITPRO"
+          aarch64-none-elf-gcc --version
+          make --version
           python3 --version
-          command -v zip
-
-      # -------------------------------------------------
-      # Set devkitPro environment
-      # -------------------------------------------------
-      - name: Set devkitPro environment
-        run: |
-          echo "DEVKITPRO=/opt/devkitpro" >> $GITHUB_ENV
-          echo "DEVKITA64=/opt/devkitpro/devkitA64" >> $GITHUB_ENV
-          echo "DEVKITARM=/opt/devkitpro/devkitARM" >> $GITHUB_ENV
-
-      # -------------------------------------------------
-      # FIX: devkitPro pacman 403 error
-      # -------------------------------------------------
-      - name: Initialize devkitPro pacman keyring
-        run: |
-          dkp-pacman-key --init
-          dkp-pacman-key --populate devkitpro
-
-      - name: Sync devkitPro and install dependencies
-        run: |
-          dkp-pacman -Sy --noconfirm
-          dkp-pacman -S --noconfirm --needed \
-            switch-dev \
-            libnx \
-            hactool \
-            general-tools
+          hactool --help >/dev/null
+          zip --version >/dev/null
 
       # -------------------------------------------------
       # Clone Atmosphere
@@ -58,17 +34,17 @@ jobs:
           git clone https://github.com/Atmosphere-NX/Atmosphere.git atmosphere
 
       # -------------------------------------------------
-      # Clone Horizon OC (develop branch)
+      # Clone Horizon OC (develop)
       # -------------------------------------------------
-      - name: Clone Horizon OC (develop)
+      - name: Clone Horizon OC
         run: |
           git clone -b develop --single-branch \
             https://github.com/Horizon-OC/Horizon-OC.git horizon-oc
 
       # -------------------------------------------------
-      # Create build folder and copy Atmosphere
+      # Prepare build directory
       # -------------------------------------------------
-      - name: Prepare build directory
+      - name: Prepare build folder
         working-directory: horizon-oc
         run: |
           mkdir -p build
@@ -85,9 +61,9 @@ jobs:
             build/stratosphere/loader/source/ldr_process_creation.cpp
 
       # -------------------------------------------------
-      # Build Horizon OC
+      # Build Horizon OC Zeus
       # -------------------------------------------------
-      - name: Build Horizon OC
+      - name: Build Horizon OC Zeus
         working-directory: horizon-oc
         run: |
           chmod +x build.sh
@@ -96,16 +72,16 @@ jobs:
       # -------------------------------------------------
       # Zip dist folder
       # -------------------------------------------------
-      - name: Package dist folder
+      - name: Package dist
         working-directory: horizon-oc
         run: |
-          zip -r horizon-oc-dist.zip dist
+          zip -r horizon-oc-zeus-dist.zip dist
 
       # -------------------------------------------------
-      # Upload zip artifact
+      # Upload artifact
       # -------------------------------------------------
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: horizon-oc-dist
-          path: horizon-oc/horizon-oc-dist.zip
+          name: horizon-oc-zeus-dist
+          path: horizon-oc/horizon-oc-zeus-dist.zip
