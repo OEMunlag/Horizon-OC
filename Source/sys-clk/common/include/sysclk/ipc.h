@@ -31,8 +31,8 @@
 #include "board.h"
 #include "clock_manager.h"
 
-#define SYSCLK_IPC_API_VERSION 4
-#define SYSCLK_IPC_SERVICE_NAME "sys:clk"
+#define SYSCLK_IPC_API_VERSION 1
+#define SYSCLK_IPC_SERVICE_NAME "hoc:clk"
 
 enum SysClkIpcCmd
 {
