@@ -1,0 +1,100 @@
+name: Build Horizon OC
+
+on:
+  push:
+    branches: [ develop, main, master ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    container:
+      image: devkitpro/devkita64:latest
+
+    steps:
+      # -------------------------------------------------
+      # Base environment validation
+      # -------------------------------------------------
+      - name: Ensure required tools exist
+        run: |
+          command -v make
+          command -v python3
+          python3 --version
+          command -v zip
+
+      - name: Set devkitPro environment
+        run: |
+          echo "DEVKITPRO=/opt/devkitpro" >> $GITHUB_ENV
+          echo "DEVKITA64=/opt/devkitpro/devkitA64" >> $GITHUB_ENV
+          echo "DEVKITARM=/opt/devkitpro/devkitARM" >> $GITHUB_ENV
+
+      - name: Sync devkitPro and install switch-dev
+        run: |
+          dkp-pacman -Sy --noconfirm
+          dkp-pacman -S --noconfirm --needed \
+            switch-dev \
+            libnx \
+            hactool \
+            general-tools
+
+      # -------------------------------------------------
+      # Clone Atmosphere
+      # -------------------------------------------------
+      - name: Clone Atmosphere
+        run: |
+          git clone https://github.com/Atmosphere-NX/Atmosphere.git atmosphere
+
+      # -------------------------------------------------
+      # Clone Horizon OC (develop branch)
+      # -------------------------------------------------
+      - name: Clone Horizon OC (develop)
+        run: |
+          git clone -b develop --single-branch \
+            https://github.com/Horizon-OC/Horizon-OC.git horizon-oc
+
+      # -------------------------------------------------
+      # Create build folder and copy Atmosphere
+      # -------------------------------------------------
+      - name: Create build directory and copy Atmosphere
+        working-directory: horizon-oc
+        run: |
+          mkdir -p build
+          cp -r ../atmosphere/. build/
+
+      # -------------------------------------------------
+      # Override ldr_process_creation.cpp
+      # -------------------------------------------------
+      - name: Override Atmosphere loader source
+        working-directory: horizon-oc
+        run: |
+          cp -f \
+            Source/Atmosphere/stratosphere/loader/source/ldr_process_creation.cpp \
+            build/stratosphere/loader/source/ldr_process_creation.cpp
+
+      # -------------------------------------------------
+      # Run the Horizon OC build script
+      # -------------------------------------------------
+      - name: Build Horizon OC
+        working-directory: horizon-oc
+        run: |
+          chmod +x build.sh
+          ./build.sh
+
+      # -------------------------------------------------
+      # Zip dist folder
+      # -------------------------------------------------
+      - name: Package dist as zip
+        working-directory: horizon-oc
+        run: |
+          zip -r horizon-oc-dist.zip dist
+
+      # -------------------------------------------------
+      # Upload zip artifact
+      # -------------------------------------------------
+      - name: Upload dist zip artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: horizon-oc-dist
+          path: horizon-oc/horizon-oc-dist.zip
