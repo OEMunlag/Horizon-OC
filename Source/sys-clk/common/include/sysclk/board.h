@@ -125,6 +125,13 @@ typedef enum {
     HorizonOCSpeedo_EnumMax,
 } HorizonOCSpeedo;
 
+typedef enum {
+    GPUUVLevel_NoUV = 0,
+    GPUUVLevel_SLT,
+    GPUUVLevel_HiOPT,
+    GPUUVLevel_EnumMax,
+} GPUUndervoltLevel;
+
 #define SYSCLK_ENUM_VALID(n, v) ((v) < n##_EnumMax)
 
 static inline const char* sysclkFormatModule(SysClkModule module, bool pretty)

@@ -460,7 +460,7 @@ protected:
         addConfigToggle(KipConfigValue_hpMode, "HP Mode");
 
         std::vector<NamedValue> marikoMaxEmcClock = {
-            NamedValue("1600MHz", 1600000),
+            NamedValue("1600MHz (JEDEC.)", 1600000),
             NamedValue("1633MHz", 1633000),
             NamedValue("1666MHz", 1666000),
             NamedValue("1700MHz", 1700000),
@@ -468,17 +468,16 @@ protected:
             NamedValue("1766MHz", 1766000),
             NamedValue("1800MHz", 1800000),
             NamedValue("1833MHz", 1833000),
-            NamedValue("1862MHz", 1862400),
-            NamedValue("1866MHz", 1866000),
+            NamedValue("1866MHz (JEDEC.)", 1866000),
             NamedValue("1900MHz", 1900000),
             NamedValue("1933MHz", 1933000),
             NamedValue("1966MHz", 1966000),
-            NamedValue("1996MHz", 1996800),
+            NamedValue("1996MHz (JEDEC.)", 1996800),
             NamedValue("2000MHz", 2000000),
             NamedValue("2033MHz", 2033000),
             NamedValue("2066MHz", 2066000),
             NamedValue("2100MHz", 2100000),
-            NamedValue("2133MHz", 2133000),
+            NamedValue("2133MHz (JEDEC.)", 2133000),
             NamedValue("2166MHz", 2166000),
             NamedValue("2200MHz", 2200000),
             NamedValue("2233MHz", 2233000),
@@ -486,7 +485,7 @@ protected:
             NamedValue("2300MHz", 2300000),
             NamedValue("2333MHz", 2333000),
             NamedValue("2366MHz", 2366000),
-            NamedValue("2400MHz", 2400000),
+            NamedValue("2400MHz (JEDEC.)", 2400000),
             NamedValue("2433MHz", 2433000),
             NamedValue("2466MHz", 2466000),
             NamedValue("2500MHz", 2500000),
@@ -502,7 +501,7 @@ protected:
             NamedValue("2833MHz", 2833000),
             NamedValue("2866MHz", 2866000),
             NamedValue("2900MHz", 2900000),
-            NamedValue("2933MHz", 2933000),
+            NamedValue("2933MHz (JEDEC.)", 2933000),
             NamedValue("2966MHz", 2966000),
             NamedValue("3000MHz", 3000000),
             NamedValue("3033MHz", 3033000),
@@ -510,20 +509,20 @@ protected:
             NamedValue("3100MHz", 3100000),
             NamedValue("3133MHz", 3133000),
             NamedValue("3166MHz", 3166000),
-            NamedValue("3200MHz", 3200000),
-            NamedValue("3233MHz (Needs high Speedo/PLL)", 3233000),
-            NamedValue("3266MHz (Needs high Speedo/PLL)", 3266000),
-            NamedValue("3300MHz (Needs high Speedo/PLL)", 3300000),
-            NamedValue("3333MHz (Needs extreme Speedo/PLL)", 3333000),
-            NamedValue("3366MHz (Needs extreme Speedo/PLL)", 3366000),
-            NamedValue("3400MHz (Needs extreme Speedo/PLL)", 3400000),
-            NamedValue("3433MHz (Needs ridiculous Speedo/PLL)", 3433000),
-            NamedValue("3466MHz (Needs ridiculous Speedo/PLL)", 3466000),
-            NamedValue("3500MHz (Needs ridiculous Speedo/PLL)", 3500000),
+            NamedValue("3200MHz (JEDEC.)", 3200000),
+            // NamedValue("3233MHz (Needs high Speedo/PLL)", 3233000),
+            // NamedValue("3266MHz (Needs high Speedo/PLL)", 3266000),
+            // NamedValue("3300MHz (Needs high Speedo/PLL)", 3300000),
+            // NamedValue("3333MHz (Needs extreme Speedo/PLL)", 3333000),
+            // NamedValue("3366MHz (Needs extreme Speedo/PLL)", 3366000),
+            // NamedValue("3400MHz (Needs extreme Speedo/PLL)", 3400000),
+            // NamedValue("3433MHz (Needs ridiculous Speedo/PLL)", 3433000),
+            // NamedValue("3466MHz (Needs ridiculous Speedo/PLL)", 3466000),
+            // NamedValue("3500MHz (Needs ridiculous Speedo/PLL)", 3500000),
         };
 
         std::vector<NamedValue> eristaMaxEmcClock = {
-            NamedValue("1600MHz", 1600000),
+            NamedValue("1600MHz (JEDEC.)", 1600000),
             NamedValue("1633MHz", 1633000),
             NamedValue("1666MHz", 1666000),
             NamedValue("1700MHz", 1700000),
@@ -531,7 +530,7 @@ protected:
             NamedValue("1766MHz", 1766000),
             NamedValue("1800MHz", 1800000),
             NamedValue("1833MHz", 1833000),
-            NamedValue("1866MHz", 1866000),
+            NamedValue("1866MHz (JEDEC.)", 1866000),
             NamedValue("1900MHz", 1900000),
             NamedValue("1933MHz", 1933000),
             NamedValue("1966MHz", 1966000),
@@ -539,7 +538,7 @@ protected:
             NamedValue("2033MHz", 2033000),
             NamedValue("2066MHz", 2066000),
             NamedValue("2100MHz", 2100000),
-            NamedValue("2133MHz", 2133000),
+            NamedValue("2133MHz (JEDEC.)", 2133000),
             NamedValue("2166MHz", 2166000),
             NamedValue("2200MHz (high power draw!)", 2200000),
             NamedValue("2233MHz (high power draw!)", 2233000),
@@ -547,7 +546,7 @@ protected:
             NamedValue("2300MHz (high power draw!)", 2300000),
             NamedValue("2333MHz (high power draw!)", 2333000),
             NamedValue("2366MHz (high power draw!)", 2366000),
-            NamedValue("2400MHz (high power draw!)", 2400000),
+            NamedValue("2400MHz (high power draw & JEDEC.)", 2400000),
         };
 
         if(IsErista()) {
@@ -1209,16 +1208,20 @@ protected:
             addConfigButton(KipConfigValue_g_volt_921600, "921.6MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
             addConfigButton(KipConfigValue_g_volt_998400, "998.4MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
             addConfigButton(KipConfigValue_g_volt_1075200, "1075.2MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
-            addConfigButton(KipConfigValue_g_volt_1152000, "1152.0MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
-            addConfigButton(KipConfigValue_g_volt_1228800, "1228.8MHz (SLT/HiOPT Only)", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
-            addConfigButton(KipConfigValue_g_volt_1267200, "1267.2MHz (HiOPT Only)", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
-            addConfigButton(KipConfigValue_g_volt_1305600, "1305.6MHz (HiOPT Only)", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
-            addConfigButton(KipConfigValue_g_volt_1344000, "1344.0MHz (HiOPT Only)", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
-            addConfigButton(KipConfigValue_g_volt_1382400, "1382.4MHz (HiOPT Only)", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
-            addConfigButton(KipConfigValue_g_volt_1420800, "1420.8MHz (HiOPT Only)", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
-            addConfigButton(KipConfigValue_g_volt_1459200, "1459.2MHz (HiOPT Only)", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
-            addConfigButton(KipConfigValue_g_volt_1497600, "1497.6MHz (HiOPT Only)", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
-            addConfigButton(KipConfigValue_g_volt_1536000, "1536.0MHz (HiOPT Only)", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
+            if(this->configList->values[KipConfigValue_marikoGpuUV] >= GPUUVLevel_SLT)
+                addConfigButton(KipConfigValue_g_volt_1152000, "1152.0MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
+            if(this->configList->values[KipConfigValue_marikoGpuUV] >= GPUUVLevel_HiOPT) {
+                addConfigButton(KipConfigValue_g_volt_1228800, "1228.8MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
+                addConfigButton(KipConfigValue_g_volt_1267200, "1267.2MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
+                addConfigButton(KipConfigValue_g_volt_1305600, "1305.6MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts, false);
+                addConfigButton(KipConfigValue_g_volt_1344000, "1344.0MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
+                addConfigButton(KipConfigValue_g_volt_1382400, "1382.4MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
+                addConfigButton(KipConfigValue_g_volt_1420800, "1420.8MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
+                addConfigButton(KipConfigValue_g_volt_1459200, "1459.2MHz)", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
+                addConfigButton(KipConfigValue_g_volt_1497600, "1497.6MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
+                addConfigButton(KipConfigValue_g_volt_1536000, "1536.0MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &MgpuVmaxThresholds, {}, mGpuVolts_noAuto, false);
+            }
+
         } else {
 
             tsl::elm::CustomDrawer* warningText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
@@ -1254,10 +1257,13 @@ protected:
             addConfigButton(KipConfigValue_g_volt_e_844800, "844.8MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts, false);
             addConfigButton(KipConfigValue_g_volt_e_883200, "883.2MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts, false);
             addConfigButton(KipConfigValue_g_volt_e_921600, "921.6MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts, false);
-            addConfigButton(KipConfigValue_g_volt_e_960000, "960.0MHz (SLT/HiOPT Only)", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts, false);
-            addConfigButton(KipConfigValue_g_volt_e_998400, "998.4MHz (HiOPT Only)", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts, false);
-            addConfigButton(KipConfigValue_g_volt_e_1036800, "1036.8MHz (HiOPT Only)", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts_noAuto, false);
-            addConfigButton(KipConfigValue_g_volt_e_1075200, "1075.2MHz (HiOPT Only)", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts_noAuto, false);
+            if(this->configList->values[KipConfigValue_eristaGpuUV] >= GPUUVLevel_SLT)
+                addConfigButton(KipConfigValue_g_volt_e_960000, "960.0MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts, false);
+            if(this->configList->values[KipConfigValue_eristaGpuUV] >= GPUUVLevel_HiOPT) {
+                addConfigButton(KipConfigValue_g_volt_e_998400, "998.4MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts, false);
+                addConfigButton(KipConfigValue_g_volt_e_1036800, "1036.8MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts_noAuto, false);
+                addConfigButton(KipConfigValue_g_volt_e_1075200, "1075.2MHz", ValueRange(0, 0, 0, "0", 1), "Voltage", &EgpuVmaxThresholds, {}, eGpuVolts_noAuto, false);
+            }
         }
     }
 };

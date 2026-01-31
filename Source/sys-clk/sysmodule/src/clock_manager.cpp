@@ -46,7 +46,6 @@ bool hasChanged = true;
 ClockManager *ClockManager::instance = NULL;
 Thread governorTHREAD;
 u32 initialConfigValues[SysClkConfigValue_EnumMax]; // initial config. used for safety checks
-bool writeBootConfigValues = true; // do we write the initial config values?
 
 bool kipAvailable = false;
 ClockManager *ClockManager::GetInstance()
@@ -823,6 +822,8 @@ void ClockManager::GetKipData() {
             writeNotification("Horizon OC\nKip read failed");
             return;
         }
+        
+        static bool writeBootConfigValues = true;
 
         if(writeBootConfigValues) {
             writeBootConfigValues = false;
@@ -870,14 +871,6 @@ void ClockManager::GetKipData() {
             initialConfigValues[KipConfigValue_marikoGpuVmax] = cust_get_mariko_gpu_vmax(&table);
             initialConfigValues[KipConfigValue_commonGpuVoltOffset] = cust_get_common_gpu_offset(&table);
             initialConfigValues[KipConfigValue_gpuSpeedo] = cust_get_gpu_speedo(&table);
-
-            for (int i = 0; i < 24; i++) {
-                initialConfigValues[KipConfigValue_g_volt_76800 + i] = cust_get_mariko_gpu_volt(&table, i);
-            }
-
-            for (int i = 0; i < 27; i++) {
-                initialConfigValues[KipConfigValue_g_volt_e_76800 + i] = cust_get_erista_gpu_volt(&table, i);
-            }
         }
 
         configValues.values[KipConfigValue_mtcConf] = cust_get_mtc_conf(&table);
@@ -926,10 +919,12 @@ void ClockManager::GetKipData() {
 
         for (int i = 0; i < 24; i++) {
             configValues.values[KipConfigValue_g_volt_76800 + i] = cust_get_mariko_gpu_volt(&table, i);
+            initialConfigValues[KipConfigValue_g_volt_76800 + i] = cust_get_mariko_gpu_volt(&table, i);
         }
 
         for (int i = 0; i < 27; i++) {
             configValues.values[KipConfigValue_g_volt_e_76800 + i] = cust_get_erista_gpu_volt(&table, i);
+            initialConfigValues[KipConfigValue_g_volt_e_76800 + i] = cust_get_erista_gpu_volt(&table, i);
         }
 
         // if(cust_get_cust_rev(&table) == KIP_CUST_REV)
@@ -979,18 +974,20 @@ void ClockManager::UpdateRamTimings() {
     //     writeNotification("Horizon OC\nCritical values changed!\nUnable to write timings");
     //     return;
     // }
-    u32 t1_tRCD = initialConfigValues[KipConfigValue_t1_tRCD];
-    u32 t2_tRP = initialConfigValues[KipConfigValue_t2_tRP];
-    u32 t3_tRAS = initialConfigValues[KipConfigValue_t3_tRAS];
-    u32 t4_tRRD = initialConfigValues[KipConfigValue_t4_tRRD];
-    u32 t5_tRFC = initialConfigValues[KipConfigValue_t5_tRFC];
-    u32 t6_tRTW = initialConfigValues[KipConfigValue_t6_tRTW];
-    u32 t7_tWTR = initialConfigValues[KipConfigValue_t7_tWTR];
-    u32 t8_tREFI = initialConfigValues[KipConfigValue_t8_tREFI];
+    u32 t1_tRCD = this->config->GetConfigValue(KipConfigValue_t1_tRCD);
+    u32 t2_tRP = this->config->GetConfigValue(KipConfigValue_t2_tRP);
+    u32 t3_tRAS = this->config->GetConfigValue(KipConfigValue_t3_tRAS);
+    u32 t4_tRRD = this->config->GetConfigValue(KipConfigValue_t4_tRRD);
+    u32 t5_tRFC = this->config->GetConfigValue(KipConfigValue_t5_tRFC);
+    u32 t6_tRTW = this->config->GetConfigValue(KipConfigValue_t6_tRTW);
+    u32 t7_tWTR = this->config->GetConfigValue(KipConfigValue_t7_tWTR);
+    u32 t8_tREFI = this->config->GetConfigValue(KipConfigValue_t8_tREFI);
+    bool hpMode = (bool)this->config->GetConfigValue(KipConfigValue_hpMode);
+
     u64 ramFreq = initialConfigValues[KipConfigValue_marikoEmcMaxClock];
     u32 rlAdd = initialConfigValues[KipConfigValue_mem_burst_read_latency];
     u32 wlAdd = initialConfigValues[KipConfigValue_mem_burst_write_latency];
-    bool hpMode = (bool)initialConfigValues[KipConfigValue_hpMode];
+
 
     Board::UpdateShadowRegs(t1_tRCD, t2_tRP, t3_tRAS, t4_tRRD, t5_tRFC, t6_tRTW, t7_tWTR, t8_tREFI, ramFreq, rlAdd, wlAdd, hpMode);
 }
@@ -1021,7 +1018,7 @@ unsigned int ClockManager::GetGpuVoltage (unsigned int freq, int speedo)
     int bracket = GetSpeedoBracket(speedo);
 
     if (freq < 1601)
-        return 0;
+        return 610;
 
     loop = 0;
     do

@@ -137,9 +137,9 @@ void FreqChoiceGui::listUI()
                 this->configList->values[HocClkConfigValue_EristaMaxCpuClock] < mhz)
                 continue;
 
-            if (moduleName == "gpu" &&
-                this->configList->values[HocClkConfigValue_EristaMaxGpuClock] < mhz)
-                continue;
+            // if (moduleName == "gpu" &&
+            //     this->configList->values[HocClkConfigValue_EristaMaxGpuClock] < mhz)
+            //     continue;
 
             // if (moduleName == "mem" &&
             //     this->configList->values[HocClkConfigValue_EristaMaxMemClock] < mhz)

@@ -41,11 +41,7 @@ typedef enum {
     HocClkConfigValue_OverwriteBoostMode,
 
     HocClkConfigValue_EristaMaxCpuClock,
-    HocClkConfigValue_EristaMaxGpuClock,
-    HocClkConfigValue_EristaMaxMemClock,
     HocClkConfigValue_MarikoMaxCpuClock,
-    HocClkConfigValue_MarikoMaxGpuClock,
-    HocClkConfigValue_MarikoMaxMemClock,
 
     HocClkConfigValue_ThermalThrottle,
     HocClkConfigValue_ThermalThrottleThreshold,
@@ -56,9 +52,6 @@ typedef enum {
     HocClkConfigValue_LiteTDPLimit,
 
     HocClkConfigValue_EnforceBoardLimit,
-    
-    HocClkConfigValue_KipEditing,
-    HocClkConfigValue_KipFileName,
 
     HorizonOCConfigValue_BatteryChargeCurrent,
 
@@ -194,17 +187,9 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
 
         case HocClkConfigValue_EristaMaxCpuClock:
             return pretty ? "CPU Max Display Clock" : "cpu_max_e";
-        case HocClkConfigValue_EristaMaxGpuClock:
-            return pretty ? "Max GPU Clock" : "gpu_max_e";
-        case HocClkConfigValue_EristaMaxMemClock:
-            return pretty ? "Erista Max MEM Clock" : "mem_max_e";
 
         case HocClkConfigValue_MarikoMaxCpuClock:
             return pretty ? "CPU Max Display Clock" : "cpu_max_m";
-        case HocClkConfigValue_MarikoMaxGpuClock:
-            return pretty ? "Mariko Max GPU Clock" : "gpu_max_m";
-        case HocClkConfigValue_MarikoMaxMemClock:
-            return pretty ? "Mariko Max MEM Clock" : "mem_max_m";
 
         case HocClkConfigValue_ThermalThrottle:
             return pretty ? "Thermal Throttle" : "thermal_throttle";
@@ -223,12 +208,6 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
 
         case HocClkConfigValue_EnforceBoardLimit:
             return pretty ? "Enforce Board Limit" : "enforce_board_limit";
-
-        case HocClkConfigValue_KipEditing:
-            return pretty ? "Enable KIP Editing" : "kip_editing";
-        
-        case HocClkConfigValue_KipFileName:
-            return pretty ? "KIP File Name" : "kip_file_name";
 
         case HorizonOCConfigValue_BatteryChargeCurrent:
             return pretty ? "Battery Charge Current" : "bat_charge_current";
@@ -407,29 +386,19 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
         case SysClkConfigValue_CsvWriteIntervalMs:
         case HocClkConfigValue_UncappedClocks:
         case HocClkConfigValue_OverwriteBoostMode:
-        case HocClkConfigValue_KipFileName:
         case HorizonOCConfigValue_BatteryChargeCurrent:
         case HorizonOCConfigValue_OverwriteRefreshRate:
         case HorizonOCConfigValue_EnableUnsafeDisplayFreqs:
             return 0ULL;
         case HocClkConfigValue_EristaMaxCpuClock:
             return 1785ULL;
-        case HocClkConfigValue_EristaMaxGpuClock:
-            return 921ULL;
-        case HocClkConfigValue_EristaMaxMemClock:
-            return 1600ULL;
 
         case HocClkConfigValue_MarikoMaxCpuClock:
             return 1963ULL;
-        case HocClkConfigValue_MarikoMaxGpuClock:
-            return 1075ULL;
-        case HocClkConfigValue_MarikoMaxMemClock:
-            return 1862ULL;
 
         case HocClkConfigValue_ThermalThrottle:
         case HocClkConfigValue_HandheldTDP:
         case HocClkConfigValue_EnforceBoardLimit:
-        case HocClkConfigValue_KipEditing:
         case HocClkConfigValue_FixCpuVoltBug:
             return 1ULL;
         case HocClkConfigValue_ThermalThrottleThreshold:
@@ -448,11 +417,7 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
     switch(val)
     {
         case HocClkConfigValue_EristaMaxCpuClock:
-        case HocClkConfigValue_EristaMaxGpuClock:
-        case HocClkConfigValue_EristaMaxMemClock:
         case HocClkConfigValue_MarikoMaxCpuClock:
-        case HocClkConfigValue_MarikoMaxGpuClock:
-        case HocClkConfigValue_MarikoMaxMemClock:
         case HocClkConfigValue_ThermalThrottleThreshold:
         case HocClkConfigValue_HandheldTDPLimit:
         case HocClkConfigValue_LiteTDPLimit:
@@ -468,8 +433,6 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case HocClkConfigValue_ThermalThrottle:
         case HocClkConfigValue_HandheldTDP:
         case HocClkConfigValue_EnforceBoardLimit:
-        case HocClkConfigValue_KipEditing:
-        case HocClkConfigValue_KipFileName:
         case HorizonOCConfigValue_OverwriteRefreshRate:
         case HocClkConfigValue_FixCpuVoltBug:
         case HorizonOCConfigValue_EnableUnsafeDisplayFreqs:
