@@ -38,6 +38,7 @@
 #include <display_refresh_rate.h>
 #include <cstring>
 #include <cstdio>
+#include <crc32.h>
 
 #define HOSPPC_HAS_BOOST (hosversionAtLeast(7,0,0))
 bool isGovernorEnabled = false; // to avoid thread messes
@@ -423,12 +424,12 @@ void ClockManager::Tick()
 
     if(this->config->GetConfigValue(HocClkConfigValue_HandheldTDP) && opMode == AppletOperationMode_Handheld) {
         if(Board::GetConsoleType() == HorizonOCConsoleType_Hoag) {
-            if(Board::GetPowerMw(SysClkPowerSensor_Now) < -(int)this->config->GetConfigValue(HocClkConfigValue_LiteTDPLimit)) {
+            if(Board::GetPowerMw(SysClkPowerSensor_Avg) < -(int)this->config->GetConfigValue(HocClkConfigValue_LiteTDPLimit)) {
                 ResetToStockClocks();
                 return;
             }
         } else {
-            if(Board::GetPowerMw(SysClkPowerSensor_Now) < -(int)this->config->GetConfigValue(HocClkConfigValue_HandheldTDPLimit)) {
+            if(Board::GetPowerMw(SysClkPowerSensor_Avg) < -(int)this->config->GetConfigValue(HocClkConfigValue_HandheldTDPLimit)) {
                 ResetToStockClocks();
                 return;
             }
@@ -793,6 +794,18 @@ void ClockManager::SetKipData() {
         FileUtils::LogLine("[clock_manager] Failed to write KIP file");
         writeNotification("Horizon OC\nKip write failed");
     }
+
+    SysClkConfigValueList configValues;
+    this->config->GetConfigValues(&configValues);
+
+    configValues.values[KipCrc32] = (u64)checksum_file("sdmc:/atmosphere/kips/hoc.kip"); // write checksum
+
+    if (this->config->SetConfigValues(&configValues, false)) {
+        FileUtils::LogLine("[clock_manager] Successfully loaded KIP data into config");
+    } else {
+        FileUtils::LogLine("[clock_manager] Warning: Failed to set config values from KIP");
+        writeNotification("Horizon OC\nKip config set failed");
+    }
 }
 
 // I know this is very hacky, but the config system in the sysmodule doesn't really support writing
@@ -812,6 +825,8 @@ void ClockManager::GetKipData() {
             fclose(fp);
         }
 
+
+
         SysClkConfigValueList configValues;
         this->config->GetConfigValues(&configValues);
 
@@ -822,8 +837,20 @@ void ClockManager::GetKipData() {
             writeNotification("Horizon OC\nKip read failed");
             return;
         }
-        
+
+        if((u64)checksum_file("sdmc:/atmosphere/kips/hoc.kip") != this->config->GetConfigValue(KipCrc32) && !this->config->GetConfigValue(HocClkConfigValue_IsFirstLoad)) {
+            SetKipData();
+            writeNotification("Horizon OC\nKIP has been updated");
+            writeNotification("Horizon OC\nPlease reboot your console");
+            writeNotification("Horizon OC\nto complete the update");
+            return;
+        }
+        if(this->config->GetConfigValue(HocClkConfigValue_IsFirstLoad) == true) {
+            configValues.values[HocClkConfigValue_IsFirstLoad] = (u64)false;
+            writeNotification("Horizon OC has been installed");
+        }
         static bool writeBootConfigValues = true;
+
 
         if(writeBootConfigValues) {
             writeBootConfigValues = false;
@@ -948,32 +975,6 @@ void ClockManager::GetKipData() {
 }
 
 void ClockManager::UpdateRamTimings() {
-    FILE* fp;
-    fp = fopen("sdmc:/atmosphere/kips/hoc.kip", "r");
-
-    if (fp == NULL) {
-        writeNotification("Horizon OC\nKip opening failed");
-        kipAvailable = false;
-        return;
-    } else {
-        kipAvailable = true;
-        fclose(fp);
-    }
-    CustomizeTable table;
-
-    if (!cust_read_and_cache("sdmc:/atmosphere/kips/hoc.kip", &table)) {
-        FileUtils::LogLine("[clock_manager] Failed to read KIP file for UpdateRamTimings");
-        writeNotification("Horizon OC\nKip read failed");
-        return;
-    }
-
-    // if(this->config->GetConfigValue(KipConfigValue_marikoEmcMaxClock) != initialConfigValues[KipConfigValue_marikoEmcMaxClock] ||
-    //    this->config->GetConfigValue(KipConfigValue_mem_burst_read_latency) != initialConfigValues[KipConfigValue_mem_burst_read_latency] ||
-    //    this->config->GetConfigValue(KipConfigValue_mem_burst_write_latency) != initialConfigValues[KipConfigValue_mem_burst_write_latency]
-    // ) {
-    //     writeNotification("Horizon OC\nCritical values changed!\nUnable to write timings");
-    //     return;
-    // }
     u32 t1_tRCD = this->config->GetConfigValue(KipConfigValue_t1_tRCD);
     u32 t2_tRP = this->config->GetConfigValue(KipConfigValue_t2_tRP);
     u32 t3_tRAS = this->config->GetConfigValue(KipConfigValue_t3_tRAS);
