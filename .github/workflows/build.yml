@@ -30,9 +30,13 @@ jobs:
           echo "DEVKITA64=/opt/devkitpro/devkitA64" >> $GITHUB_ENV
           echo "DEVKITARM=/opt/devkitpro/devkitARM" >> $GITHUB_ENV
           echo "PATH=/opt/devkitpro/devkitA64/bin:/opt/devkitpro/devkitARM/bin:$PATH" >> $GITHUB_ENV
+        shell: bash
+
+      - name: I do not know why this doesn't work on the previous part
+        run: |
           aarch64-none-elf-gcc --version
           arm-none-eabi-gcc --version
-        shell: bash
+        shell: bash # is this even needed? but for consistency let's keep using it
 
       - name: Install ccache
         run: |
