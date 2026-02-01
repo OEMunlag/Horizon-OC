@@ -410,9 +410,9 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
         case HocClkConfigValue_ThermalThrottleThreshold:
             return 70ULL;
         case HocClkConfigValue_HandheldTDPLimit:
-            return 8600ULL;
+            return 9600ULL; // 8600mW will trigger on erista stock, so raise it a bit
         case HocClkConfigValue_LiteTDPLimit:
-            return 6400ULL;
+            return 6400ULL; // 0.5C
         default:
             return 0ULL;
     }
