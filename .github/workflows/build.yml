@@ -190,4 +190,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: horizon-oc-zeus-dist
-          path: horizon-oc/${{ env.ZIP_NAME }}
+          path: ${{ env.ZIP_NAME }}
