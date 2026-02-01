@@ -138,23 +138,22 @@ jobs:
         run: |
           export CC="ccache aarch64-none-elf-gcc"
           export CXX="ccache aarch64-none-elf-g++"
-          make -j$(($(nproc) * 8)) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
+          make -j$(($(nproc) * 4)) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
           hactool -t kip1 out/nintendo_nx_arm64_armv8a/release/loader.kip --uncompress=hoc.kip
           cp hoc.kip ../../../dist/atmosphere/kips/hoc.kip
           
       - name: Build exosphere
-        working-directory: build/stratosphere/loader
+        working-directory: build/exosphere
         run: |
-          export PATCHES="Source/Atmosphere-Patches"
-          export ROOT=build
+          export PATCHES="../../Source/Atmosphere-Patches"
+          export ROOT=../build
           cp "$PATCHES/secmon_memory_layout.hpp" "$ROOT/libraries/libexosphere/include/exosphere/secmon/"
           cp "$PATCHES/secmon_emc_access_table_data.inc" "$ROOT/exosphere/program/source/smc/"
           cp "$PATCHES/secmon_define_emc_access_table.inc" "$ROOT/exosphere/program/source/smc/"
           cp "$PATCHES/secmon_smc_register_access.cpp" "$ROOT/exosphere/program/source/smc/"
 
-          cd build/exosphere
-          make -j$(($(nproc) * 8)) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
-          cp "build/exosphere/out/nintendo_nx_arm64_armv8a/release/exosphere.bin" dist/
+          make -j$(($(nproc) * 4)) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
+          cp ./out/nintendo_nx_arm64_armv8a/release/exosphere.bin ../../dist/
           
       - name: ccache stats
         run: ccache --show-stats
