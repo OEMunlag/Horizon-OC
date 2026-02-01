@@ -1053,6 +1053,13 @@ public:
 
 protected:
     void listUI() override {
+
+        Result rc = sysclkIpcGetConfigValues(this->configList); // populate config list early otherwise wont work
+        if (R_FAILED(rc)) [[unlikely]] {
+            FatalGui::openWithResultCode("sysclkIpcGetConfigValues", rc);
+            return;
+        }
+
         this->listElement->addItem(new tsl::elm::CategoryHeader("GPU Custom Table (mV)"));
 
         ValueThresholds MgpuVmaxThresholds(800, 850);
