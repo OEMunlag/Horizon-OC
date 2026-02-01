@@ -22,7 +22,7 @@
 #include <cstdio>
 
 static void writeNotification(const std::string& message) {
-        const char* flagPath = "sdmc:/config/ultrahand/flags/NOTIFICATIONS.flag";
+        static const char* flagPath = "sdmc:/config/ultrahand/flags/NOTIFICATIONS.flag";
 
         FILE* flagFile = fopen(flagPath, "r");
         if (!flagFile) {
