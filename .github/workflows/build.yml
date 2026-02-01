@@ -76,8 +76,7 @@ jobs:
       # -------------------------------------------------
       - name: Override ldr_process_creation.cpp
         run: |
-          cp -f Source/Atmosphere/stratosphere/loader/source/ldr_process_creation.cpp \
-            build/stratosphere/loader/source/ldr_process_creation.cpp
+          cp -rf Source/Atmosphere/stratosphere/loader/source/* build/stratosphere/loader/source/
 
       # -------------------------------------------------
       # Build Horizon OC Zeus (trying ccache, directly invoking make instead, hacky)
