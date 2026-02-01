@@ -26,16 +26,18 @@ jobs:
       # -------------------------------------------------
       - name: Set devkitPro PATH
         run: |
-          export DEVKITPRO=/opt/devkitpro
-          export DEVKITA64=$DEVKITPRO/devkitA64
-          export DEVKITARM=$DEVKITPRO/devkitARM
-          export PATH=$DEVKITA64/bin:$DEVKITARM/bin:$PATH
+          echo "DEVKITPRO=/opt/devkitpro" >> $GITHUB_ENV
+          echo "DEVKITA64=/opt/devkitpro/devkitA64" >> $GITHUB_ENV
+          echo "DEVKITARM=/opt/devkitpro/devkitARM" >> $GITHUB_ENV
+          echo "PATH=/opt/devkitpro/devkitA64/bin:/opt/devkitpro/devkitARM/bin:$PATH" >> $GITHUB_ENV
           aarch64-none-elf-gcc --version
           arm-none-eabi-gcc --version
         shell: bash
 
-      - name: 
-        run: apt install ccache -y
+      - name: Install ccache
+        run: |
+          apt-get update
+          apt-get install -y ccache
         shell: bash
 
       # -------------------------------------------------
@@ -63,7 +65,7 @@ jobs:
       - name: Prepare build folder
         run: |
           mkdir -p build
-          cp -r atmosphere/ build/
+          cp -r atmosphere/* build/
 
       # -------------------------------------------------
       # Override loader source
@@ -102,7 +104,7 @@ jobs:
         run: | # I forgot what dkp uses
           export CC="ccache aarch64-none-elf-gcc"
           export CXX="ccache aarch64-none-elf-g++"
-          ccache make -j$(($(nproc) * 2)) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc
+          make -j$(($(nproc) * 2)) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc
           hactool -t kip1 out/nintendo_nx_arm64_armv8a/release/loader.kip --uncompress=hoc.kip
           cp build/stratosphere/loader/hoc.kip dist/atmosphere/kips/hoc.kip
          
