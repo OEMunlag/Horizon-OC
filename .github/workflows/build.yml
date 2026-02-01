@@ -146,7 +146,7 @@ jobs:
         working-directory: build/exosphere
         run: |
           export PATCHES="../../Source/Atmosphere-Patches"
-          export ROOT=../build
+          export ROOT=".."
           cp "$PATCHES/secmon_memory_layout.hpp" "$ROOT/libraries/libexosphere/include/exosphere/secmon/"
           cp "$PATCHES/secmon_emc_access_table_data.inc" "$ROOT/exosphere/program/source/smc/"
           cp "$PATCHES/secmon_define_emc_access_table.inc" "$ROOT/exosphere/program/source/smc/"
