@@ -20,10 +20,6 @@ jobs:
         with:
           submodules: recursive
 
-
-      # -------------------------------------------------
-      # Fix PATH for devkitA64 and devkitARM
-      # -------------------------------------------------
       - name: Set devkitPro PATH
         run: |
           echo "DEVKITPRO=/opt/devkitpro" >> $GITHUB_ENV
@@ -32,10 +28,10 @@ jobs:
           echo "PATH=/opt/devkitpro/devkitA64/bin:/opt/devkitpro/devkitARM/bin:$PATH" >> $GITHUB_ENV
         shell: bash
 
-      - name: I do not know why this doesn't work on the previous part
+      - name: Check devkitPro gcc and g++ versions
         run: |
           aarch64-none-elf-gcc --version
-          arm-none-eabi-gcc --version
+          aarch64-none-elf-g++ --version
         shell: bash # is this even needed? but for consistency let's keep using it
 
       - name: Install ccache
@@ -44,28 +40,13 @@ jobs:
           apt-get install -y ccache
         shell: bash
 
-      # -------------------------------------------------
-      # Get short commit SHA
-      # -------------------------------------------------
       - name: Set commit SHA
         id: vars
         run: echo "SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
 
-      # -------------------------------------------------
-      # Clone Atmosphère
-      # -------------------------------------------------
       - name: Clone Atmosphere
         run: git clone --depth=1 --single-branch https://github.com/Atmosphere-NX/Atmosphere.git atmosphere -b $(cat ams_ver.txt)
-
-      # -------------------------------------------------
-      # Clone Horizon OC (develop branch) kinda suspicious for now, shouldn't it just already be cloned on the actions runner?
-      # -------------------------------------------------
-      #- name: Clone Horizon OC
-      #  run: git clone -b develop --single-branch https://github.com/Horizon-OC/Horizon-OC.git horizon-oc
-
-      # -------------------------------------------------
-      # Prepare build folder
-      # -------------------------------------------------
+        
       - name: Prepare build folder
         run: |
           mkdir -p build
@@ -78,19 +59,11 @@ jobs:
         run: |
           cp -rf Source/Atmosphere/stratosphere/loader/source/* build/stratosphere/loader/source/
 
-      # -------------------------------------------------
-      # Build Horizon OC Zeus (trying ccache, directly invoking make instead, hacky)
-      # -------------------------------------------------
-      #- name: Build Horizon OC Zeus
-      #  working-directory: horizon-oc
-      #  run: |
-      #    chmod +x build.sh
-      #    ./build.sh
       - name: Cache ccache
         uses: actions/cache@v4
         with:
           path: /root/.cache/ccache
-          key: ccache-${{ runner.os }}-devkitpro-ams-${{ hashFiles('ams_ver.txt') }} # last key was utter garbage, stick to ams versions, 
+          key: ccache-${{ runner.os }}-devkitpro-ams-${{ hashFiles('ams_ver.txt') }} # last key was utter garbage, stick to ams versions
           restore-keys: |
             ccache-${{ runner.os }}-devkitpro-
 
@@ -121,7 +94,7 @@ jobs:
           echo "TITLE_ID: $TITLE_ID"
 
           pushd "$ROOT_DIR/sysmodule"
-          make -j$(($(nproc) * 2)) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
+          make -j$(($(nproc) * 4)) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
           popd
 
           mkdir -p "$DIST_DIR/atmosphere/contents/$TITLE_ID/flags"
@@ -139,7 +112,7 @@ jobs:
           echo "*** overlay ***"
 
           pushd "$ROOT_DIR/overlay"
-          make -j$(($(nproc) * 2)) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
+          make -j$(($(nproc) * 4)) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
           popd
 
           mkdir -p "$DIST_DIR/switch/.overlays"
@@ -165,9 +138,23 @@ jobs:
         run: |
           export CC="ccache aarch64-none-elf-gcc"
           export CXX="ccache aarch64-none-elf-g++"
-          make -j$(($(nproc) * 4)) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
+          make -j$(($(nproc) * 8)) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
           hactool -t kip1 out/nintendo_nx_arm64_armv8a/release/loader.kip --uncompress=hoc.kip
           cp hoc.kip ../../../dist/atmosphere/kips/hoc.kip
+          
+      - name: Build exosphere
+        working-directory: build/stratosphere/loader
+        run: |
+          export PATCHES="Source/Atmosphere-Patches"
+          export ROOT=build
+          cp "$PATCHES/secmon_memory_layout.hpp" "$ROOT/libraries/libexosphere/include/exosphere/secmon/"
+          cp "$PATCHES/secmon_emc_access_table_data.inc" "$ROOT/exosphere/program/source/smc/"
+          cp "$PATCHES/secmon_define_emc_access_table.inc" "$ROOT/exosphere/program/source/smc/"
+          cp "$PATCHES/secmon_smc_register_access.cpp" "$ROOT/exosphere/program/source/smc/"
+
+          cd build/exosphere
+          make -j$(($(nproc) * 8)) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
+          cp "build/exosphere/out/nintendo_nx_arm64_armv8a/release/exosphere.bin" dist/
           
       - name: ccache stats
         run: ccache --show-stats
@@ -176,18 +163,9 @@ jobs:
       # -------------------------------------------------
       # Package dist folder as ZIP with commit SHA
       # -------------------------------------------------
-      - name: Package dist
-        # working-directory: horizon-oc
-        run: |
-          ZIP_NAME="horizon-oc-zeus-dist-${SHORT_SHA}.zip"
-          zip -r "$ZIP_NAME" dist
-          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
-
-      # -------------------------------------------------
-      # Upload ZIP artifact
-      # -------------------------------------------------
       - name: Upload build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
-          name: horizon-oc-zeus-dist
-          path: ${{ env.ZIP_NAME }}
+          name: horizon-oc-zeus-dist-${{ env.SHORT_SHA }}
+          path: dist/
+          compression-level: 3
