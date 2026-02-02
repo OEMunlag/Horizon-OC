@@ -42,6 +42,7 @@ jobs:
 
       - name: Make ccache shims
         run: | # yes it's as bad as it sounds and it doesn't make sense but exosphere uses both aarch64 and arm32 gcc and g++
+          mkdir -p .dkp-wrappers
           cat > .dkp-wrappers/aarch64-none-elf-gcc <<'EOF'
           #!/bin/sh
           exec ccache /opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc "$@"
@@ -66,6 +67,8 @@ jobs:
           exec ccache /opt/devkitpro/devkitARM/bin/arm-none-eabi-g++ "$@"
           EOF
           chmod +x .dkp-wrappers/arm-none-eabi-g++
+
+          echo "PATH="$PWD/.dkp-wrappers:$PATH" >> $GITHUB_ENV
 
       - name: Set commit SHA
         id: vars
@@ -167,7 +170,6 @@ jobs:
       - name: Build exosphere
         working-directory: build/exosphere
         run: |
-          export PATH="$PWD/.dkp-wrappers:$PATH"
           export PATCHES="../../Source/Atmosphere-Patches"
           export ROOT=".."
           cp "$PATCHES/secmon_memory_layout.hpp" "$ROOT/libraries/libexosphere/include/exosphere/secmon/"
