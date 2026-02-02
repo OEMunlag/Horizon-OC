@@ -66,10 +66,10 @@ namespace ams::ldr::oc::pcv::erista {
 
     Result CpuVoltDfll(u32* ptr) {
         cvb_cpu_dfll_data *entry = reinterpret_cast<cvb_cpu_dfll_data *>(ptr);
-        R_UNLESS(entry->tune0_low == 0x0000FFCF,   ldr::ResultInvalidCpuVoltDfllEntry());
-        R_UNLESS(entry->tune0_high == 0x00000000,    ldr::ResultInvalidCpuVoltDfllEntry());
-        R_UNLESS(entry->tune1_low == 0x012207FF,   ldr::ResultInvalidCpuVoltDfllEntry());
-        R_UNLESS(entry->tune1_high == 0x03FFF7FF,    ldr::ResultInvalidCpuVoltDfllEntry());
+        R_UNLESS(entry->tune0_low == 0xFFEAD0FF,   ldr::ResultInvalidCpuVoltDfllEntry());
+        R_UNLESS(entry->tune0_high == 0x0,   ldr::ResultInvalidCpuVoltDfllEntry());
+        R_UNLESS(entry->tune1_low == 0x0,   ldr::ResultInvalidCpuVoltDfllEntry());
+        R_UNLESS(entry->tune1_high == 0x0,    ldr::ResultInvalidCpuVoltDfllEntry());
 
         if( !C.eristaCpuUV) {
             R_SKIP();
@@ -735,7 +735,7 @@ namespace ams::ldr::oc::pcv::erista {
             {"CPU Freq Table", CpuFreqCvbTable<false>, 1, nullptr, static_cast<u32>(GetDvfsTableLastEntry(CpuCvbTableDefault)->freq)},
             {"CPU Volt DVFS", &CpuVoltDvfs, 1, nullptr, 825},
             {"CPU Volt Thermals", &CpuVoltThermals, 1, nullptr, 825},
-            {"CPU Volt Dfll",  &CpuVoltDfll, 1, nullptr, 0xFFD0EAFF},
+            {"CPU Volt Dfll",  &CpuVoltDfll, 1, nullptr, 0xFFEAD0FF},
             {"GPU Volt DVFS", &GpuVoltDVFS, 1, nullptr, 810},
             {"GPU Volt Thermals", &GpuVoltThermals, 1, nullptr, 810},
             {"GPU Freq Table", GpuFreqCvbTable<false>, 1, nullptr, static_cast<u32>(GetDvfsTableLastEntry(GpuCvbTableDefault)->freq)},
