@@ -50,7 +50,6 @@ jobs:
           chmod +x .dkp-wrappers/aarch64-none-elf-gcc
 
           cat > .dkp-wrappers/aarch64-none-elf-g++ <<'EOF'
-
           #!/bin/sh
           exec ccache /opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ "$@"
           EOF
@@ -68,7 +67,7 @@ jobs:
           EOF
           chmod +x .dkp-wrappers/arm-none-eabi-g++
 
-          echo "PATH="$PWD/.dkp-wrappers:$PATH" >> $GITHUB_ENV
+          echo "PATH=$PWD/.dkp-wrappers:$PATH" >> $GITHUB_ENV
 
       - name: Set commit SHA
         id: vars
