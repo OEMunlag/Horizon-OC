@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Checkout repository and submodules # why are we doing this? I don't think we use submodules but memory doesn't serve so let's keep it
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
         with:
           submodules: recursive
 
@@ -39,6 +39,33 @@ jobs:
           apt-get update
           apt-get install -y ccache
         shell: bash
+
+      - name: Make ccache shims
+        run: | # yes it's as bad as it sounds and it doesn't make sense but exosphere uses both aarch64 and arm32 gcc and g++
+          cat > .dkp-wrappers/aarch64-none-elf-gcc <<'EOF'
+          #!/bin/sh
+          exec ccache /opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc "$@"
+          EOF
+          chmod +x .dkp-wrappers/aarch64-none-elf-gcc
+
+          cat > .dkp-wrappers/aarch64-none-elf-g++ <<'EOF'
+
+          #!/bin/sh
+          exec ccache /opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ "$@"
+          EOF
+          chmod +x .dkp-wrappers/aarch64-none-elf-g++
+
+          cat > .dkp-wrappers/arm-none-eabi-gcc <<'EOF'
+          #!/bin/sh
+          exec ccache /opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc "$@"
+          EOF
+          chmod +x .dkp-wrappers/arm-none-eabi-gcc
+
+          cat > .dkp-wrappers/arm-none-eabi-g++ <<'EOF'
+          #!/bin/sh
+          exec ccache /opt/devkitpro/devkitARM/bin/arm-none-eabi-g++ "$@"
+          EOF
+          chmod +x .dkp-wrappers/arm-none-eabi-g++
 
       - name: Set commit SHA
         id: vars
@@ -78,9 +105,6 @@ jobs:
       - name: Build hoc-clk sysmodule and overlay
         shell: bash
         run: |
-          export CC="ccache aarch64-none-elf-gcc"
-          export CXX="ccache aarch64-none-elf-g++"
-
           ROOT_DIR="$GITHUB_WORKSPACE/Source/sys-clk"
           DIST_DIR="$ROOT_DIR/dist"
           
@@ -94,7 +118,7 @@ jobs:
           echo "TITLE_ID: $TITLE_ID"
 
           pushd "$ROOT_DIR/sysmodule"
-          make -j$(($(nproc) * 4)) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
+          make -j$(($(nproc) * 4))
           popd
 
           mkdir -p "$DIST_DIR/atmosphere/contents/$TITLE_ID/flags"
@@ -112,7 +136,7 @@ jobs:
           echo "*** overlay ***"
 
           pushd "$ROOT_DIR/overlay"
-          make -j$(($(nproc) * 4)) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
+          make -j$(($(nproc) * 4))
           popd
 
           mkdir -p "$DIST_DIR/switch/.overlays"
@@ -136,38 +160,9 @@ jobs:
       - name: Build kip
         working-directory: build/stratosphere/loader
         run: |
-          export CC="ccache aarch64-none-elf-gcc"
-          export CXX="ccache aarch64-none-elf-g++"
-          make -j$(($(nproc) * 4)) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
+          make -j$(($(nproc) * 4))
           hactool -t kip1 out/nintendo_nx_arm64_armv8a/release/loader.kip --uncompress=hoc.kip
           cp hoc.kip ../../../dist/atmosphere/kips/hoc.kip
-
-      - name: Make ccache shims
-        run: | # yes it's as bad as it sounds and it doesn't make sense but exosphere uses both aarch64 and arm32 gcc and g++
-          cat > .dkp-wrappers/aarch64-none-elf-gcc <<'EOF'
-          #!/bin/sh
-          exec ccache /opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc "$@"
-          EOF
-          chmod +x .dkp-wrappers/aarch64-none-elf-gcc
-
-          cat > .dkp-wrappers/aarch64-none-elf-g++ <<'EOF'
-
-          #!/bin/sh
-          exec ccache /opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ "$@"
-          EOF
-          chmod +x .dkp-wrappers/aarch64-none-elf-g++
-
-          cat > .dkp-wrappers/arm-none-eabi-gcc <<'EOF'
-          #!/bin/sh
-          exec ccache /opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc "$@"
-          EOF
-          chmod +x .dkp-wrappers/arm-none-eabi-gcc
-
-          cat > .dkp-wrappers/arm-none-eabi-g++ <<'EOF'
-          #!/bin/sh
-          exec ccache /opt/devkitpro/devkitARM/bin/arm-none-eabi-g++ "$@"
-          EOF
-          chmod +x .dkp-wrappers/arm-none-eabi-g++
           
       - name: Build exosphere
         working-directory: build/exosphere
