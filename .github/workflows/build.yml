@@ -141,16 +141,46 @@ jobs:
           make -j$(($(nproc) * 4)) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
           hactool -t kip1 out/nintendo_nx_arm64_armv8a/release/loader.kip --uncompress=hoc.kip
           cp hoc.kip ../../../dist/atmosphere/kips/hoc.kip
+
+      - name: Make ccache shims
+        run: | # yes it's as bad as it sounds and it doesn't make sense but exosphere uses both aarch64 and arm32 gcc and g++
+          cat > .dkp-wrappers/aarch64-none-elf-gcc <<'EOF'
+          #!/bin/sh
+          exec ccache /opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc "$@"
+          EOF
+          chmod +x .dkp-wrappers/aarch64-none-elf-gcc
+
+          cat > .dkp-wrappers/aarch64-none-elf-g++ <<'EOF'
+
+          #!/bin/sh
+          exec ccache /opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ "$@"
+          EOF
+          chmod +x .dkp-wrappers/aarch64-none-elf-g++
+
+          cat > .dkp-wrappers/arm-none-eabi-gcc <<'EOF'
+          #!/bin/sh
+          exec ccache /opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc "$@"
+          EOF
+          chmod +x .dkp-wrappers/arm-none-eabi-gcc
+
+          cat > .dkp-wrappers/arm-none-eabi-g++ <<'EOF'
+          #!/bin/sh
+          exec ccache /opt/devkitpro/devkitARM/bin/arm-none-eabi-g++ "$@"
+          EOF
+          chmod +x .dkp-wrappers/arm-none-eabi-g++
           
       - name: Build exosphere
         working-directory: build/exosphere
         run: |
+          export PATH="$PWD/.dkp-wrappers:$PATH"
           export PATCHES="../../Source/Atmosphere-Patches"
           export ROOT=".."
           cp "$PATCHES/secmon_memory_layout.hpp" "$ROOT/libraries/libexosphere/include/exosphere/secmon/"
           cp "$PATCHES/secmon_emc_access_table_data.inc" "$ROOT/exosphere/program/source/smc/"
           cp "$PATCHES/secmon_define_emc_access_table.inc" "$ROOT/exosphere/program/source/smc/"
           cp "$PATCHES/secmon_smc_register_access.cpp" "$ROOT/exosphere/program/source/smc/"
+          cp "$PATCHES/secmon_define_soctherm_access_table.inc" "$ROOT/exosphere/program/source/smc/"
+          
           # build without ams for now
           make -j$(($(nproc) * 4))
           cp ./out/nintendo_nx_arm64_armv8a/release/exosphere.bin ../../dist/
