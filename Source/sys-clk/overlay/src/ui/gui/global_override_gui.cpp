@@ -19,7 +19,7 @@
 #include "fatal_gui.h"
 #include "global_override_gui.h"
 #include "value_choice_gui.h"
-
+#include "labels.h"
 GlobalOverrideGui::GlobalOverrideGui()
 {
     for (std::uint16_t m = 0; m < SysClkModule_EnumMax; m++) {
@@ -38,6 +38,14 @@ void GlobalOverrideGui::openFreqChoiceGui(SysClkModule module)
         FatalGui::openWithResultCode("sysclkIpcGetFreqList", rc);
         return;
     }
+    
+    std::map<uint32_t, std::string> labels = {};
+
+    if (module == SysClkModule_CPU) {
+        labels = IsMariko() ? cpu_freq_label_m : cpu_freq_label_e;
+    } else if (module == SysClkModule_GPU) {
+        labels = IsMariko() ? gpu_freq_label_m : gpu_freq_label_e;
+    }
     tsl::changeTo<FreqChoiceGui>(
     this->context->overrideFreqs[module], hzList, hzCount, module,
     [this, module](std::uint32_t hz) {
@@ -52,7 +60,8 @@ void GlobalOverrideGui::openFreqChoiceGui(SysClkModule module)
 
         return true;
     },
-    true);
+    true, labels
+    );
 }
 
 void GlobalOverrideGui::openValueChoiceGui(
@@ -283,7 +292,7 @@ void GlobalOverrideGui::listUI()
     #if IS_MINIMAL == 0
         ValueThresholds lcdThresholds(60, 65);
         if(!IsHoag() && configList.values[HorizonOCConfigValue_OverwriteRefreshRate])
-            this->addModuleListItemValue(HorizonOCModule_Display, "Display", 40, configList.values[HorizonOCConfigValue_EnableUnsafeDisplayFreqs] ? 72 : 60, 1, " Hz", 1, 0, lcdThresholds);
+            this->addModuleListItemValue(HorizonOCModule_Display, "Display", 40, configList.values[HorizonOCConfigValue_EnableUnsafeDisplayFreqs] ? IsAula() ? 65 : 72 : 60, 1, " Hz", 1, 0, lcdThresholds);
     #endif
     this->addModuleToggleItem(HorizonOCModule_Governor);
 }

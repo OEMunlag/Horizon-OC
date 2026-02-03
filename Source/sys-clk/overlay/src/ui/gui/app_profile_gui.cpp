@@ -29,6 +29,7 @@
 
 #include "../format.h"
 #include "fatal_gui.h"
+#include "labels.h"
 AppProfileGui::AppProfileGui(std::uint64_t applicationId, SysClkTitleProfileList* profileList)
 {
     this->applicationId = applicationId;
@@ -50,7 +51,13 @@ void AppProfileGui::openFreqChoiceGui(tsl::elm::ListItem* listItem, SysClkProfil
         FatalGui::openWithResultCode("sysclkIpcGetFreqList", rc);
         return;
     }
+    std::map<uint32_t, std::string> labels = {};
 
+    if (module == SysClkModule_CPU) {
+        labels = IsMariko() ? cpu_freq_label_m : cpu_freq_label_e;
+    } else if (module == SysClkModule_GPU) {
+        labels = IsMariko() ? gpu_freq_label_m : gpu_freq_label_e;
+    }
     tsl::changeTo<FreqChoiceGui>(this->profileList->mhzMap[profile][module] * 1000000, hzList, hzCount, module, [this, listItem, profile, module](std::uint32_t hz) {
         this->profileList->mhzMap[profile][module] = hz / 1000000;
         listItem->setValue(formatListFreqMHz(this->profileList->mhzMap[profile][module]));
@@ -62,7 +69,7 @@ void AppProfileGui::openFreqChoiceGui(tsl::elm::ListItem* listItem, SysClkProfil
         }
 
         return true;
-    }, true
+    }, true, labels
     );
 }
 
@@ -282,7 +289,7 @@ void AppProfileGui::addProfileUI(SysClkProfile profile)
         ValueThresholds lcdThresholds(60, 65);
         if(!IsHoag() && configList.values[HorizonOCConfigValue_OverwriteRefreshRate]) {
             if(profile != SysClkProfile_Docked)
-                this->addModuleListItemValue(profile, HorizonOCModule_Display, "Display", 40, configList.values[HorizonOCConfigValue_EnableUnsafeDisplayFreqs] ? 72 : 60, 1, " Hz", 1, 0, lcdThresholds);
+                this->addModuleListItemValue(profile, HorizonOCModule_Display, "Display", 40, configList.values[HorizonOCConfigValue_EnableUnsafeDisplayFreqs] ? IsAula() ? 65 : 72 : 60, 1, " Hz", 1, 0, lcdThresholds);
             else
                 this->addModuleListItemValue(profile, HorizonOCModule_Display, "Display", 50, 120, 5, " Hz", 1, 0);
         }
