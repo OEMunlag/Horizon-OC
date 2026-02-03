@@ -233,12 +233,10 @@ public:
                     else if (realRAM_Hz && settings.showDeltas && (settings.showRealFreqs || settings.showTargetFreqs)) {
                         renderer->drawString(DeltaRAM_c, false, COMMON_MARGIN +  deltaOffset, height_offset, 15, (settings.textColor));
                     }
-                    if (R_SUCCEEDED(sysclkCheck)) {
-                        static std::vector<std::string> PartLoadColoredChars = {"CPU", "GPU"};
-                        //static auto loadLabelWidth = renderer->getTextDimensions("Load: ", false, 15).first;
-                        renderer->drawString("Load", false, COMMON_MARGIN, height_offset+15, 15, (settings.catColor2));
-                        renderer->drawStringWithColoredSections(RAM_load_c, false, PartLoadColoredChars, COMMON_MARGIN + valueOffset, height_offset+15, 15, (settings.textColor), settings.catColor2);
-                    }
+                    static std::vector<std::string> PartLoadColoredChars = {"CPU", "GPU"};
+                    //static auto loadLabelWidth = renderer->getTextDimensions("Load: ", false, 15).first;
+                    renderer->drawString("Load", false, COMMON_MARGIN, height_offset+15, 15, (settings.catColor2));
+                    renderer->drawStringWithColoredSections(RAM_load_c, false, PartLoadColoredChars, COMMON_MARGIN + valueOffset, height_offset+15, 15, (settings.textColor), settings.catColor2);
                 }
                 if (R_SUCCEEDED(Hinted)) {
                     //static auto textWidth = renderer->getTextDimensions("Total \nApplication \nApplet \nSystem \nSystem Unsafe ", false, 15).first;
