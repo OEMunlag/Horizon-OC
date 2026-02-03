@@ -12,7 +12,7 @@ jobs:
 
     # Minimal devkitA64 container, apparently dkp-toolchain isn't needed?
     container:
-      image: devkitpro/devkita64:latest
+      image: devkitpro/devkita64:20251231 # latest breaks ams building for some reason
 
     steps:
       - name: Checkout repository and submodules # why are we doing this? I don't think we use submodules but memory doesn't serve so let's keep it
