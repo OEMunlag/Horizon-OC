@@ -1,0 +1,171 @@
+name: Build Horizon OC Zeus
+
+on:
+  push:
+    branches: [ develop, main, master ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    # Minimal devkitA64 container, apparently dkp-toolchain isn't needed?
+    container:
+      image: devkitpro/devkita64:20251231
+
+    steps:
+      - name: Checkout repository and submodules # needed for hoc-clk
+        uses: actions/checkout@v6.0.2
+        with:
+          submodules: recursive
+
+
+      # -------------------------------------------------
+      # Fix PATH for devkitA64 and devkitARM
+      # -------------------------------------------------
+      - name: Set devkitPro PATH
+        run: |
+          echo "DEVKITPRO=/opt/devkitpro" >> $GITHUB_ENV
+          echo "DEVKITA64=/opt/devkitpro/devkitA64" >> $GITHUB_ENV
+          echo "DEVKITARM=/opt/devkitpro/devkitARM" >> $GITHUB_ENV
+          echo "PATH=/opt/devkitpro/devkitA64/bin:/opt/devkitpro/devkitARM/bin:$PATH" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Check devkitPro gcc and g++ versions
+        run: |
+          aarch64-none-elf-gcc --version
+          aarch64-none-elf-g++ --version
+        shell: bash # is this even needed? but for consistency let's keep using it
+
+      - name: Install ccache
+        run: |
+          apt-get update
+          apt-get install -y ccache
+        shell: bash
+
+      # -------------------------------------------------
+      # Get short commit SHA
+      # -------------------------------------------------
+      - name: Set commit SHA
+        id: vars
+        run: echo "SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
+
+      - name: Clone Atmosphere
+        run: git clone --depth=1 --single-branch https://github.com/Atmosphere-NX/Atmosphere.git atmosphere -b $(cat ams_ver.txt)
+
+      - name: Prepare build folder
+        run: |
+          mkdir -p build
+          cp -r atmosphere/* build/
+
+      - name: Override ldr_process_creation.cpp
+        run: |
+          cp -rf Source/Atmosphere/stratosphere/loader/source/* build/stratosphere/loader/source/
+
+      - name: Cache ccache
+        uses: actions/cache@v5.0.3
+        with:
+          path: /root/.cache/ccache
+          key: ccache-${{ runner.os }}-devkitpro-ams-${{ hashFiles('ams_ver.txt') }} # last key was utter garbage, stick to ams versions, 
+          restore-keys: |
+            ccache-${{ runner.os }}-devkitpro-
+
+      - name: Configure ccache
+        run: |
+          export CCACHE_DIR=/root/.cache/ccache
+          echo "CCACHE_DIR=/root/.cache/ccache" >> $GITHUB_ENV
+          ccache --set-config=max_size=10G
+          ccache --set-config=compiler_check=content
+          ccache --zero-stats
+          
+      - name: Build hoc-clk sysmodule and overlay
+        shell: bash
+        run: |
+          export CC="ccache aarch64-none-elf-gcc"
+          export CXX="ccache aarch64-none-elf-g++"
+
+          ROOT_DIR="$GITHUB_WORKSPACE/Source/sys-clk"
+          DIST_DIR="$ROOT_DIR/dist"
+          
+          mkdir -p "$DIST_DIR"
+
+          echo "*** sysmodule ***"
+
+          TITLE_ID="$(grep -oP '"title_id":\s*"0x\K(\w+)' \
+            "$ROOT_DIR/sysmodule/perms.json")"
+
+          echo "TITLE_ID: $TITLE_ID"
+
+          pushd "$ROOT_DIR/sysmodule"
+          make -j$(($(nproc) * 2)) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
+          popd
+
+          mkdir -p "$DIST_DIR/atmosphere/contents/$TITLE_ID/flags"
+
+          cp -vf \
+            "$ROOT_DIR/sysmodule/out/horizon-oc.nsp" \
+            "$DIST_DIR/atmosphere/contents/$TITLE_ID/exefs.nsp"
+
+          : >"$DIST_DIR/atmosphere/contents/$TITLE_ID/flags/boot2.flag"
+
+          cp -vf \
+            "$ROOT_DIR/sysmodule/toolbox.json" \
+            "$DIST_DIR/atmosphere/contents/$TITLE_ID/toolbox.json"
+
+          echo "*** overlay ***"
+
+          pushd "$ROOT_DIR/overlay"
+          make -j$(($(nproc) * 2)) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
+          popd
+
+          mkdir -p "$DIST_DIR/switch/.overlays"
+
+          cp -vf \
+            "$ROOT_DIR/overlay/out/horizon-oc-overlay.ovl" \
+            "$DIST_DIR/switch/.overlays/horizon-oc-overlay.ovl"
+
+          echo "*** assets ***"
+
+          mkdir -p "$DIST_DIR/config/horizon-oc"
+
+          cp -vf \
+            "$ROOT_DIR/config.ini.template" \
+            "$DIST_DIR/config/horizon-oc/config.ini.template"
+
+          cp -vf \
+            "$ROOT_DIR/README.md" \
+            "$DIST_DIR/README.md"
+
+      - name: Build kip
+        working-directory: build/stratosphere/loader
+        run: |
+          export CC="ccache aarch64-none-elf-gcc"
+          export CXX="ccache aarch64-none-elf-g++"
+          make -j$(($(nproc) * 4)) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
+          hactool -t kip1 out/nintendo_nx_arm64_armv8a/release/loader.kip --uncompress=hoc.kip
+          cp hoc.kip ../../../dist/atmosphere/kips/hoc.kip
+          
+      - name: ccache stats
+        run: ccache --show-stats
+
+
+      # -------------------------------------------------
+      # Package dist folder as ZIP with commit SHA
+      # -------------------------------------------------
+      - name: Package dist
+        # working-directory: horizon-oc
+        run: |
+          ZIP_NAME="horizon-oc-zeus-dist-${SHORT_SHA}.zip"
+          zip -r "$ZIP_NAME" dist
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
+
+      # -------------------------------------------------
+      # Upload ZIP artifact
+      # -------------------------------------------------
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: horizon-oc-zeus-dist-${{ env.SHORT_SHA }}
+          path: dist/
+          compression-level: 3
