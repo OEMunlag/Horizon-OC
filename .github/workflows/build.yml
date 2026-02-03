@@ -12,13 +12,17 @@ jobs:
 
     # Minimal devkitA64 container, apparently dkp-toolchain isn't needed?
     container:
-      image: devkitpro/devkita64:20251231 # latest breaks ams building for some reason
+      image: devkitpro/toolchain-base:20250727
 
     steps:
       - name: Checkout repository and submodules # needed for hoc-clk
         uses: actions/checkout@v6.0.2
         with:
           submodules: recursive
+
+
+      - name: install switch-dev
+        run: dkp-pacman -Syu switch-dev --noconfirm
 
       - name: Set devkitPro PATH
         run: |
