@@ -446,14 +446,6 @@ public:
             if (SaltySD) {
                 LoadSharedMemoryAndRefreshRate();
             }
-            if (sysclkIpcRunning() && R_SUCCEEDED(sysclkIpcInitialize())) {
-                uint32_t sysClkApiVer = 0;
-                sysclkIpcGetAPIVersion(&sysClkApiVer);
-                if (sysClkApiVer < 4) {
-                    sysclkIpcExit();
-                }
-                else sysclkCheck = 0;
-            }
             if (R_SUCCEEDED(splInitialize())) {
                 u64 sku = 0;
                 splGetConfig(SplConfigItem_HardwareType, &sku);
@@ -473,9 +465,7 @@ public:
 
     virtual void exitServices() override {
         CloseThreads();
-        if (R_SUCCEEDED(sysclkCheck)) {
-            sysclkIpcExit();
-        }
+        sysclkIpcExit();
         shmemClose(&_sharedmemory);
         //Exit services
         clkrstExit();
@@ -530,14 +520,6 @@ public:
             if (SaltySD) {
                 LoadSharedMemory();
             }
-            if (sysclkIpcRunning() && R_SUCCEEDED(sysclkIpcInitialize())) {
-                uint32_t sysClkApiVer = 0;
-                sysclkIpcGetAPIVersion(&sysClkApiVer);
-                if (sysClkApiVer < 4) {
-                    sysclkIpcExit();
-                }
-                else sysclkCheck = 0;
-            }
             if (R_SUCCEEDED(splInitialize())) {
                 u64 sku = 0;
                 splGetConfig(SplConfigItem_HardwareType, &sku);
@@ -557,9 +539,7 @@ public:
     virtual void exitServices() override {
         CloseThreads();
         shmemClose(&_sharedmemory);
-        if (R_SUCCEEDED(sysclkCheck)) {
-            sysclkIpcExit();
-        }
+        sysclkIpcExit();
         //Exit services
         clkrstExit();
         pcvExit();
@@ -617,14 +597,6 @@ public:
             if (SaltySD) {
                 LoadSharedMemory();
             }
-            if (sysclkIpcRunning() && R_SUCCEEDED(sysclkIpcInitialize())) {
-                uint32_t sysClkApiVer = 0;
-                sysclkIpcGetAPIVersion(&sysClkApiVer);
-                if (sysClkApiVer < 4) {
-                    sysclkIpcExit();
-                }
-                else sysclkCheck = 0;
-            }
             if (R_SUCCEEDED(splInitialize())) {
                 u64 sku = 0;
                 splGetConfig(SplConfigItem_HardwareType, &sku);
@@ -645,9 +617,7 @@ public:
     virtual void exitServices() override {
         CloseThreads();
         shmemClose(&_sharedmemory);
-        if (R_SUCCEEDED(sysclkCheck)) {
-            sysclkIpcExit();
-        }
+        sysclkIpcExit();
         // Exit services
         clkrstExit();
         pcvExit();
@@ -707,14 +677,6 @@ public:
             if (SaltySD) {
                 LoadSharedMemoryAndRefreshRate();
             }
-            if (sysclkIpcRunning() && R_SUCCEEDED(sysclkIpcInitialize())) {
-                uint32_t sysClkApiVer = 0;
-                sysclkIpcGetAPIVersion(&sysClkApiVer);
-                if (sysClkApiVer < 4) {
-                    sysclkIpcExit();
-                }
-                else sysclkCheck = 0;
-            }
             if (R_SUCCEEDED(splInitialize())) {
                 u64 sku = 0;
                 splGetConfig(SplConfigItem_HardwareType, &sku);
@@ -734,9 +696,7 @@ public:
     virtual void exitServices() override {
         CloseThreads();
         shmemClose(&_sharedmemory);
-        if (R_SUCCEEDED(sysclkCheck)) {
-            sysclkIpcExit();
-        }
+        sysclkIpcExit();
         clkrstExit();
         pcvExit();
         tsExit();
@@ -790,14 +750,6 @@ public:
             if (SaltySD) {
                 LoadSharedMemoryAndRefreshRate();
             }
-            if (sysclkIpcRunning() && R_SUCCEEDED(sysclkIpcInitialize())) {
-                uint32_t sysClkApiVer = 0;
-                sysclkIpcGetAPIVersion(&sysClkApiVer);
-                if (sysClkApiVer < 4) {
-                    sysclkIpcExit();
-                }
-                else sysclkCheck = 0;
-            }
             if (R_SUCCEEDED(splInitialize())) {
                 u64 sku = 0;
                 splGetConfig(SplConfigItem_HardwareType, &sku);
@@ -817,9 +769,7 @@ public:
     virtual void exitServices() override {
         CloseThreads();
         shmemClose(&_sharedmemory);
-        if (R_SUCCEEDED(sysclkCheck)) {
-            sysclkIpcExit();
-        }
+        sysclkIpcExit();
         clkrstExit();
         pcvExit();
         tsExit();
@@ -873,14 +823,6 @@ public:
             if (SaltySD) {
                 LoadSharedMemoryAndRefreshRate();
             }
-            if (sysclkIpcRunning() && R_SUCCEEDED(sysclkIpcInitialize())) {
-                uint32_t sysClkApiVer = 0;
-                sysclkIpcGetAPIVersion(&sysClkApiVer);
-                if (sysClkApiVer < 4) {
-                    sysclkIpcExit();
-                }
-                else sysclkCheck = 0;
-            }
             if (R_SUCCEEDED(splInitialize())) {
                 u64 sku = 0;
                 splGetConfig(SplConfigItem_HardwareType, &sku);
@@ -900,9 +842,7 @@ public:
     virtual void exitServices() override {
         CloseThreads();
         shmemClose(&_sharedmemory);
-        if (R_SUCCEEDED(sysclkCheck)) {
-            sysclkIpcExit();
-        }
+        sysclkIpcExit();
         clkrstExit();
         pcvExit();
         tsExit();

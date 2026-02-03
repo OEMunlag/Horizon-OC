@@ -83,7 +83,7 @@ Result nvdecCheck = 1;
 Result nvencCheck = 1;
 Result nvjpgCheck = 1;
 Result nifmCheck = 1;
-Result sysclkCheck = 1;
+Result sysclkCheck = 0;
 Result pwmDutyCycleCheck = 1;
 
 //Wi-Fi
@@ -572,21 +572,19 @@ void Misc(void*) {
         }
         
         // Get sys-clk data
-        if (R_SUCCEEDED(sysclkCheck)) {
-            SysClkContext sysclkCTX;
-            if (R_SUCCEEDED(sysclkIpcGetCurrentContext(&sysclkCTX))) {
-                realCPU_Hz = sysclkCTX.realFreqs[SysClkModule_CPU];
-                realGPU_Hz = sysclkCTX.realFreqs[SysClkModule_GPU];
-                realRAM_Hz = sysclkCTX.realFreqs[SysClkModule_MEM];
-                partLoad[SysClkPartLoad_EMC] = sysclkCTX.partLoad[SysClkPartLoad_EMC];
-                partLoad[SysClkPartLoad_EMCCpu] = sysclkCTX.partLoad[SysClkPartLoad_EMCCpu];
-                
-                realCPU_mV = sysclkCTX.voltages[HocClkVoltage_CPU]; 
-                realGPU_mV = sysclkCTX.voltages[HocClkVoltage_GPU]; 
-                realVDD2_mV = sysclkCTX.voltages[HocClkVoltage_EMCVDD2];
-                realVDDQ_mV = sysclkCTX.voltages[HocClkVoltage_EMCVDDQ_MarikoOnly];
-                realSOC_mV = sysclkCTX.voltages[HocClkVoltage_SOC];
-            }
+        SysClkContext sysclkCTX;
+        if (R_SUCCEEDED(sysclkIpcGetCurrentContext(&sysclkCTX))) {
+            realCPU_Hz = sysclkCTX.realFreqs[SysClkModule_CPU];
+            realGPU_Hz = sysclkCTX.realFreqs[SysClkModule_GPU];
+            realRAM_Hz = sysclkCTX.realFreqs[SysClkModule_MEM];
+            partLoad[SysClkPartLoad_EMC] = sysclkCTX.partLoad[SysClkPartLoad_EMC];
+            partLoad[SysClkPartLoad_EMCCpu] = sysclkCTX.partLoad[SysClkPartLoad_EMCCpu];
+            
+            realCPU_mV = sysclkCTX.voltages[HocClkVoltage_CPU]; 
+            realGPU_mV = sysclkCTX.voltages[HocClkVoltage_GPU]; 
+            realVDD2_mV = sysclkCTX.voltages[HocClkVoltage_EMCVDD2];
+            realVDDQ_mV = sysclkCTX.voltages[HocClkVoltage_EMCVDDQ_MarikoOnly];
+            realSOC_mV = sysclkCTX.voltages[HocClkVoltage_SOC];
         }
         
         // Temperatures
@@ -699,21 +697,7 @@ void Misc3(void*) {
     
     do {
         mutexLock(&mutex_Misc);
-        
-        // Get sys-clk data
-        if (R_SUCCEEDED(sysclkCheck)) {
-                SysClkContext sysclkCTX;
-                if (R_SUCCEEDED(sysclkIpcGetCurrentContext(&sysclkCTX))) {
-                    partLoad[SysClkPartLoad_EMC] = sysclkCTX.partLoad[SysClkPartLoad_EMC];
-                    partLoad[SysClkPartLoad_EMCCpu] = sysclkCTX.partLoad[SysClkPartLoad_EMCCpu];
-                    
-                    realCPU_mV = sysclkCTX.voltages[HocClkVoltage_CPU]; 
-                    realGPU_mV = sysclkCTX.voltages[HocClkVoltage_GPU]; 
-                    realSOC_mV = sysclkCTX.voltages[HocClkVoltage_SOC];
-                    realVDD2_mV = sysclkCTX.voltages[HocClkVoltage_EMCVDD2];
-                    realVDDQ_mV = sysclkCTX.voltages[HocClkVoltage_EMCVDDQ_MarikoOnly];
-            }
-        }
+
         // Temperatures
         if (R_SUCCEEDED(i2cCheck)) {
             Tmp451GetSocTemp(&SOC_temperatureF);

@@ -354,7 +354,7 @@ public:
                             else
                                 width = renderer->getTextDimensions("100%@4444.4444 mV", false, fontsize).first;
                         }
-                    } else if (key == "GPU" || (key == "RAM" && settings.showRAMLoad && R_SUCCEEDED(sysclkCheck))) {
+                    } else if (key == "GPU" || (key == "RAM" && settings.showRAMLoad)) {
                         //dimensions = renderer->drawString("100.0%@4444.4", false, 0, 0, fontsize, renderer->a(0x0000));
 
                         if (!settings.showRAMLoadCPUGPU) {
@@ -370,7 +370,7 @@ public:
                                 width = renderer->getTextDimensions("100%[100%,100%]@4444.4444 mV", false, fontsize).first;
                             }
                         }
-                    } else if (key == "RAM" && (!settings.showRAMLoad || R_FAILED(sysclkCheck))) {
+                    } else if (key == "RAM" && (!settings.showRAMLoad)) {
                         //dimensions = renderer->drawString("44444444MB@4444.4", false, 0, 0, fontsize, renderer->a(0x0000));
                         if (!settings.realVolts) {
                             width = renderer->getTextDimensions("100%@4444.4", false, fontsize).first;
@@ -993,51 +993,33 @@ public:
             } else {
                 unsigned PartLoadInt;
                 
-                if (R_SUCCEEDED(sysclkCheck)) {
-                    PartLoadInt = partLoad[SysClkPartLoad_EMC] / 10;
-                    
-                    if (settings.showRAMLoadCPUGPU) {
-                        unsigned ramCpuLoadInt = partLoad[SysClkPartLoad_EMCCpu] / 10;
-                        int RAM_GPU_Load = partLoad[SysClkPartLoad_EMC] - partLoad[SysClkPartLoad_EMCCpu];
-                        unsigned ramGpuLoadInt = RAM_GPU_Load / 10;
-                        
-                        if (settings.realFrequencies && realRAM_Hz) {
-                            snprintf(MINI_RAM_var_compressed_c, sizeof(MINI_RAM_var_compressed_c),
-                                     "%u%%[%u%%,%u%%]@%hu.%hhu",
-                                     PartLoadInt, ramCpuLoadInt, ramGpuLoadInt,
-                                     realRAM_Hz / 1000000, (realRAM_Hz / 100000) % 10);
-                        } else {
-                            snprintf(MINI_RAM_var_compressed_c, sizeof(MINI_RAM_var_compressed_c),
-                                     "%u%%[%u%%,%u%%]@%hu.%hhu",
-                                     PartLoadInt, ramCpuLoadInt, ramGpuLoadInt,
-                                     RAM_Hz / 1000000, (RAM_Hz / 100000) % 10);
-                        }
-                    } else {
-                        if (settings.realFrequencies && realRAM_Hz) {
-                            snprintf(MINI_RAM_var_compressed_c, sizeof(MINI_RAM_var_compressed_c),
-                                     "%u%%@%hu.%hhu", PartLoadInt,
-                                     realRAM_Hz / 1000000, (realRAM_Hz / 100000) % 10);
-                        } else {
-                            snprintf(MINI_RAM_var_compressed_c, sizeof(MINI_RAM_var_compressed_c),
-                                     "%u%%@%hu.%hhu", PartLoadInt,
-                                     RAM_Hz / 1000000, (RAM_Hz / 100000) % 10);
-                        }
-                    }
-                } else {
-                    const uint64_t RAM_Total_all = RAM_Total_application_u + RAM_Total_applet_u + 
-                                                   RAM_Total_system_u + RAM_Total_systemunsafe_u;
-                    const uint64_t RAM_Used_all = RAM_Used_application_u + RAM_Used_applet_u + 
-                                                  RAM_Used_system_u + RAM_Used_systemunsafe_u;
-                    PartLoadInt = (RAM_Total_all > 0) ? (unsigned)((RAM_Used_all * 100) / RAM_Total_all) : 0;
+                PartLoadInt = partLoad[SysClkPartLoad_EMC] / 10;
+                
+                if (settings.showRAMLoadCPUGPU) {
+                    unsigned ramCpuLoadInt = partLoad[SysClkPartLoad_EMCCpu] / 10;
+                    int RAM_GPU_Load = partLoad[SysClkPartLoad_EMC] - partLoad[SysClkPartLoad_EMCCpu];
+                    unsigned ramGpuLoadInt = RAM_GPU_Load / 10;
                     
                     if (settings.realFrequencies && realRAM_Hz) {
                         snprintf(MINI_RAM_var_compressed_c, sizeof(MINI_RAM_var_compressed_c),
-                                 "%u%%@%hu.%hhu", PartLoadInt,
-                                 realRAM_Hz / 1000000, (realRAM_Hz / 100000) % 10);
+                                    "%u%%[%u%%,%u%%]@%hu.%hhu",
+                                    PartLoadInt, ramCpuLoadInt, ramGpuLoadInt,
+                                    realRAM_Hz / 1000000, (realRAM_Hz / 100000) % 10);
                     } else {
                         snprintf(MINI_RAM_var_compressed_c, sizeof(MINI_RAM_var_compressed_c),
-                                 "%u%%@%hu.%hhu", PartLoadInt,
-                                 RAM_Hz / 1000000, (RAM_Hz / 100000) % 10);
+                                    "%u%%[%u%%,%u%%]@%hu.%hhu",
+                                    PartLoadInt, ramCpuLoadInt, ramGpuLoadInt,
+                                    RAM_Hz / 1000000, (RAM_Hz / 100000) % 10);
+                    }
+                } else {
+                    if (settings.realFrequencies && realRAM_Hz) {
+                        snprintf(MINI_RAM_var_compressed_c, sizeof(MINI_RAM_var_compressed_c),
+                                    "%u%%@%hu.%hhu", PartLoadInt,
+                                    realRAM_Hz / 1000000, (realRAM_Hz / 100000) % 10);
+                    } else {
+                        snprintf(MINI_RAM_var_compressed_c, sizeof(MINI_RAM_var_compressed_c),
+                                    "%u%%@%hu.%hhu", PartLoadInt,
+                                    RAM_Hz / 1000000, (RAM_Hz / 100000) % 10);
                     }
                 }
             }
