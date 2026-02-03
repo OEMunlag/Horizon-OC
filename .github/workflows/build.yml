@@ -12,7 +12,7 @@ jobs:
 
     # Minimal devkitA64 container, apparently dkp-toolchain isn't needed?
     container:
-      image: devkitpro/toolchain-base:20250727
+      image: devkitpro/devkita64:20251231
 
     steps:
       - name: Checkout repository and submodules # needed for hoc-clk
@@ -21,9 +21,9 @@ jobs:
           submodules: recursive
 
 
-      - name: install switch-dev
-        run: dkp-pacman -Syu switch-dev --noconfirm
-
+      # -------------------------------------------------
+      # Fix PATH for devkitA64 and devkitARM
+      # -------------------------------------------------
       - name: Set devkitPro PATH
         run: |
           echo "DEVKITPRO=/opt/devkitpro" >> $GITHUB_ENV
@@ -44,58 +44,21 @@ jobs:
           apt-get install -y ccache
         shell: bash
 
-      - name: Create compiler shims
-        run: | #I deeply hate this from my heart
-          # aarch64 gcc
-          mv /opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc /opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc.real
-          cat > /opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc <<'EOF'
-          #!/bin/sh
-          exec ccache /opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc.real "$@"
-          EOF
-          chmod +x /opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc
-
-          # aarch64 g++
-          mv /opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ /opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++.real
-          cat > /opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ <<'EOF'
-          #!/bin/sh
-          exec ccache /opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++.real "$@"
-          EOF
-          chmod +x /opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++
-
-          # arm gcc
-          mv /opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc /opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc.real
-          cat > /opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc <<'EOF'
-          #!/bin/sh
-          exec ccache /opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc.real "$@"
-          EOF
-          chmod +x /opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc
-
-          # arm g++
-          mv /opt/devkitpro/devkitARM/bin/arm-none-eabi-g++ /opt/devkitpro/devkitARM/bin/arm-none-eabi-g++.real
-          cat > /opt/devkitpro/devkitARM/bin/arm-none-eabi-g++ <<'EOF'
-          #!/bin/sh
-          exec ccache /opt/devkitpro/devkitARM/bin/arm-none-eabi-g++.real "$@"
-          EOF
-          chmod +x /opt/devkitpro/devkitARM/bin/arm-none-eabi-g++
-
-          cat $(which arm-none-eabi-g++)
-        shell: bash
-
+      # -------------------------------------------------
+      # Get short commit SHA
+      # -------------------------------------------------
       - name: Set commit SHA
         id: vars
         run: echo "SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
 
       - name: Clone Atmosphere
         run: git clone --depth=1 --single-branch https://github.com/Atmosphere-NX/Atmosphere.git atmosphere -b $(cat ams_ver.txt)
-        
+
       - name: Prepare build folder
         run: |
           mkdir -p build
           cp -r atmosphere/* build/
 
-      # -------------------------------------------------
-      # Override loader source
-      # -------------------------------------------------
       - name: Override ldr_process_creation.cpp
         run: |
           cp -rf Source/Atmosphere/stratosphere/loader/source/* build/stratosphere/loader/source/
@@ -104,10 +67,9 @@ jobs:
         uses: actions/cache@v5.0.3
         with:
           path: /root/.cache/ccache
-          key: ccache-${{ runner.os }}-devkitpro-ams-${{ hashFiles('ams_ver.txt') }} # last key was utter garbage, stick to ams versions
+          key: ccache-${{ runner.os }}-devkitpro-ams-${{ hashFiles('ams_ver.txt') }} # last key was utter garbage, stick to ams versions, 
           restore-keys: |
             ccache-${{ runner.os }}-devkitpro-
-          save-always: true
 
       - name: Configure ccache
         run: |
@@ -120,6 +82,9 @@ jobs:
       - name: Build hoc-clk sysmodule and overlay
         shell: bash
         run: |
+          export CC="ccache aarch64-none-elf-gcc"
+          export CXX="ccache aarch64-none-elf-g++"
+
           ROOT_DIR="$GITHUB_WORKSPACE/Source/sys-clk"
           DIST_DIR="$ROOT_DIR/dist"
           
@@ -133,7 +98,7 @@ jobs:
           echo "TITLE_ID: $TITLE_ID"
 
           pushd "$ROOT_DIR/sysmodule"
-          make -j$(($(nproc) * 4))
+          make -j$(($(nproc) * 2)) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
           popd
 
           mkdir -p "$DIST_DIR/atmosphere/contents/$TITLE_ID/flags"
@@ -151,7 +116,7 @@ jobs:
           echo "*** overlay ***"
 
           pushd "$ROOT_DIR/overlay"
-          make -j$(($(nproc) * 4))
+          make -j$(($(nproc) * 2)) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
           popd
 
           mkdir -p "$DIST_DIR/switch/.overlays"
@@ -175,25 +140,11 @@ jobs:
       - name: Build kip
         working-directory: build/stratosphere/loader
         run: |
-          make -j$(($(nproc) * 4))
+          export CC="ccache aarch64-none-elf-gcc"
+          export CXX="ccache aarch64-none-elf-g++"
+          make -j$(($(nproc) * 4)) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
           hactool -t kip1 out/nintendo_nx_arm64_armv8a/release/loader.kip --uncompress=hoc.kip
           cp hoc.kip ../../../dist/atmosphere/kips/hoc.kip
-          
-      - name: Build exosphere
-        working-directory: build/exosphere
-        run: |
-          export PATCHES="../../Source/Atmosphere-Patches"
-          export ROOT=".."
-          cp "$PATCHES/secmon_memory_layout.hpp" "$ROOT/libraries/libexosphere/include/exosphere/secmon/"
-          cp "$PATCHES/secmon_emc_access_table_data.inc" "$ROOT/exosphere/program/source/smc/"
-          cp "$PATCHES/secmon_define_emc_access_table.inc" "$ROOT/exosphere/program/source/smc/"
-          cp "$PATCHES/secmon_smc_register_access.cpp" "$ROOT/exosphere/program/source/smc/"
-          cp "$PATCHES/secmon_define_soctherm_access_table.inc" "$ROOT/exosphere/program/source/smc/"
-          cp "$PATCHES/secmon_soctherm_access_table_data.inc" "$ROOT/exosphere/program/source/smc/"
-          
-          # build without ams for now
-          make -j$(($(nproc) * 4))
-          cp ./out/nintendo_nx_arm64_armv8a/release/exosphere.bin ../../dist/
           
       - name: ccache stats
         run: ccache --show-stats
@@ -201,6 +152,16 @@ jobs:
 
       # -------------------------------------------------
       # Package dist folder as ZIP with commit SHA
+      # -------------------------------------------------
+      - name: Package dist
+        # working-directory: horizon-oc
+        run: |
+          ZIP_NAME="horizon-oc-zeus-dist-${SHORT_SHA}.zip"
+          zip -r "$ZIP_NAME" dist
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
+
+      # -------------------------------------------------
+      # Upload ZIP artifact
       # -------------------------------------------------
       - name: Upload build artifact
         uses: actions/upload-artifact@v6
