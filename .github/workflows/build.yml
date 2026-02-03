@@ -40,34 +40,43 @@ jobs:
           apt-get install -y ccache
         shell: bash
 
-      - name: Make ccache shims
-        run: | # yes it's as bad as it sounds and it doesn't make sense but exosphere uses both aarch64 and arm32 gcc and g++
-          mkdir -p .dkp-wrappers
-          cat > .dkp-wrappers/aarch64-none-elf-gcc <<'EOF'
-          #!/bin/sh
-          exec ccache /opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc "$@"
-          EOF
-          chmod +x .dkp-wrappers/aarch64-none-elf-gcc
+      - name: Create compiler shims
+        run: | #I deeply hate this from my heart
+          set -eux
 
-          cat > .dkp-wrappers/aarch64-none-elf-g++ <<'EOF'
+          # aarch64 gcc
+          mv /opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc /opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc.real
+          cat > /opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc <<'EOF'
           #!/bin/sh
-          exec ccache /opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ "$@"
+          exec ccache /opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc.real "$@"
           EOF
-          chmod +x .dkp-wrappers/aarch64-none-elf-g++
+          chmod +x /opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc
 
-          cat > .dkp-wrappers/arm-none-eabi-gcc <<'EOF'
+          # aarch64 g++
+          mv /opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ /opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++.real
+          cat > /opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ <<'EOF'
           #!/bin/sh
-          exec ccache /opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc "$@"
+          exec ccache /opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++.real "$@"
           EOF
-          chmod +x .dkp-wrappers/arm-none-eabi-gcc
+          chmod +x /opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++
 
-          cat > .dkp-wrappers/arm-none-eabi-g++ <<'EOF'
+          # arm gcc
+          mv /opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc /opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc.real
+          cat > /opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc <<'EOF'
           #!/bin/sh
-          exec ccache /opt/devkitpro/devkitARM/bin/arm-none-eabi-g++ "$@"
+          exec ccache /opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc.real "$@"
           EOF
-          chmod +x .dkp-wrappers/arm-none-eabi-g++
+          chmod +x /opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc
 
+          # arm g++
+          mv /opt/devkitpro/devkitARM/bin/arm-none-eabi-g++ /opt/devkitpro/devkitARM/bin/arm-none-eabi-g++.real
+          cat > /opt/devkitpro/devkitARM/bin/arm-none-eabi-g++ <<'EOF'
+          #!/bin/sh
+          exec ccache /opt/devkitpro/devkitARM/bin/arm-none-eabi-g++.real "$@"
+          EOF
+          chmod +x /opt/devkitpro/devkitARM/bin/arm-none-eabi-g++
           echo "PATH=$PWD/.dkp-wrappers:$PATH" >> $GITHUB_ENV
+        shell: bash
 
       - name: Set commit SHA
         id: vars
@@ -89,7 +98,7 @@ jobs:
           cp -rf Source/Atmosphere/stratosphere/loader/source/* build/stratosphere/loader/source/
 
       - name: Cache ccache
-        uses: actions/cache@v4
+        uses: actions/cache@v5.0.3
         with:
           path: /root/.cache/ccache
           key: ccache-${{ runner.os }}-devkitpro-ams-${{ hashFiles('ams_ver.txt') }} # last key was utter garbage, stick to ams versions
