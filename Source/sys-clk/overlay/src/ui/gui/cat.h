@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
  */
-
+// this is a generated file, do not edit manually.
 // cat.png - 96x128
 static const unsigned int CAT_WIDTH = 96;
 static const unsigned int CAT_HEIGHT = 128;
