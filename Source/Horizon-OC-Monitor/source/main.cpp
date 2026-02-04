@@ -458,7 +458,7 @@ public:
                 }
             }
             splExit();
-
+            sysclkIpcInitialize();
         });
         Hinted = envIsSyscallHinted(0x6F);
     }
@@ -532,6 +532,7 @@ public:
                 }
             }
             splExit();
+            sysclkIpcInitialize();
         });
         Hinted = envIsSyscallHinted(0x6F);
     }
@@ -609,6 +610,7 @@ public:
                 }
             }
             splExit();
+            sysclkIpcInitialize();
         });
         Hinted = envIsSyscallHinted(0x6F);
 
@@ -689,6 +691,7 @@ public:
                 }
             }
             splExit();
+            sysclkIpcInitialize();
         });
         Hinted = envIsSyscallHinted(0x6F);
     }
@@ -762,6 +765,7 @@ public:
                 }
             }
             splExit();
+            sysclkIpcInitialize();
         });
         Hinted = envIsSyscallHinted(0x6F);
     }
@@ -835,6 +839,7 @@ public:
                 }
             }
             splExit();
+            sysclkIpcInitialize();
         });
         Hinted = envIsSyscallHinted(0x6F);
     }
