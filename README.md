@@ -69,7 +69,7 @@ It enables advanced CPU, GPU, and RAM tuning with user-friendly configuration to
 
 1. Open the Horizon OC Overlay
 2. Open the settings menu
-3. Adjust your overclocking settings as desired.
+3. Adjust your overclocking settings as desired. A helpful guide can be found [here.](https://rentry.co/mariko#oc-settings-for-horizon-oc)
 4. Click **Save KIP Settings** to apply your configuration.
 
 ---
