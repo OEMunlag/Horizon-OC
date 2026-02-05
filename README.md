@@ -44,7 +44,7 @@ It enables advanced CPU, GPU, and RAM tuning with user-friendly configuration to
 > *Higher (potentially dangerous) frequencies are unlockable via configuration.*
 > *Erista and Mariko units can usually push a bit further fully safely with a bit of undervolting, however this may not work on all units.*
 > *The exact maximum overclock possible varies per console, although most consoles should be able to do this safely.*
-
+> *You may refer to the Clock Table to see clocks in more detail*
 ---
 
 ## Installation
@@ -77,6 +77,73 @@ It enables advanced CPU, GPU, and RAM tuning with user-friendly configuration to
 ## Building from Source
 
 Refer to COMPILATION.md
+
+---
+## Clock table
+
+### MEM clocks
+* 3200 → max on mariko, JEDEC.
+* 2933 → JEDEC.
+* 2666 → JEDEC.
+* 2400 → max on erista, JEDEC.
+* 2133 → mariko safe max (4266 Modules), JEDEC.
+* 1996 → JEDEC.
+* 1866 → mariko safe max (3733 Modules), JEDEC.
+* 1600 → official docked, boost mode, erista safe max, JEDEC.
+* 1331 → official handheld, JEDEC.
+* 1065 
+* 800
+* 665
+
+### CPU clocks
+* 2601 → mariko absolute max, very dangerous
+* 2499
+* 2397
+* 2295 → mariko safe max with UV (low speedo)
+* 2193
+* 2091
+* 1963 → mariko no UV max clock
+* 1887
+* 1785 → erista no UV max clock, boost mode
+* 1683
+* 1581
+* 1428
+* 1326
+* 1224 → sdev oc
+* 1122
+* 1020 → official docked & handheld
+* 918
+* 816
+* 714
+* 612 → sleep mode
+
+### GPU clocks
+* 1536 → absolute max clock on mariko. very dangerous
+* 1459
+* 1382
+* 1305
+* 1267 → NVIDIA T214 rating
+* 1228 → mariko HiOPT safe clock
+* 1152 → mariko SLT max clock
+* 1075 → mariko no UV max clock. absolute max clock on erista. very dangerous
+* 998 → NVIDIA T210 rating
+* 960 (erista only) → erista slt/hiopt safe max clock
+* 921 → erista no UV max clock
+* 844
+* 768 → official docked
+* 691
+* 614
+* 537
+* 460 → max handheld
+* 384 → official handheld
+* 307 → official handheld
+* 230
+* 153
+* 76 → boost mode
+
+**Notes:**
+1. GPU overclock is capped at 460MHz in handheld and capped at 768MHz if charging, unless you're using the official charger.
+2. Clocks higher than 768MHz need the official charger is plugged in.
 
 ---
 
