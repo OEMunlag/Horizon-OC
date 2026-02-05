@@ -755,7 +755,6 @@ void ClockManager::SetKipData() {
     CUST_WRITE_FIELD_BATCH(&table, t8_tREFI, this->config->GetConfigValue(KipConfigValue_t8_tREFI));
     CUST_WRITE_FIELD_BATCH(&table, mem_burst_read_latency, this->config->GetConfigValue(KipConfigValue_mem_burst_read_latency));
     CUST_WRITE_FIELD_BATCH(&table, mem_burst_write_latency, this->config->GetConfigValue(KipConfigValue_mem_burst_write_latency));
-
     CUST_WRITE_FIELD_BATCH(&table, eristaCpuUV, this->config->GetConfigValue(KipConfigValue_eristaCpuUV));
     CUST_WRITE_FIELD_BATCH(&table, eristaCpuVmin, this->config->GetConfigValue(KipConfigValue_eristaCpuVmin));
     CUST_WRITE_FIELD_BATCH(&table, eristaCpuMaxVolt, this->config->GetConfigValue(KipConfigValue_eristaCpuMaxVolt));
@@ -850,6 +849,8 @@ void ClockManager::GetKipData() {
             writeNotification("Horizon OC has been installed");
         }
         static bool writeBootConfigValues = true;
+
+        configValues.values[KipCrc32] = (u64)checksum_file("sdmc:/atmosphere/kips/hoc.kip"); // write checksum
 
 
         if(writeBootConfigValues) {
