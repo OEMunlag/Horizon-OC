@@ -208,9 +208,18 @@ std::uint32_t ClockManager::GetMaxAllowedHz(SysClkModule module, SysClkProfile p
                     case SysClkSocType_Erista:
                         return 460800000;
                     case SysClkSocType_Mariko:
-                        return 614400000;
+                        switch(this->config->GetConfigValue(KipConfigValue_marikoGpuUV)) {
+                            case 0:
+                                return 614400000;
+                            case 1:
+                                return 691200000;
+                            case 2: 
+                                return 768000000;
+                            default:
+                                return 614400000;      
+                        }
                     default:
-                        return 4294967294;
+                        return 460800000;
                 }
             }
             else if (profile <= SysClkProfile_HandheldChargingUSB)
@@ -219,10 +228,25 @@ std::uint32_t ClockManager::GetMaxAllowedHz(SysClkModule module, SysClkProfile p
                     case SysClkSocType_Erista:
                         return 768000000;
                     case SysClkSocType_Mariko:
-                        return 921600000;
+                        switch(this->config->GetConfigValue(KipConfigValue_marikoGpuUV)) {
+                            case 0:
+                                return 844800000;
+                            case 1:
+                                return 921600000;
+                            case 2: 
+                                return 998400000;
+                            default:
+                                return 844800000;      
+                        }
                     default:
-                        return 4294967294;
+                        return 768000000;
                 }
+            }
+        } else if(module == SysClkModule_CPU) {
+            if(profile < SysClkProfile_HandheldCharging && Board::GetSocType() == SysClkSocType_Erista) {
+                return 1581000000;
+            } else {
+                return 4294967294;
             }
         }
     }
