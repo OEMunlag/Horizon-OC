@@ -58,11 +58,9 @@ typedef struct CustomizeTable {
 
     u32 commonEmcMemVolt;
     u32 eristaEmcMaxClock;
-
     u32 marikoEmcMaxClock;
     u32 marikoEmcVddqVolt;
     u32 emcDvbShift;
-
     // advanced config
     u32 t1_tRCD;
     u32 t2_tRP;
@@ -106,7 +104,7 @@ typedef struct CustomizeTable {
 
     u32 eristaGpuVoltArray[27];
     u32 marikoGpuVoltArray[24];
-
+    u32 reserved[64];
     CustomizeCpuDvfsTable eristaCpuDvfsTable;
     CustomizeCpuDvfsTable eristaCpuDvfsTableSLT;
 

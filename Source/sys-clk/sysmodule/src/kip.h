@@ -35,6 +35,7 @@ typedef struct {
     u32 marikoEmcMaxClock;
     u32 marikoEmcVddqVolt;
     u32 emcDvbShift;
+    // advanced config
     u32 t1_tRCD;
     u32 t2_tRP;
     u32 t3_tRAS;
@@ -43,6 +44,7 @@ typedef struct {
     u32 t6_tRTW;
     u32 t7_tWTR;
     u32 t8_tREFI;
+
     u32 mem_burst_read_latency;
     u32 mem_burst_write_latency;
 
@@ -58,17 +60,24 @@ typedef struct {
     u32 marikoCpuHighVmin;
     u32 marikoCpuMaxVolt;
     u32 marikoCpuMaxClock;
+
     u32 eristaCpuBoostClock;
     u32 marikoCpuBoostClock;
+
     u32 eristaGpuUV;
     u32 eristaGpuVmin;
+
     u32 marikoGpuUV;
     u32 marikoGpuVmin;
     u32 marikoGpuVmax;
+
     u32 commonGpuVoltOffset;
+
     u32 gpuSpeedo;
+
     u32 eristaGpuVoltArray[27];
     u32 marikoGpuVoltArray[24];
+    u32 reserved[64];
 } CustomizeTable;
 
 #pragma pack(pop)

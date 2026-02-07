@@ -114,38 +114,40 @@ ClockManager::ClockManager()
 
 
 void ClockManager::FixCpuBug() {
-    u32 targetHz = 0;
-    u32 maxHz = 0;
-    u32 nearestHz = 0;
+    if(this->config->Refresh() && this->RefreshContext()) {
+        u32 targetHz = 0;
+        u32 maxHz = 0;
+        u32 nearestHz = 0;
 
-    // ResetToStockClocks();
+        // ResetToStockClocks();
 
-    targetHz = this->context->overrideFreqs[SysClkModule_CPU];
-    if (!targetHz) {
-        targetHz = this->config->GetAutoClockHz(this->context->applicationId, SysClkModule_CPU, this->context->profile, false);
-        if(!targetHz)
-            targetHz = this->config->GetAutoClockHz(GLOBAL_PROFILE_ID, SysClkModule_CPU, this->context->profile, false);
-    }
-
-    if (targetHz) {
-        maxHz = this->GetMaxAllowedHz(SysClkModule_CPU, this->context->profile);
-        nearestHz = this->GetNearestHz(SysClkModule_CPU, targetHz, maxHz);
-
-        while ((nearestHz = this->GetNearestHz(SysClkModule_CPU, targetHz, maxHz)) != targetHz) {
-            Board::SetHz(SysClkModule_CPU, 1020000000);
-            svcSleepThread(1'000'000);
-            Board::SetHz(SysClkModule_CPU, maxHz);
-            this->context->freqs[SysClkModule_CPU] = maxHz;
+        targetHz = this->context->overrideFreqs[SysClkModule_CPU];
+        if (!targetHz) {
+            targetHz = this->config->GetAutoClockHz(this->context->applicationId, SysClkModule_CPU, this->context->profile, false);
+            if(!targetHz)
+                targetHz = this->config->GetAutoClockHz(GLOBAL_PROFILE_ID, SysClkModule_CPU, this->context->profile, false);
         }
-        Board::SetHz(SysClkModule_CPU, targetHz);
+
+        if (targetHz) {
+            maxHz = this->GetMaxAllowedHz(SysClkModule_CPU, this->context->profile);
+            nearestHz = this->GetNearestHz(SysClkModule_CPU, targetHz, maxHz);
+
+            while ((nearestHz = this->GetNearestHz(SysClkModule_CPU, targetHz, maxHz)) != targetHz) {
+                Board::SetHz(SysClkModule_CPU, 1020000000);
+                svcSleepThread(1'000'000);
+                Board::SetHz(SysClkModule_CPU, maxHz);
+                this->context->freqs[SysClkModule_CPU] = maxHz;
+            }
+            Board::SetHz(SysClkModule_CPU, targetHz);
+        }
     }
 }
 
 ClockManager::~ClockManager()
 {
+    threadClose(&governorTHREAD);
     delete this->config;
     delete this->context;
-    threadClose(&governorTHREAD);
 }
 
 SysClkContext ClockManager::GetCurrentContext()
@@ -323,7 +325,6 @@ void ClockManager::GovernorThread(void* arg)
             continue;
         }
 
-        std::scoped_lock lock{mgr->contextMutex};
 
         if (!isGovernorEnabled)
         {
@@ -337,6 +338,8 @@ void ClockManager::GovernorThread(void* arg)
             svcSleepThread(50'000'000);
             continue;
         }
+        
+        std::scoped_lock lock{mgr->contextMutex};
 
         u32 currentHz = Board::GetHz(SysClkModule_GPU);
 
@@ -755,7 +758,6 @@ void ClockManager::SetKipData() {
     CUST_WRITE_FIELD_BATCH(&table, t8_tREFI, this->config->GetConfigValue(KipConfigValue_t8_tREFI));
     CUST_WRITE_FIELD_BATCH(&table, mem_burst_read_latency, this->config->GetConfigValue(KipConfigValue_mem_burst_read_latency));
     CUST_WRITE_FIELD_BATCH(&table, mem_burst_write_latency, this->config->GetConfigValue(KipConfigValue_mem_burst_write_latency));
-
     CUST_WRITE_FIELD_BATCH(&table, eristaCpuUV, this->config->GetConfigValue(KipConfigValue_eristaCpuUV));
     CUST_WRITE_FIELD_BATCH(&table, eristaCpuVmin, this->config->GetConfigValue(KipConfigValue_eristaCpuVmin));
     CUST_WRITE_FIELD_BATCH(&table, eristaCpuMaxVolt, this->config->GetConfigValue(KipConfigValue_eristaCpuMaxVolt));
@@ -850,6 +852,8 @@ void ClockManager::GetKipData() {
             writeNotification("Horizon OC has been installed");
         }
         static bool writeBootConfigValues = true;
+
+        configValues.values[KipCrc32] = (u64)checksum_file("sdmc:/atmosphere/kips/hoc.kip"); // write checksum
 
 
         if(writeBootConfigValues) {
