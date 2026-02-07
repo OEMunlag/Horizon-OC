@@ -59,7 +59,6 @@ tsl::elm::ListItem* FreqChoiceGui::createFreqListItem(std::uint32_t hz, bool sel
     if (selected)
         text += " \uE14B";
 
-    // NEW: Right-side label
     std::string rightText = "";
     auto it = labels.find(hz);
     if (it != labels.end())
@@ -156,16 +155,26 @@ void FreqChoiceGui::listUI()
 
         if (IsMariko())
         {
-            unsafe_cpu = 1964;
-            unsafe_gpu = 1076;
-            danger_cpu = 2398;
+            unsafe_cpu = this->configList->values[KipConfigValue_marikoCpuUVHigh] ? 2296 : 1963;
+            if(this->configList->values[KipConfigValue_marikoGpuUV] == 0) {
+                unsafe_gpu = 1076;
+            } else if (this->configList->values[KipConfigValue_marikoGpuUV] == 1) {
+                unsafe_gpu = 1153;
+            } else {
+                unsafe_gpu = 1229;
+            }
+            danger_cpu = this->configList->values[KipConfigValue_marikoCpuUVHigh] ? 2500 : 2398;
             danger_gpu = 1306;
         }
         else
         {
-            unsafe_cpu = 1786;
-            unsafe_gpu = 922;
-            danger_cpu = 2092;
+            unsafe_cpu = this->configList->values[KipConfigValue_eristaCpuUV] ? 1964 : 1786;
+            if(this->configList->values[KipConfigValue_eristaGpuUV] == 0) {
+                unsafe_gpu = 922;
+            } else {
+                unsafe_gpu = 961;
+            }
+            danger_cpu = this->configList->values[KipConfigValue_eristaCpuUV] ? 2194 : 1964;
             danger_gpu = 999;
         }
 
