@@ -60,7 +60,7 @@ typedef enum {
     HocClkConfigValue_FixCpuVoltBug,
 
     KipConfigValue_custRev,
-    KipConfigValue_mtcConf,
+    // KipConfigValue_mtcConf,
     KipConfigValue_hpMode,
 
     KipConfigValue_commonEmcMemVolt,
@@ -226,8 +226,8 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
         // KIP config values
         case KipConfigValue_custRev:
             return pretty ? "Custom Revision" : "kip_cust_rev";
-        case KipConfigValue_mtcConf:
-            return pretty ? "MTC Config" : "kip_mtc_conf";
+        // case KipConfigValue_mtcConf:
+        //     return pretty ? "MTC Config" : "kip_mtc_conf";
         case KipConfigValue_hpMode:
             return pretty ? "HP Mode" : "kip_hp_mode";
 
@@ -446,7 +446,7 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
             return (input & 0x1) == input;
         
         case KipConfigValue_custRev:
-        case KipConfigValue_mtcConf:
+        // case KipConfigValue_mtcConf:
         case KipConfigValue_hpMode:
         case KipConfigValue_commonEmcMemVolt:
         case KipConfigValue_eristaEmcMaxClock:

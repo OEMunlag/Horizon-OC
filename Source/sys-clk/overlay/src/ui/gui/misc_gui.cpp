@@ -255,9 +255,6 @@ void MiscGui::listUI()
     addConfigToggle(HocClkConfigValue_EnforceBoardLimit, nullptr);
 
     #if IS_MINIMAL == 0
-        std::map<uint32_t, std::string> labels_pwr_r = {
-            {8600, "Official Rating"}
-        };
         std::map<uint32_t, std::string> labels_pwr_l = {
             {6400, "Official Rating"}
         };
@@ -273,14 +270,13 @@ void MiscGui::listUI()
                 labels_pwr_l
             );
         } else {
-            ValueThresholds tdpThresholds(8600, 9500);
+            ValueThresholds tdpThresholds(9600, 11000);
             addConfigButton(
                 HocClkConfigValue_HandheldTDPLimit,
                 "TDP Threshold",
-                ValueRange(5000, 10000, 100, "mW", 1),
+                ValueRange(8000, 12000, 100, "mW", 1),
                 "Power",
-                &tdpThresholds,
-                labels_pwr_r
+                &tdpThresholds
             );
         }
 
