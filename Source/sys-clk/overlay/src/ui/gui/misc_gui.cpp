@@ -457,7 +457,7 @@ protected:
             NamedValue("2033MHz", 2033000),
             NamedValue("2066MHz", 2066000),
             NamedValue("2100MHz", 2100000),
-            NamedValue("2133MHz", 2133000),
+            NamedValue("2133MHz", 2133000, "JEDEC."),
             NamedValue("2166MHz", 2166000),
             NamedValue("2200MHz", 2200000),
             NamedValue("2233MHz", 2233000),
