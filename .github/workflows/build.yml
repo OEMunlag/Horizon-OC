@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # Minimal devkitA64 container, apparently dkp-toolchain isn't needed?
+    # Minimal devkitA64 container
     container:
       image: devkitpro/devkita64:20251231
 
@@ -47,9 +47,12 @@ jobs:
       # -------------------------------------------------
       # Get short commit SHA
       # -------------------------------------------------
-      - name: Set commit SHA
+      - name: Set commit SHA & dist
         id: vars
-        run: echo "SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
+        run: |
+          echo "SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
+          echo $SHORT_SHA > dist/.commit
+          echo $GITHUB_SHA >> dist/.commit
 
       - name: Clone Atmosphere
         run: git clone --depth=1 --single-branch https://github.com/Atmosphere-NX/Atmosphere.git atmosphere -b $(cat ams_ver.txt)
@@ -149,23 +152,12 @@ jobs:
       - name: ccache stats
         run: ccache --show-stats
 
-
-      # -------------------------------------------------
-      # Package dist folder as ZIP with commit SHA
-      # -------------------------------------------------
-      - name: Package dist
-        # working-directory: horizon-oc
-        run: |
-          ZIP_NAME="horizon-oc-zeus-dist-${SHORT_SHA}.zip"
-          zip -r "$ZIP_NAME" dist
-          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
-
       # -------------------------------------------------
       # Upload ZIP artifact
       # -------------------------------------------------
       - name: Upload build artifact
         uses: actions/upload-artifact@v6
         with:
-          name: horizon-oc-zeus-dist-${{ env.SHORT_SHA }}
+          name: horizon-oc-zeus-dist
           path: dist/
           compression-level: 3
