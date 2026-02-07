@@ -12,7 +12,7 @@ def image_to_rgba8888_array(image_path, output_path):
 
     # Write as C header file
     with open(output_path, 'w') as f:
-        f.write('// This is a generated automatically generated file, do not edit manually.\n')
+        f.write('// This is a automatically generated file, do not edit manually.\n')
         f.write(f'// {os.path.basename(image_path)} - {width}x{height}\n')
         f.write(f'const unsigned int IMG_WIDTH = {width};\n')
         f.write(f'const unsigned int IMG_HEIGHT = {height};\n')
@@ -32,7 +32,7 @@ def image_to_rgba8888_array(image_path, output_path):
 
 def main():
     parser = argparse.ArgumentParser(
-        description='PNG -> RGB8888 script'
+        description='PNG to RGB8888 script'
     )
     parser.add_argument('input', help='Input image file (e.g. cat.png)')
     parser.add_argument(

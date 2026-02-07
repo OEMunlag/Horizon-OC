@@ -739,7 +739,7 @@ void ClockManager::SetKipData() {
     }
 
     CUST_WRITE_FIELD_BATCH(&table, custRev, this->config->GetConfigValue(KipConfigValue_custRev));
-    CUST_WRITE_FIELD_BATCH(&table, mtcConf, this->config->GetConfigValue(KipConfigValue_mtcConf));
+    // CUST_WRITE_FIELD_BATCH(&table, mtcConf, this->config->GetConfigValue(KipConfigValue_mtcConf));
     CUST_WRITE_FIELD_BATCH(&table, hpMode, this->config->GetConfigValue(KipConfigValue_hpMode));
 
     CUST_WRITE_FIELD_BATCH(&table, commonEmcMemVolt, this->config->GetConfigValue(KipConfigValue_commonEmcMemVolt));
@@ -859,7 +859,7 @@ void ClockManager::GetKipData() {
         if(writeBootConfigValues) {
             writeBootConfigValues = false;
 
-            initialConfigValues[KipConfigValue_mtcConf] = cust_get_mtc_conf(&table);
+            // initialConfigValues[KipConfigValue_mtcConf] = cust_get_mtc_conf(&table);
             initialConfigValues[KipConfigValue_hpMode] = cust_get_hp_mode(&table);
 
             initialConfigValues[KipConfigValue_commonEmcMemVolt] = cust_get_common_emc_volt(&table);
@@ -904,7 +904,7 @@ void ClockManager::GetKipData() {
             initialConfigValues[KipConfigValue_gpuSpeedo] = cust_get_gpu_speedo(&table);
         }
 
-        configValues.values[KipConfigValue_mtcConf] = cust_get_mtc_conf(&table);
+        // configValues.values[KipConfigValue_mtcConf] = cust_get_mtc_conf(&table);
         configValues.values[KipConfigValue_hpMode] = cust_get_hp_mode(&table);
 
         configValues.values[KipConfigValue_commonEmcMemVolt] = cust_get_common_emc_volt(&table);

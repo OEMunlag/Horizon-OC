@@ -20,7 +20,7 @@
 
 #pragma once
 
-#define CUST_REV 11
+#define CUST_REV 1
 
 #include "oc_common.hpp"
 #include "pcv/pcv_common.hpp"
@@ -29,16 +29,38 @@ namespace ams::ldr::oc {
 
 #include "mtc_timing_table.hpp"
 
-enum MtcConfig: u32 {
-    AUTO_ADJ = 0,
-    AUTO_ADJ_BL = 1,
-};
-
 enum TableConfig: u32 {
     DEFAULT_TABLE = 1,
     TBREAK_1581 = 2,
     TBREAK_1683 = 3,
     EXTREME_TABLE = 4,
+};
+
+/*
+ *  Read:
+ *   2133RL = 40
+ *   1866RL = 36
+ *   1600RL = 32
+ *   1331RL = 28
+ *  Write:
+ *   2133WL = 18
+ *   1866WL = 16
+ *   1600WL = 14
+ *   1331WL = 12
+ */
+
+enum ReadLatency: u32 {
+    RL_2133 = 40,
+    RL_1866 = 36,
+    RL_1600 = 32,
+    RL_1331 = 28,
+};
+
+enum WriteLatency: u32 {
+    WL_2133 = 18,
+    WL_1866 = 16,
+    WL_1600 = 14,
+    WL_1331 = 12,
 };
 
 using CustomizeCpuDvfsTable = pcv::cvb_entry_t[pcv::DvfsTableEntryLimit];
@@ -53,7 +75,7 @@ typedef struct CustomizeTable {
     u8  cust[4] = {'C', 'U', 'S', 'T'};
     u32 custRev = CUST_REV;
 
-    u32 mtcConf;
+    u32 placeholder;
     u32 hpMode;
 
     u32 commonEmcMemVolt;

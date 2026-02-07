@@ -31,14 +31,14 @@
 namespace ams::ldr::oc {
 
 volatile CustomizeTable C = {
-
+/* Disables RAM powerdown */
 .hpMode = DISABLED,
 
-.commonEmcMemVolt  = 1175000, // LPDDR4X JEDEC Specification
-.eristaEmcMaxClock = 1600000, // Maximum HB-MGCH ram rating
+.commonEmcMemVolt  = 1175000, /* LPDDR4X JEDEC Specification */
+.eristaEmcMaxClock = 1600000, /* Maximum HB-MGCH ram rating */
 
-.marikoEmcMaxClock = 1866000, // 1866MHz @ 1866tWRL is guaranteed to work on all Mariko units
-.marikoEmcVddqVolt = 600000,
+.marikoEmcMaxClock = 1866000, /* 1866MHz @ 1866tWRL is guaranteed to work on all Mariko units */
+.marikoEmcVddqVolt = 600000, /* Micron: 600mV, other manafacturers: 640mV */
 .emcDvbShift = 0,
 
 // Primary
@@ -52,9 +52,7 @@ volatile CustomizeTable C = {
 .t7_tWTR  = 0,
 .t8_tREFI = 0,
 
-/* Set to 4 read and 2 write for 1866b tWRL. */
-/* For 2133 tWRL: 8 read and 4 write. */
-
+/* You can mix and match different latencies if needed */
 /*
  *  Read:
  *   2133RL = 40
@@ -67,8 +65,9 @@ volatile CustomizeTable C = {
  *   1600WL = 14
  *   1331WL = 12
  */
-.mem_burst_read_latency = 36,
-.mem_burst_write_latency = 16,
+
+.mem_burst_read_latency = RL_1866,
+.mem_burst_write_latency = WL_1866,
 
 .eristaCpuUV = 0,
 .eristaCpuVmin = 800,
@@ -78,9 +77,11 @@ volatile CustomizeTable C = {
 
 .marikoCpuUVLow = 0, // No undervolt
 .marikoCpuUVHigh = 0, // No undervolt
+
 .tableConf = DEFAULT_TABLE,
 .marikoCpuLowVmin = 620,
 .marikoCpuHighVmin = 750,
+/* 1120mV is NVIDIA rating */
 .marikoCpuMaxVolt = 1120,
 
 /* Supported values: 1963000, 2091000, 2193000, 2295000, 2397000, 2499000, 2601000, 2703000. */
@@ -99,19 +100,22 @@ volatile CustomizeTable C = {
 .eristaGpuVmin = 810,
 
 .marikoGpuUV = 0,
+
 /* For automatic vmin detection, set this to AUTO. */
-.marikoGpuVmin = AUTO,
+/* vmin past 795mV won't work due to HOS limitation */
+/* Vmin is automatically set to 800mV when SoC temperature is below 20C */
+.marikoGpuVmin = AUTO, 
 
 .marikoGpuVmax = 800,
 
 .commonGpuVoltOffset = 0,
 
+/* Speedo is automatically set by hoc-clk on first boot */
 .gpuSpeedo = 1450,
 
-/* This table is used with a gpu uv mode of 2. */
 /* Setting DEACTIVATED_GPU_FREQ on any freq will disable it and all freqs greater than it. (the latter is a bug :/) */
 /* AUTO: Voltage is optimally chosen; with commonGpuVoltOffset applied. */
-/* AUTO only works up to 1305 GPU on Mariko and 921 GPU on Erista */
+/* AUTO only works up to 1305 GPU on Mariko and 998 GPU on Erista (it is reccomended to manually set your 998MHz voltage though) */
 /* You can overwrite auto with any voltage (in mv) of your choice - offset will not be applied. */
 
 .eristaGpuVoltArray = {
@@ -159,8 +163,8 @@ volatile CustomizeTable C = {
                     AUTO  /*  921                       */,
                     AUTO  /*  998                       */,
                     AUTO  /* 1075                       */,
-    DEACTIVATED_GPU_FREQ  /* 1152                       */,
-    DEACTIVATED_GPU_FREQ  /* 1228                       */,
+                    AUTO  /* 1152 (SLT / HiOPT Only!)   */,
+                    AUTO  /* 1228 (HiOPT Only!)         */,
     DEACTIVATED_GPU_FREQ  /* 1267 (Disabled by default) */,
     DEACTIVATED_GPU_FREQ  /* 1305 (Disabled by default) */,
     DEACTIVATED_GPU_FREQ  /* 1344 (Disabled by default) */,

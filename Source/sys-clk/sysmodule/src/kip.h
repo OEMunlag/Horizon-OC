@@ -28,7 +28,7 @@
 typedef struct {
     u8  cust[4];
     u32 custRev;
-    u32 mtcConf;
+    u32 placeholder;
     u32 hpMode;
     u32 commonEmcMemVolt;
     u32 eristaEmcMaxClock;
@@ -183,7 +183,7 @@ static inline bool cust_read_and_cache(const char* path, CustomizeTable* out) {
     } while (0)
 
 static inline bool cust_set_cust_rev(const char* p, u32 v) { CUST_WRITE_FIELD(p, custRev, v); }
-static inline bool cust_set_mtc_conf(const char* p, u32 v) { CUST_WRITE_FIELD(p, mtcConf, v); }
+// static inline bool cust_set_mtc_conf(const char* p, u32 v) { CUST_WRITE_FIELD(p, mtcConf, v); }
 static inline bool cust_set_hp_mode(const char* p, u32 v) { CUST_WRITE_FIELD(p, hpMode, v); }
 
 static inline bool cust_set_common_emc_volt(const char* p, u32 v) { CUST_WRITE_FIELD(p, commonEmcMemVolt, v); }
@@ -250,7 +250,7 @@ static inline u32 cust_get_field(const CustomizeTable* t, u32 offset) {
 #define CUST_GET_FIELD(table, field) ((table) ? (table)->field : 0)
 
 static inline u32 cust_get_cust_rev(const CustomizeTable* t) { return CUST_GET_FIELD(t, custRev); }
-static inline u32 cust_get_mtc_conf(const CustomizeTable* t) { return CUST_GET_FIELD(t, mtcConf); }
+// static inline u32 cust_get_mtc_conf(const CustomizeTable* t) { return CUST_GET_FIELD(t, mtcConf); }
 static inline u32 cust_get_hp_mode(const CustomizeTable* t) { return CUST_GET_FIELD(t, hpMode); }
 
 static inline u32 cust_get_common_emc_volt(const CustomizeTable* t) { return CUST_GET_FIELD(t, commonEmcMemVolt); }
