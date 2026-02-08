@@ -20,7 +20,7 @@
 
 #include "pcv.hpp"
 
-namespace ams::ldr::oc::pcv {
+namespace ams::ldr::hoc::pcv {
 
 Result MemFreqPllmLimit(u32* ptr) {
     clk_pll_param* entry = reinterpret_cast<clk_pll_param *>(ptr);

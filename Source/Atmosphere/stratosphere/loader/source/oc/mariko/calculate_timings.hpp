@@ -16,7 +16,7 @@
 
 #pragma once
 
-namespace ams::ldr::oc::pcv::mariko {
+namespace ams::ldr::hoc::pcv::mariko {
 
     void CalculateTimings();
 

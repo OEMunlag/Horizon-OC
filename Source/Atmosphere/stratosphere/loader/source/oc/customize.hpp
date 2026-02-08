@@ -25,7 +25,7 @@
 #include "oc_common.hpp"
 #include "pcv/pcv_common.hpp"
 
-namespace ams::ldr::oc {
+namespace ams::ldr::hoc {
 
 #include "mtc_timing_table.hpp"
 

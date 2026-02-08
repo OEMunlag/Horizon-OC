@@ -20,7 +20,7 @@
 
 #include "../oc_common.hpp"
 
-namespace ams::ldr::oc::ptm {
+namespace ams::ldr::hoc::ptm {
 
 typedef struct {
     u32 conf_id;

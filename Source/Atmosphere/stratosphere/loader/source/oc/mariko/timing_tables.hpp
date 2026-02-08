@@ -17,7 +17,7 @@
 #pragma once
 #include "../mtc_timing_value.hpp"
 
-namespace ams::ldr::oc::pcv::mariko {
+namespace ams::ldr::hoc::pcv::mariko {
 
     struct ReplacePatch {
         u32 freq;

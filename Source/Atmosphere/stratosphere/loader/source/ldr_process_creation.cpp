@@ -694,11 +694,11 @@ namespace ams::ldr {
 
                 /* Apply PCV and PTM patches */
                 if (g_is_pcv) {
-                    oc::pcv::Patch(map_address, nso_size);
+                    hoc::pcv::Patch(map_address, nso_size);
                 }
 
                 if (g_is_ptm) {
-                    oc::ptm::Patch(map_address, nso_size);
+                    hoc::ptm::Patch(map_address, nso_size);
                 }
             }
 

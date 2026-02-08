@@ -18,7 +18,7 @@
 #include "../mtc_timing_value.hpp"
 #include "timing_tables.hpp"
 
-namespace ams::ldr::oc::pcv::mariko {
+namespace ams::ldr::hoc::pcv::mariko {
 
     u32 GetRext() {
         if (auto r = FindRext()) {

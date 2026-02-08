@@ -29,7 +29,7 @@
 #define GPU_MIN_MIN_VOLT 480000
 #define CPU_MAX_MAX_VOLT 1235000
 
-namespace ams::ldr::oc {
+namespace ams::ldr::hoc {
 
 volatile CustomizeTable C = {
 /* Disables RAM powerdown */

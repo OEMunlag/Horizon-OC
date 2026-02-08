@@ -65,7 +65,7 @@ void saveExec(const char* file_loc, const void* buf, size_t size) {
 }
 
 Result Test_PcvDvfsTable() {
-    using namespace ams::ldr::oc::pcv;
+    using namespace ams::ldr::hoc::pcv;
 
     assert(GetDvfsTableEntryCount((cvb_entry_t *)(&mariko::CpuCvbTableDefault)) == 18);
     assert(GetDvfsTableEntryCount((cvb_entry_t *)(&erista::CpuCvbTableDefault)) == 16);
@@ -76,19 +76,19 @@ Result Test_PcvDvfsTable() {
     cvb_entry_t last_mariko_cpu_cvb_entry_default = { 1963500, { 1675751, -38635, 27 }, { 1120000 } };
     assert(memcmp(GetDvfsTableLastEntry((cvb_entry_t *)(&mariko::CpuCvbTableDefault)), (void *)&last_mariko_cpu_cvb_entry_default, sizeof(last_mariko_cpu_cvb_entry_default)) == 0);
     assert(GetDvfsTableLastEntry((cvb_entry_t *)(&erista::GpuCvbTableDefault))->freq == 921600);
-    assert(GetDvfsTableEntryCount((cvb_entry_t *)(&ams::ldr::oc::C.marikoCpuDvfsTableSLT)) == 25);
+    assert(GetDvfsTableEntryCount((cvb_entry_t *)(&ams::ldr::hoc::C.marikoCpuDvfsTableSLT)) == 25);
 
     // Customized table default
-    assert(GetDvfsTableEntryCount((cvb_entry_t *)(&ams::ldr::oc::C.eristaCpuDvfsTable)) == 19);
-    assert(GetDvfsTableEntryCount((cvb_entry_t *)(&ams::ldr::oc::C.marikoCpuDvfsTable)) == 21);
-    assert(GetDvfsTableEntryCount((cvb_entry_t *)(&ams::ldr::oc::C.marikoCpuDvfsTableSLT)) == 22);
+    assert(GetDvfsTableEntryCount((cvb_entry_t *)(&ams::ldr::hoc::C.eristaCpuDvfsTable)) == 19);
+    assert(GetDvfsTableEntryCount((cvb_entry_t *)(&ams::ldr::hoc::C.marikoCpuDvfsTable)) == 21);
+    assert(GetDvfsTableEntryCount((cvb_entry_t *)(&ams::ldr::hoc::C.marikoCpuDvfsTableSLT)) == 22);
 
-    assert(GetDvfsTableEntryCount((cvb_entry_t *)(&ams::ldr::oc::C.eristaGpuDvfsTable)) == 12);
-    assert(GetDvfsTableEntryCount((cvb_entry_t *)(&ams::ldr::oc::C.marikoGpuDvfsTable)) == 17);
-    assert(GetDvfsTableEntryCount((cvb_entry_t *)(&ams::ldr::oc::C.marikoGpuDvfsTableSLT)) == 17);
-    assert(GetDvfsTableEntryCount((cvb_entry_t *)(&ams::ldr::oc::C.marikoGpuDvfsTableHiOPT)) == 17);
+    assert(GetDvfsTableEntryCount((cvb_entry_t *)(&ams::ldr::hoc::C.eristaGpuDvfsTable)) == 12);
+    assert(GetDvfsTableEntryCount((cvb_entry_t *)(&ams::ldr::hoc::C.marikoGpuDvfsTable)) == 17);
+    assert(GetDvfsTableEntryCount((cvb_entry_t *)(&ams::ldr::hoc::C.marikoGpuDvfsTableSLT)) == 17);
+    assert(GetDvfsTableEntryCount((cvb_entry_t *)(&ams::ldr::hoc::C.marikoGpuDvfsTableHiOPT)) == 17);
 
-    constexpr size_t limit = ams::ldr::oc::pcv::DvfsTableEntryLimit;
+    constexpr size_t limit = ams::ldr::hoc::pcv::DvfsTableEntryLimit;
     cvb_entry_t customized_table[limit] = {};
     for (size_t i = 0; i < limit; i++) {
         assert(GetDvfsTableEntryCount(customized_table) == i);
@@ -156,14 +156,14 @@ int main(int argc, char** argv) {
     size_t exec_path_patched_len = exec_path_len + std::max(strlen(mariko_ext), strlen(erista_ext)) + 1;
 
     if (exe_opt == EXE_PCV) {
-        ams::ldr::oc::pcv::SafetyCheck();
+        ams::ldr::hoc::pcv::SafetyCheck();
 
         {
             void* erista_buf = malloc(file_size);
             std::memcpy(erista_buf, file_buffer, file_size);
 
             printf("Patching %s for Erista...\n", pcv_opt);
-            ams::ldr::oc::pcv::erista::Patch(reinterpret_cast<uintptr_t>(erista_buf), file_size);
+            ams::ldr::hoc::pcv::erista::Patch(reinterpret_cast<uintptr_t>(erista_buf), file_size);
             if (save_patched) {
                 char* exec_path_erista = reinterpret_cast<char *>(malloc(exec_path_patched_len));
                 strncpy(exec_path_erista, exec_path, exec_path_patched_len);
@@ -179,7 +179,7 @@ int main(int argc, char** argv) {
             std::memcpy(mariko_buf, file_buffer, file_size);
 
             printf("Patching %s for Mariko...\n", pcv_opt);
-            ams::ldr::oc::pcv::mariko::Patch(reinterpret_cast<uintptr_t>(mariko_buf), file_size);
+            ams::ldr::hoc::pcv::mariko::Patch(reinterpret_cast<uintptr_t>(mariko_buf), file_size);
             if (save_patched) {
                 char* exec_path_mariko = reinterpret_cast<char *>(malloc(exec_path_patched_len));
                 strncpy(exec_path_mariko, exec_path, exec_path_patched_len);
@@ -196,7 +196,7 @@ int main(int argc, char** argv) {
         std::memcpy(mariko_buf, file_buffer, file_size);
 
         printf("Patching %s (Mariko Only)...\n", ptm_opt);
-        ams::ldr::oc::ptm::Patch(reinterpret_cast<uintptr_t>(mariko_buf), file_size);
+        ams::ldr::hoc::ptm::Patch(reinterpret_cast<uintptr_t>(mariko_buf), file_size);
         if (save_patched) {
             char* exec_path_mariko = reinterpret_cast<char *>(malloc(exec_path_patched_len));
             strncpy(exec_path_mariko, exec_path, exec_path_patched_len);

@@ -18,7 +18,7 @@
 
 #include "ptm.hpp"
 
-namespace ams::ldr::oc::ptm {
+namespace ams::ldr::hoc::ptm {
 
 Result CpuPtmBoost(perf_conf_entry* entry) {
 

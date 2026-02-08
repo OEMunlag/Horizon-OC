@@ -23,7 +23,7 @@
 #include "../oc_common.hpp"
 #include "pcv_common.hpp"
 
-namespace ams::ldr::oc::pcv {
+namespace ams::ldr::hoc::pcv {
 
     namespace mariko {
         constexpr cvb_entry_t CpuCvbTableDefault[] = {

@@ -52,7 +52,7 @@ namespace ams::ldr {
     R_DEFINE_ERROR_RESULT(SafetyCheckFailure,       1015);
 }
 
-namespace ams::ldr::oc {
+namespace ams::ldr::hoc {
     template<typename Pointer>
     struct PatcherEntry {
         using patternFn = bool(*)(Pointer* ptr);

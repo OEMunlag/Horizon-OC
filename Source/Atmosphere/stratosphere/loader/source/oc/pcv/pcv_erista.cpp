@@ -21,7 +21,7 @@
 #include "pcv.hpp"
 #include "../mtc_timing_value.hpp"
 
-namespace ams::ldr::oc::pcv::erista {
+namespace ams::ldr::hoc::pcv::erista {
 
     Result CpuVoltDvfs(u32 *ptr) {
         if (MatchesPattern(ptr, cpuVoltDvfsPattern, cpuVoltDvfsOffsets)) {

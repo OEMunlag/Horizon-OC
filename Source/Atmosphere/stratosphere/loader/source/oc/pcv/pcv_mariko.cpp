@@ -22,7 +22,7 @@
 #include "../mtc_timing_value.hpp"
 #include "../mariko/calculate_timings.hpp"
 
-namespace ams::ldr::oc::pcv::mariko {
+namespace ams::ldr::hoc::pcv::mariko {
 
     u32 GetGpuVminVoltage() {
         for (auto e : vminTable) {

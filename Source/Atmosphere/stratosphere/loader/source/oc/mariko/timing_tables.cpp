@@ -17,7 +17,7 @@
 #include "../mtc_timing_value.hpp"
 #include "timing_tables.hpp"
 
-namespace ams::ldr::oc::pcv::mariko {
+namespace ams::ldr::hoc::pcv::mariko {
 
     const ReplacePatch g_rext_table[] = {
         {2'133'000, 0x1A}, {2'166'000, 0x19}, {2'200'000, 0x19},

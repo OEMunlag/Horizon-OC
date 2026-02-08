@@ -18,7 +18,7 @@
 
  #pragma once
 
- namespace ams::ldr::oc::pcv {
+ namespace ams::ldr::hoc::pcv {
 
  typedef struct cvb_coefficients {
      s32 c0 = 0;

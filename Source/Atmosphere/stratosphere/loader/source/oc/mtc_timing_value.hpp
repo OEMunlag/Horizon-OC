@@ -20,7 +20,7 @@
 
 #include "oc_common.hpp"
 
-namespace ams::ldr::oc {
+namespace ams::ldr::hoc {
     #define MAX(A, B)   std::max(A, B)
     #define MIN(A, B)   std::min(A, B)
     #define CEIL(A)     std::ceil(A)
