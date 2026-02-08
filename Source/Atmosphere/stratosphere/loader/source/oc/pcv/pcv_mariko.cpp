@@ -434,21 +434,17 @@ namespace ams::ldr::hoc::pcv::mariko {
          */
 
         #define WRITE_PARAM_ALL_REG(TABLE, PARAM, VALUE) \
-            TABLE->burst_regs.PARAM = VALUE;             \
-            TABLE->shadow_regs_ca_train.PARAM   = VALUE; \
-            TABLE->shadow_regs_rdwr_train.PARAM = VALUE;
+            TABLE->burst_regs.PARAM = (VALUE);             \
+            TABLE->shadow_regs_ca_train.PARAM   = (VALUE); \
+            TABLE->shadow_regs_rdwr_train.PARAM = (VALUE);
 
-        #define GET_CYCLE_CEIL(PARAM) u32(CEIL(double(PARAM) / tCK_avg))
+        #define GET_CYCLE_CEIL(PARAM) u32(CEIL(double(PARAM) / (tCK_avg)))
 
         /* Ram power down       */
         /* B31: DRAM_CLKSTOP_PD */
         /* B30: DRAM_CLKSTOP_SR */
         /* B29: DRAM_ACPD       */
-        if (C.hpMode) {
-            WRITE_PARAM_ALL_REG(table, emc_cfg, 0x13200000);
-        } else {
-            WRITE_PARAM_ALL_REG(table, emc_cfg, 0xF3200000);
-        }
+        WRITE_PARAM_ALL_REG(table, emc_cfg, C.hpMode ? 0x13200000 : 0xF3200000);
 
         u32 refresh_raw = 0xFFFF;
         if (C.t8_tREFI != 6) {
