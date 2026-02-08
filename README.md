@@ -96,8 +96,8 @@ Refer to COMPILATION.md
 ### CPU clocks
 * 2601 → mariko absolute max, very dangerous
 * 2499
-* 2397
-* 2295 → mariko safe max with UV (low speedo)
+* 2397 → mariko safe max with UV (low speedo)
+* 2295
 * 2193
 * 2091
 * 1963 → mariko no UV max clock
