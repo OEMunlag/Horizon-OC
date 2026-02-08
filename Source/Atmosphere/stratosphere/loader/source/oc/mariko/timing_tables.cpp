@@ -36,78 +36,11 @@ namespace ams::ldr::hoc::pcv::mariko {
     const u32 g_rext_table_size = sizeof(g_rext_table) / sizeof(g_rext_table[0]);
 
     const ReplacePatch *FindRext() {
-        for (u32 i = 0; i < g_rext_table_size; i++)
-            if (g_rext_table[i].freq == C.marikoEmcMaxClock)
+        for (u32 i = 0; i < g_rext_table_size; i++) {
+            if (g_rext_table[i].freq >= C.marikoEmcMaxClock) {
                 return &g_rext_table[i];
-        return nullptr;
-    }
-
-    const AdjustPatch g_tr2w_patches[] = {
-        {2'500'000,  1},
-        {2'533'000,  1},
-        {2'566'000,  1},
-        {2'866'000, -1},
-        {3'100'000,  1},
-        {3'133'000,  1},
-    };
-
-    const u32 g_tr2w_table_size = sizeof(g_tr2w_patches) / sizeof(g_tr2w_patches[0]);
-
-    const AdjustPatch *FindTR2WPatch() {
-        for (u32 i = 0; i < g_tr2w_table_size; i++)
-            if (g_tr2w_patches[i].freq == C.marikoEmcMaxClock)
-                return &g_tr2w_patches[i];
-        return nullptr;
-    }
-
-    const AdjustPatch g_pdex2rw_patches[] = {
-        {2'166'000,  1},
-        {2'300'000,  1},
-        {2'333'000,  1},
-        {2'433'000,  1},
-        {2'533'000,  0},
-        {2'633'000, -1},
-        {2'666'000, -1},
-        {2'733'000, -1},
-        {2'766'000, -1},
-        {2'800'000, -1},
-        {2'833'000, -1},
-        {2'933'000, -1},
-        {3'066'000,  1},
-    };
-
-    const u32 g_pdex2rw_table_size = sizeof(g_pdex2rw_patches) / sizeof(g_pdex2rw_patches[0]);
-
-    const AdjustPatch *FindPdex2rwPatch() {
-        for (u32 i = 0; i < g_pdex2rw_table_size; i++)
-            if (g_pdex2rw_patches[i].freq == C.marikoEmcMaxClock)
-                return &g_pdex2rw_patches[i];
-        return nullptr;
-    }
-
-    const AdjustPatch g_cke2pden_patches[] = {
-        {2'133'000, 1},
-        {2'166'000, 1},
-        {2'266'000, 1},
-        {2'300'000, 1},
-        {2'366'000, 1},
-        {2'400'000, 1},
-        {2'500'000, 1},
-        {2'633'000, 1},
-        {2'733'000, 1},
-        {2'833'000, 1},
-        {2'866'000, 1},
-        {2'966'000, 1},
-        {3'066'000, 1},
-        {3'100'000, 1},
-    };
-
-    const u32 g_cke2pden_table_size = sizeof(g_cke2pden_patches) / sizeof(g_cke2pden_patches[0]);
-
-    const AdjustPatch *FindCke2pdenPatch() {
-        for (u32 i = 0; i < g_cke2pden_table_size; i++)
-            if (g_cke2pden_patches[i].freq == C.marikoEmcMaxClock)
-                return &g_cke2pden_patches[i];
+            }
+        }
         return nullptr;
     }
 

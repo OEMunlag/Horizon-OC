@@ -89,7 +89,7 @@ Refer to COMPILATION.md
 * 1866 → mariko safe max (3733 Modules), JEDEC.
 * 1600 → official docked, boost mode, erista safe max, JEDEC.
 * 1331 → official handheld, JEDEC.
-* 1065 
+* 1065
 * 800
 * 665
 
@@ -151,6 +151,7 @@ Refer to COMPILATION.md
 * **Souldbminer** – hoc-clk and loader development
 * **Lightos** – loader patches development
 * **SciresM** - Atmosphere CFW
+* **CTCaer** - L4T, Hekate, perfect ram timings
 * **KazushiMe** – Switch OC Suite
 * **hanai3bi (meha)** – Switch OC Suite, EOS, sys-clk-eos
 * **NaGaa95** – L4T-OC-kernel

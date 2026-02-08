@@ -21,19 +21,19 @@
 #include "oc_common.hpp"
 
 namespace ams::ldr::hoc {
-    #define MAX(A, B)   std::max(A, B)
-    #define MIN(A, B)   std::min(A, B)
-    #define CEIL(A)     std::ceil(A)
-    #define FLOOR(A)    std::floor(A)
-    #define ROUND(A)    std::lround(A)
+    #define MAX(A, B) std::max(A, B)
+    #define MIN(A, B) std::min(A, B)
+    #define CEIL(A)   std::ceil(A)
+    #define FLOOR(A)  std::floor(A)
+    #define ROUND(A)  std::lround(A)
 
     #define PACK_U32(high, low) ((static_cast<u32>(high) << 16) | (static_cast<u32>(low) & 0xFFFF))
     #define PACK_U32_NIBBLE_HIGH_BYTE_LOW(high, low) ((static_cast<u32>(high & 0xF) << 28) | (static_cast<u32>(low) & 0xFF))
 
     /* Primary timings. */
-    const std::array<u32,  8> tRCD_values  =  { 18, 17, 16, 15, 14, 13, 12, 11 };
-    const std::array<u32,  8> tRP_values   =  { 18, 17, 16, 15, 14, 13, 12, 11 };
-    const std::array<u32, 10> tRAS_values  =  { 42, 36, 34, 32, 30, 28, 26, 24, 22, 20 };
+    const std::array<u32,       8> tRCD_values    = { 18, 17, 16, 15, 14, 13, 12, 11 };
+    const std::array<u32,       8> tRP_values     = { 18, 17, 16, 15, 14, 13, 12, 11 };
+    const std::array<u32,      10> tRAS_values    = { 42, 36, 34, 32, 30, 28, 26, 24, 22, 20 };
     const std::array<double,    7>  tRRD_values   = { /*10.0,*/ 7.5, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0 }; /* 10.0 is used for <2133mhz; do we care? 8gb uses 7.5 tRRD on >=1331. */
     const std::array<u32,      11>  tRFC_values   = { 140, 130, 120, 110, 100, 90, 80, 70, 60, 50, 40 };
     const std::array<u32,      10>  tWTR_values   = { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
@@ -96,7 +96,7 @@ namespace ams::ldr::hoc {
 
         const u32 tW2P = (CEIL(WL * 1.7303) * 2) - 5;
         const u32 tW2R = CEIL(MAX(WL + (0.010322547033278747 * (C.eristaEmcMaxClock / 1000.0)), (WL * -0.2067922202979121) + FLOOR(((RL_DBI * -0.1331159971685554) + WL) * 3.654131957826108)) - (tWTR / tCK_avg));
-        
+
         const u32 wdv = WL;
         const u32 wsv = WL - 2;
         const u32 wev = 0xA + (WL - 14);
@@ -139,43 +139,41 @@ namespace ams::ldr::hoc {
         const u32 tFAW     = static_cast<u32>(tRRD * 4.0);
         const double tRPab = tRPpb + 3;
 
-        const u32 tR2P   = 12 + ((RL_DBI - 32) / 2);
-        inline u32 tR2W;
-        const u32 tRTM   = RL + 9 + (tDQSCK_max / tCK_avg) + FLOOR(tRPST) + CEIL(10 / tCK_avg); // Fix?
-        const u32 tRATM  = tRTM + CEIL(10 / tCK_avg) - 12; // Fix?
+        const u32 tR2P   = CEIL((RL_DBI * 0.426) - 2.0);
+        const u32 tR2W = FLOOR(FLOOR((5.0 / tCK_avg) + ((FLOOR(48.0 / WL) - 0.478) * 3.0)) / 1.501) + RL_DBI - (C.t6_tRTW * 3);
+        const u32 tRTM   = FLOOR((10.0 + RL_DBI) + (3.502 / tCK_avg)) + FLOOR(7.489 / tCK_avg);
+        const u32 tRATM  = CEIL((tRTM - 10.0) + (RL_DBI * 0.426));
         inline u32 rext;
 
-        const u32 rdv              = FLOOR(17.02046755653219 + (RL_DBI + (ramFreqMhz * 0.00510056573299173)));
-        const u32 qpop             = rdv - 14;
-        const u32 quse_width       = CEIL(((3.7165006256863955 - ramFreqMhz) + (-0.002446584377651142 * ramFreqMhz)) - FLOOR(ramFreqMhz / -0.9952024303111688));
-        const u32 quse             = CEIL(MIN(RL_DBI + (2.991255208275918 - (quse_width + (-0.00511180626826906 * ramFreqMhz))), ramFreqMhz * 0.021333773138874437));
-        const u32 einput_duration  = CEIL(quse_width + (ramFreqMhz * 0.01) + 4);
-        const u32 einput           = 5 + qpop - einput_duration;
-        const u32 ibdly            = 0x10000000 + FLOOR(MAX(RL_DBI - 1.9999956603408224, quse - 5.9999987787411175) + (-0.0011929079761504341 * ramFreqMhz));
-        const u32 qrst_duration    = FLOOR((ramFreqMhz * 0.001477125119082522) + 4.272302254983803);
-        const u32 qrstLow          = MAX(static_cast<s32>(einput - qrst_duration - 2), static_cast<s32>(0));
-        const u32 qrst             = PACK_U32(qrst_duration, qrstLow);
-        const u32 qsafe            = (einput_duration + 3) + MAX(MIN(qrstLow * rdv, qrst_duration + qrst_duration), einput);
-
-        const u32 tW2P  = (CEIL(WL * 1.7303) * 2) - 5;
-        inline u32 tWTPDEN;
-        const u32 tW2R  = CEIL(MAX(WL + (0.010322547033278747 * ramFreqMhz), (WL * -0.2067922202979121) + FLOOR(((RL_DBI * -0.1331159971685554) + WL) * 3.654131957826108)) - (tWTR / tCK_avg));
-        const u32 tWTM  = WL + (BL / 2) + 1 + CEIL(7.5 / tCK_avg);
-        const u32 tWATM = tWTM + CEIL(tWR / tCK_avg);
+        const u32 rdv             = RL_DBI + FLOOR((5.105 / tCK_avg) + 17.017);
+        const u32 qpop            = rdv - 14;
+        const u32 quse_width      = CEIL(((4.897 / tCK_avg) - FLOOR(2.538 / tCK_avg)) + 3.782);
+        const u32 quse            = FLOOR(RL_DBI + ((5.082 / tCK_avg) + FLOOR(2.560 / tCK_avg))) - CEIL(4.820 / tCK_avg);
+        const u32 einput_duration = FLOOR(9.936 / tCK_avg) + 5.0 + quse_width;
+        const u32 einput          = quse - CEIL(9.928 / tCK_avg);
+        const u32 qrst_duration   = FLOOR(8.399 - tCK_avg);
+        const u32 qrstLow         = MAX(static_cast<s32>(einput - qrst_duration - 2), static_cast<s32>(0));
+        const u32 qrst            = PACK_U32(qrst_duration, qrstLow);
+        const u32 ibdly           = PACK_U32_NIBBLE_HIGH_BYTE_LOW(1, quse - qrst_duration - 2.0);
+        const u32 qsafe           = (einput_duration + 3) + MAX(MIN(qrstLow * rdv, qrst_duration + qrst_duration), einput);
+        const u32 tW2P            = (CEIL(WL * 1.7303) * 2) - 5;
+        const u32 tWTPDEN         = CEIL(((1.803 / tCK_avg) + MAX(RL_DBI + (2.694 / tCK_avg), static_cast<double>(tW2P))) + (BL / 2));
+        const u32 tW2R            = FLOOR(MAX((5.020 / tCK_avg) + 1.130, WL - MAX(-CEIL(0.258 * (WL - RL_DBI)), 1.964)) * 1.964) + WL - FLOOR(tWTR / tCK_avg);
+        const u32 tWTM            = CEIL(WL + ((7.570 / tCK_avg) + 8.753));
+        const u32 tWATM           = (tWTM + (FLOOR(WL / 0.816) * 2.0)) - 4.0;
 
         const u32 wdv = WL;
         const u32 wsv = WL - 2;
         const u32 wev = 0xA + (WL - 14);
 
         const u32 obdlyHigh = 3 / FLOOR(MIN(static_cast<double>(2), tCK_avg * (WL - 7)));
-        const u32 obdlyLow = WL - MIN(static_cast<double>(WL), 12 - (CEIL(-0.0003991 * ramFreqMhz) * 2));
+        const u32 obdlyLow = MAX(WL - FLOOR((126.0 / CEIL(tCK_avg + 8.601))), 0.0);
 
         const u32 obdly = PACK_U32_NIBBLE_HIGH_BYTE_LOW(obdlyHigh, obdlyLow);
 
-        inline u32 pdex2rw;
-        inline u32 cke2pden;
+        const u32 pdex2rw = CEIL((CEIL(12.335 - tCK_avg) + (7.430 / tCK_avg) - CEIL(tCK_avg * 11.361)));
 
-        const u32 tCKE = CEIL(1.0795 * CEIL(0.0074472 * ramFreqMhz));
+        const u32 tCLKSTOP = FLOOR(MIN(8.488 / tCK_avg, 23.0)) + 8.0;
 
         const double tMMRI    = tRCD + (tCK_avg * 3);
         const double pdex2mrr = tMMRI + 10; /* Do this properly? */

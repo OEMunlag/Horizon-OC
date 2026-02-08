@@ -50,49 +50,31 @@ namespace ams::ldr::hoc::pcv::mariko {
         return ramScale;
     }
 
-    /* Note: EOS (probably?) has a bug in this function that always results in high vmin, this is fixed here. */
-
-    static unsigned int ramBrackets[][22] =
-    {
-        { 2133, 2200, 2266, 2300, 2366, 2400, 2433, 2466, 2533, 2566, 2600, 2633, 2700, 2733, 2766, 2833, 2866, 2900, 2933, 3033, 3066, 3100, },
-        { 2300, 2366, 2433, 2466, 2533, 2566, 2633, 2700, 2733, 2800, 2833, 2900, 2933, 2966, 3033, 3066, 3100, 3133, 3166, 3200, 3233, 3266, },
-        { 2433, 2466, 2533, 2600, 2666, 2733, 2766, 2800, 2833, 2866, 2933, 2966, 3033, 3066, 3100, 3133, 3166, 3200, 3233, 3300, 3333, 3366, },
-        { 2500, 2533, 2600, 2633, 2666, 2733, 2800, 2866, 2900, 2966, 3033, 3100, 3166, 3200, 3233, 3266, 3300, 3333, 3366, 3400, 3400, 3400, }
-    };
-
-    unsigned int gpuDvfsArray[] = { 590, 600, 610, 620, 630, 640, 650, 660, 670, 680, 690, 700, 710, 720, 730, 740, 750, 760, 770, 780, 790, 800};
-
-    int GetSpeedoBracket (int speedo)
-    {
-        int speedoBracket = 3;
-        if ((speedo < 1754) && (speedoBracket = 2, speedo < 1690)) {
-            speedoBracket = !!(1625 < speedo);
+    u32 GetSpeedoBracket() {
+        u32 speedoBracket = 3;
+        if ((C.gpuSpeedo < 1754) && (speedoBracket = 2, C.gpuSpeedo < 1690)) {
+            speedoBracket = !!(1625 < C.gpuSpeedo);
         }
 
         return speedoBracket;
     }
 
-    unsigned int GetGpuVoltage (unsigned int freq, int speedo)
-    {
-        long int lVar1;
-        int bracket = GetSpeedoBracket(speedo);
+    u32 GetGpuBudgetDvfsVoltage() {
+        u32 bracket = GetSpeedoBracket();
 
-        if (freq < 1601)
+        if (ramFreqMhz <= 1600)
             return 0;
 
-        lVar1 = 0;
-        do
-        {
-            if (freq <= ramBrackets[bracket][lVar1])//*(unsigned int *)((ulong)DAT_001491e0 * 0x58 + 1280960 + lVar1 * 4))
-                return gpuDvfsArray[lVar1];//*(undefined4 *)((long)(int)lVar1 * 4 + 1281312);
-
-            lVar1++;
-        } while (lVar1 != 22);
+        for (u32 voltageIndex = 0; voltageIndex < 22; voltageIndex++) {
+            if (ramFreqMhz <= ramBrackets[bracket][voltageIndex]) {
+                return gpuBudgetDvfsArray[voltageIndex];
+            }
+        }
 
         return 800;
     }
 
-
+    /* Note: EOS (probably?) has a bug in this function that always results in high vmin, this is fixed here. */
     u32 GetAutoVoltage() {
         u32 voltage = GetGpuVminVoltage();
         voltage = GetRamVminAdjustment(voltage);
@@ -127,31 +109,31 @@ namespace ams::ldr::hoc::pcv::mariko {
 
         /* C.marikoGpuVmin is zero OR one, auto voltage is applied. */
         /* Get vmin depending on speedo and ram clock. */
-        u32 autoVmin = C.marikoGpuVmin == 0 ? GetAutoVoltage() : GetGpuVoltage(C.marikoEmcMaxClock / 1000, C.gpuSpeedo);
+        u32 autoVmin = C.marikoGpuVmin == 0 ? GetAutoVoltage() : GetGpuBudgetDvfsVoltage();
         PATCH_OFFSET(ptr, autoVmin);
         R_SUCCEED();
     }
 
     Result GpuVoltThermals(u32 *ptr) {
-        u32 vmin = std::memcmp(ptr - 3, gpuVoltThermalPattern, sizeof(gpuVoltThermalPattern));
-        if (vmin) {
+        if (std::memcmp(ptr - 3, gpuVoltThermalPattern, sizeof(gpuVoltThermalPattern))) {
             R_THROW(ldr::ResultInvalidGpuDvfs());
         }
 
+        u32 vmin = C.marikoGpuVmin;
+
         /* Automatic voltage. */
-        if (!C.marikoGpuVmin) {
-            vmin = GetAutoVoltage();
+        if (!C.marikoGpuVmin || C.marikoGpuVmin == 1) {
+            vmin = C.marikoGpuVmin == 0 ? GetAutoVoltage() : GetGpuBudgetDvfsVoltage();
             PATCH_OFFSET(ptr,     vmin);
             PATCH_OFFSET(ptr + 3, vmin);
             PATCH_OFFSET(ptr + 6, vmin);
             PATCH_OFFSET(ptr + 9, vmin);
         } else {
             /* Manual voltage. */
-            PATCH_OFFSET(ptr,     C.marikoGpuVmin);
-            PATCH_OFFSET(ptr + 3, C.marikoGpuVmin);
-            PATCH_OFFSET(ptr + 6, C.marikoGpuVmin);
-            PATCH_OFFSET(ptr + 9, C.marikoGpuVmin);
-            vmin = C.marikoGpuVmin;
+            PATCH_OFFSET(ptr,     vmin);
+            PATCH_OFFSET(ptr + 3, vmin);
+            PATCH_OFFSET(ptr + 6, vmin);
+            PATCH_OFFSET(ptr + 9, vmin);
         }
 
         PATCH_OFFSET(ptr + 12, vmin);
@@ -434,17 +416,21 @@ namespace ams::ldr::hoc::pcv::mariko {
          */
 
         #define WRITE_PARAM_ALL_REG(TABLE, PARAM, VALUE) \
-            TABLE->burst_regs.PARAM = (VALUE);             \
-            TABLE->shadow_regs_ca_train.PARAM   = (VALUE); \
-            TABLE->shadow_regs_rdwr_train.PARAM = (VALUE);
+            TABLE->burst_regs.PARAM = VALUE;             \
+            TABLE->shadow_regs_ca_train.PARAM   = VALUE; \
+            TABLE->shadow_regs_rdwr_train.PARAM = VALUE;
 
-        #define GET_CYCLE_CEIL(PARAM) u32(CEIL(double(PARAM) / (tCK_avg)))
+        #define GET_CYCLE_CEIL(PARAM) u32(CEIL(double(PARAM) / tCK_avg))
 
         /* Ram power down       */
         /* B31: DRAM_CLKSTOP_PD */
         /* B30: DRAM_CLKSTOP_SR */
         /* B29: DRAM_ACPD       */
-        WRITE_PARAM_ALL_REG(table, emc_cfg, C.hpMode ? 0x13200000 : 0xF3200000);
+        if (C.hpMode) {
+            WRITE_PARAM_ALL_REG(table, emc_cfg, 0x13200000);
+        } else {
+            WRITE_PARAM_ALL_REG(table, emc_cfg, 0xF3200000);
+        }
 
         u32 refresh_raw = 0xFFFF;
         if (C.t8_tREFI != 6) {
@@ -470,9 +456,9 @@ namespace ams::ldr::hoc::pcv::mariko {
         WRITE_PARAM_ALL_REG(table, emc_tfaw, GET_CYCLE_CEIL(tFAW));
         WRITE_PARAM_ALL_REG(table, emc_trpab, MIN(GET_CYCLE_CEIL(tRPab), static_cast<u32>(0x3F)));
         WRITE_PARAM_ALL_REG(table, emc_tckesr, GET_CYCLE_CEIL(tSR));
-        WRITE_PARAM_ALL_REG(table, emc_tcke, tCKE);
+        WRITE_PARAM_ALL_REG(table, emc_tcke, GET_CYCLE_CEIL(7.425) + 2);
         WRITE_PARAM_ALL_REG(table, emc_tpd, GET_CYCLE_CEIL(tXP));
-        WRITE_PARAM_ALL_REG(table, emc_tclkstop, GET_CYCLE_CEIL(tXP) + 8); // TODO analyse
+        WRITE_PARAM_ALL_REG(table, emc_tclkstop, tCLKSTOP);
         WRITE_PARAM_ALL_REG(table, emc_r2p, tR2P);
         WRITE_PARAM_ALL_REG(table, emc_r2w, tR2W);
         WRITE_PARAM_ALL_REG(table, emc_trtm, tRTM);
@@ -490,12 +476,11 @@ namespace ams::ldr::hoc::pcv::mariko {
         WRITE_PARAM_ALL_REG(table, emc_dyn_self_ref_control, dyn_self_ref_control);
         WRITE_PARAM_ALL_REG(table, emc_pdex2wr, pdex2rw);
         WRITE_PARAM_ALL_REG(table, emc_pdex2rd, pdex2rw);
-        WRITE_PARAM_ALL_REG(table, emc_pchg2pden, GET_CYCLE_CEIL(1.75));
+        WRITE_PARAM_ALL_REG(table, emc_pchg2pden, GET_CYCLE_CEIL(1.763));
         WRITE_PARAM_ALL_REG(table, emc_ar2pden, GET_CYCLE_CEIL(1.75));
         WRITE_PARAM_ALL_REG(table, emc_pdex2cke, GET_CYCLE_CEIL(1.05));
         WRITE_PARAM_ALL_REG(table, emc_act2pden, GET_CYCLE_CEIL(14.0));
-        WRITE_PARAM_ALL_REG(table, emc_cke2pden, /* cke2pden */ GET_CYCLE_CEIL(8.5));
-        (void) cke2pden;
+        WRITE_PARAM_ALL_REG(table, emc_cke2pden, GET_CYCLE_CEIL(8.499));
         WRITE_PARAM_ALL_REG(table, emc_pdex2mrr, GET_CYCLE_CEIL(pdex2mrr));
         WRITE_PARAM_ALL_REG(table, emc_rw2pden, tWTPDEN);
         WRITE_PARAM_ALL_REG(table, emc_einput, einput);
