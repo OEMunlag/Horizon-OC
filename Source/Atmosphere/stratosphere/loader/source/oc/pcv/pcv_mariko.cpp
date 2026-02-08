@@ -125,7 +125,7 @@ namespace ams::ldr::hoc::pcv::mariko {
             R_SUCCEED();
         }
 
-        /* C.marikoGpuVmin is zero, auto voltage is applied. */
+        /* C.marikoGpuVmin is zero OR one, auto voltage is applied. */
         /* Get vmin depending on speedo and ram clock. */
         u32 autoVmin = C.marikoGpuVmin == 0 ? GetAutoVoltage() : GetGpuVoltage(C.marikoEmcMaxClock / 1000, C.gpuSpeedo);
         PATCH_OFFSET(ptr, autoVmin);
