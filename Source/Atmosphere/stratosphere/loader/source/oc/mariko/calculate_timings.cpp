@@ -20,47 +20,14 @@
 
 namespace ams::ldr::hoc::pcv::mariko {
 
-    u32 GetRext() {
+    void GetRext() {
         if (auto r = FindRext()) {
-            return r->correct;
+            rext = r->rext;
+            return;
         }
-        return 0x1A;
-    }
 
-    void CalculateTWTPDEN() {
-        tWTPDEN = tW2P + 1 + CEIL(tDQSS_max / tCK_avg) + CEIL(tDQS2DQ_max / tCK_avg) + 6;
-        if (C.marikoEmcMaxClock >= 2'233'000 && C.marikoEmcMaxClock < 2'533'000) tWTPDEN++;
-        if (C.marikoEmcMaxClock >= 2'433'000 && C.marikoEmcMaxClock < 2'800'000) tWTPDEN--;
-    }
-
-    void CalculateTR2W() {
-        tR2W = CEIL(RL_DBI + (tDQSCK_max / tCK_avg) + (BL / 2) - WL + tWPRE + FLOOR(tRPST) + 9.0) - (C.t6_tRTW * 3);
-
-        if (auto patch = FindTR2WPatch()) {
-            tR2W += patch->adjust;
-        }
-    }
-
-    void CalculatePdex2rw() {
-        double freq_mhz = C.marikoEmcMaxClock / 1000.0;
-
-        double pdex_local = (0.011 * freq_mhz) - 1.443;
-        pdex2rw = static_cast<u32>(ROUND(pdex_local));
-
-        if (pdex2rw < 22) pdex2rw = 22;
-        if (pdex2rw > 33) pdex2rw = 33;
-
-        if (auto patch = FindPdex2rwPatch()) {
-            pdex2rw += patch->adjust;
-        }
-    }
-
-    void CalculateCke2pden() {
-        cke2pden = (static_cast<double>((C.marikoEmcMaxClock / 1000.0) * 0.00875) - 0.65);
-
-        if (auto patch = FindCke2pdenPatch()) {
-            cke2pden += patch->adjust;
-        }
+        /* Fallback. */
+        rext = 0x1A;
     }
 
     void CalculateMrw2() {
@@ -93,11 +60,7 @@ namespace ams::ldr::hoc::pcv::mariko {
     }
 
     void CalculateTimings() {
-        rext = GetRext();
-        CalculateTWTPDEN();
-        CalculateTR2W();
-        CalculatePdex2rw();
-        CalculateCke2pden();
+        GetRext();
         CalculateMrw2();
     }
 

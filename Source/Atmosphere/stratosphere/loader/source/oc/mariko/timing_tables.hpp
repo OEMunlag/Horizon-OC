@@ -21,28 +21,11 @@ namespace ams::ldr::hoc::pcv::mariko {
 
     struct ReplacePatch {
         u32 freq;
-        u32 correct;
+        u32 rext;
     };
 
     extern const ReplacePatch  g_rext_table[];
     extern const u32           g_rext_table_size;
     const        ReplacePatch *FindRext();
-
-    struct AdjustPatch {
-        u32 freq;
-        s32 adjust;
-    };
-
-    extern const AdjustPatch g_tr2w_patches[];
-    extern const u32         g_tr2w_table_size;
-    const AdjustPatch       *FindTR2WPatch();
-
-    extern const AdjustPatch g_pdex2rw_patches[];
-    extern const u32         g_pdex2rw_table_size;
-    const AdjustPatch       *FindPdex2rwPatch();
-
-    extern const AdjustPatch g_cke2pden_patches[];
-    extern const u32         g_cke2pden_table_size;
-    const AdjustPatch       *FindCke2pdenPatch();
 
 }
