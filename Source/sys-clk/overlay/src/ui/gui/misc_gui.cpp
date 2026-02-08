@@ -937,7 +937,7 @@ protected:
         };
 
         std::vector<NamedValue> mGpuVoltsVmin = {
-            NamedValue("Auto", 0),
+            NamedValue("Auto", 0), NamedValue("Auto (RAM)", 1),
             NamedValue("480mV", 480), NamedValue("485mV", 485), NamedValue("490mV", 490),
             NamedValue("495mV", 495), NamedValue("500mV", 500), NamedValue("505mV", 505),
             NamedValue("510mV", 510), NamedValue("515mV", 515), NamedValue("520mV", 520),

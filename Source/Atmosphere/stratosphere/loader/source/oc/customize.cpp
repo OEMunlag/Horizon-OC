@@ -22,6 +22,7 @@
 
 /* Never edit these. */
 #define AUTO 0
+#define AUTO_RAM 0
 #define ENABLED 1
 #define DISABLED 0
 #define DEACTIVATED_GPU_FREQ 2000

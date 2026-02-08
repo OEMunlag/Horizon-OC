@@ -41,10 +41,8 @@ It enables advanced CPU, GPU, and RAM tuning with user-friendly configuration to
 * Built-in configurator
 * Compatible with most homebrew
 
-> *Higher (potentially dangerous) frequencies are unlockable via configuration.*
-> *Erista and Mariko units can usually push a bit further fully safely with a bit of undervolting, however this may not work on all units.*
-> *The exact maximum overclock possible varies per console, although most consoles should be able to do this safely.*
-> *You may refer to the Clock Table to see clocks in more detail*
+> It is reccomended to read the [guide](https://rentry.co/howtoget60fps) before proceeding, as this can help you get a *significant* performance boost over the default settings, often times with less power draw and heat output
+
 ---
 
 ## Installation
@@ -98,8 +96,8 @@ Refer to COMPILATION.md
 ### CPU clocks
 * 2601 → mariko absolute max, very dangerous
 * 2499
-* 2397
-* 2295 → mariko safe max with UV (low speedo)
+* 2397 → mariko safe max with UV (low speedo)
+* 2295
 * 2193
 * 2091
 * 1963 → mariko no UV max clock

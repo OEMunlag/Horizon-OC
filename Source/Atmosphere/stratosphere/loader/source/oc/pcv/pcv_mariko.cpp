@@ -51,6 +51,48 @@ namespace ams::ldr::oc::pcv::mariko {
     }
 
     /* Note: EOS (probably?) has a bug in this function that always results in high vmin, this is fixed here. */
+
+    static unsigned int ramBrackets[][22] =
+    {
+        { 2133, 2200, 2266, 2300, 2366, 2400, 2433, 2466, 2533, 2566, 2600, 2633, 2700, 2733, 2766, 2833, 2866, 2900, 2933, 3033, 3066, 3100, },
+        { 2300, 2366, 2433, 2466, 2533, 2566, 2633, 2700, 2733, 2800, 2833, 2900, 2933, 2966, 3033, 3066, 3100, 3133, 3166, 3200, 3233, 3266, },
+        { 2433, 2466, 2533, 2600, 2666, 2733, 2766, 2800, 2833, 2866, 2933, 2966, 3033, 3066, 3100, 3133, 3166, 3200, 3233, 3300, 3333, 3366, },
+        { 2500, 2533, 2600, 2633, 2666, 2733, 2800, 2866, 2900, 2966, 3033, 3100, 3166, 3200, 3233, 3266, 3300, 3333, 3366, 3400, 3400, 3400, }
+    };
+
+    unsigned int gpuDvfsArray[] = { 590, 600, 610, 620, 630, 640, 650, 660, 670, 680, 690, 700, 710, 720, 730, 740, 750, 760, 770, 780, 790, 800};
+
+    int GetSpeedoBracket (int speedo)
+    {
+        int speedoBracket = 3;
+        if ((speedo < 1754) && (speedoBracket = 2, speedo < 1690)) {
+            speedoBracket = !!(1625 < speedo);
+        }
+
+        return speedoBracket;
+    }
+
+    unsigned int GetGpuVoltage (unsigned int freq, int speedo)
+    {
+        long int lVar1;
+        int bracket = GetSpeedoBracket(speedo);
+
+        if (freq < 1601)
+            return 0;
+
+        lVar1 = 0;
+        do
+        {
+            if (freq <= ramBrackets[bracket][lVar1])//*(unsigned int *)((ulong)DAT_001491e0 * 0x58 + 1280960 + lVar1 * 4))
+                return gpuDvfsArray[lVar1];//*(undefined4 *)((long)(int)lVar1 * 4 + 1281312);
+
+            lVar1++;
+        } while (lVar1 != 22);
+
+        return 800;
+    }
+
+
     u32 GetAutoVoltage() {
         u32 voltage = GetGpuVminVoltage();
         voltage = GetRamVminAdjustment(voltage);
@@ -85,7 +127,7 @@ namespace ams::ldr::oc::pcv::mariko {
 
         /* C.marikoGpuVmin is zero, auto voltage is applied. */
         /* Get vmin depending on speedo and ram clock. */
-        u32 autoVmin = GetAutoVoltage();
+        u32 autoVmin = C.marikoGpuVmin == 0 ? GetAutoVoltage() : GetGpuVoltage(C.marikoEmcMaxClock / 1000, C.gpuSpeedo);
         PATCH_OFFSET(ptr, autoVmin);
         R_SUCCEED();
     }

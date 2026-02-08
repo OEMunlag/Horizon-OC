@@ -28,6 +28,7 @@
 #include "process_management.h"
 #include "file_utils.h"
 #include "errors.h"
+#define IS_QLAUNCH 0x20f
 
 void ProcessManagement::Initialize()
 {
@@ -47,7 +48,7 @@ void ProcessManagement::WaitForQLaunch()
     do
     {
         rc = pmdmntGetProcessId(&pid, PROCESS_MANAGEMENT_QLAUNCH_TID);
-        svcSleepThread(500000000ULL);
+        svcSleepThread(50 * 1000000ULL); // 50ms
     } while (R_FAILED(rc));
 }
 
@@ -58,7 +59,7 @@ std::uint64_t ProcessManagement::GetCurrentApplicationId()
     std::uint64_t tid = 0;
     rc = pmdmntGetApplicationProcessId(&pid);
 
-    if (rc == 0x20f)
+    if (rc == IS_QLAUNCH)
     {
         return PROCESS_MANAGEMENT_QLAUNCH_TID;
     }
@@ -67,7 +68,7 @@ std::uint64_t ProcessManagement::GetCurrentApplicationId()
 
     rc = pminfoGetProgramId(&tid, pid);
 
-    if (rc == 0x20f)
+    if (rc == IS_QLAUNCH)
     {
         return PROCESS_MANAGEMENT_QLAUNCH_TID;
     }
