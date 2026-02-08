@@ -120,7 +120,7 @@ namespace ams::ldr::hoc::pcv::mariko {
         }
 
         /* C.marikoGpuVmin is non zero, user sets manual voltage. */
-        if (C.marikoGpuVmin) {
+        if (C.marikoGpuVmin != 0 && C.marikoGpuVmin != 1) {
             PATCH_OFFSET(ptr, C.marikoGpuVmin);
             R_SUCCEED();
         }
