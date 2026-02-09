@@ -158,7 +158,7 @@ namespace ams::ldr::hoc {
         const u32 qsafe           = (einput_duration + 3) + MAX(MIN(qrstLow * rdv, qrst_duration + qrst_duration), einput);
         const u32 tW2P            = (CEIL(WL * 1.7303) * 2) - 5;
         const u32 tWTPDEN         = CEIL(((1.803 / tCK_avg) + MAX(RL_DBI + (2.694 / tCK_avg), static_cast<double>(tW2P))) + (BL / 2));
-        const u32 tW2R            = FLOOR(MAX((5.020 / tCK_avg) + 1.130, WL - MAX(-CEIL(0.258 * (WL - RL_DBI)), 1.964)) * 1.964) + WL - FLOOR(tWTR / tCK_avg);
+        const u32 tW2R            = FLOOR(MAX((5.020 / tCK_avg) + 1.130, WL - MAX(-CEIL(0.258 * (WL - RL_DBI)), 1.964)) * 1.964) + WL - CEIL(tWTR / tCK_avg);
         const u32 tWTM            = CEIL(WL + ((7.570 / tCK_avg) + 8.753));
         const u32 tWATM           = (tWTM + (FLOOR(WL / 0.816) * 2.0)) - 4.0;
 
