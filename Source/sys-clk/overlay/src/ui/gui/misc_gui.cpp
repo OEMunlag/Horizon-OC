@@ -662,6 +662,7 @@ protected:
             NamedValue("+3", 3),
         };
 
+        this->listElement->addItem(new tsl::elm::CategoryHeader("Advanced"));
         addConfigButton(KipConfigValue_t7_tWTR_fine_tune, "t7 tWTR Fine Tune", ValueRange(0, 6, 1, "", 0), "t7 tWTR Fine Tune", &thresholdsDisabled, {}, t7_tWTR_fine_tune, false);
 
         #if IS_MINIMAL == 0
