@@ -105,7 +105,7 @@ volatile CustomizeTable C = {
 /* For automatic vmin detection, set this to AUTO. */
 /* vmin past 795mV won't work due to HOS limitation */
 /* Vmin is automatically set to 800mV when SoC temperature is below 20C */
-.marikoGpuVmin = AUTO, 
+.marikoGpuVmin = AUTO,
 
 .marikoGpuVmax = 800,
 
@@ -175,6 +175,8 @@ volatile CustomizeTable C = {
     DEACTIVATED_GPU_FREQ  /* 1497 (Disabled by default) */,
     DEACTIVATED_GPU_FREQ  /* 1536 (Disabled by default) */,
 },
+
+.fineTune_t7_tWTR = 0,
 
 /* You shouldn't have to anything past here. */
 .eristaCpuDvfsTable = {

@@ -27,6 +27,7 @@
 #if IS_MINIMAL == 1
 #pragma message("Compiling with minimal features")
 #endif
+
 class RamSubmenuGui;
 class RamTimingsSubmenuGui;
 class RamLatenciesSubmenuGui;
@@ -650,10 +651,23 @@ protected:
         addConfigButton(KipConfigValue_t6_tRTW, "t6 tRTW", ValueRange(0, 10, 1, "", 1), "tRTW", &thresholdsDisabled, {}, {}, false);
         addConfigButton(KipConfigValue_t7_tWTR, "t7 tWTR", ValueRange(0, 10, 1, "", 1), "tWTR", &thresholdsDisabled, {}, {}, false);
         addConfigButton(KipConfigValue_t8_tREFI, "t8 tREFI", ValueRange(0, 6, 1, "", 1), "tREFI", &thresholdsDisabled, {}, {}, false);
+
+        std::vector<NamedValue> t7_tWTR_fine_tune = {
+            NamedValue("-3", 0xFFFFFFFD),
+            NamedValue("-2", 0xFFFFFFFE),
+            NamedValue("-1", 0xFFFFFFFF),
+            NamedValue(" 0", 0),
+            NamedValue("+1", 1),
+            NamedValue("+2", 2),
+            NamedValue("+3", 3),
+        };
+
+        addConfigButton(KipConfigValue_t7_tWTR_fine_tune, "t7 tWTR Fine Tune", ValueRange(0, 6, 1, "", 0), "t7 tWTR Fine Tune", &thresholdsDisabled, {}, t7_tWTR_fine_tune, false);
+
         #if IS_MINIMAL == 0
         if(IsMariko()) {
             this->listElement->addItem(new tsl::elm::CategoryHeader("Experimental"));
-            
+
             tsl::elm::ListItem* emcUpdBtn = new tsl::elm::ListItem("Update RAM Timings");
             emcUpdBtn->setClickListener([this](u64 keys) {
                 if (keys & HidNpadButton_A) {
@@ -1188,7 +1202,7 @@ protected:
         };
 
         if (IsMariko()) {
-            
+
             tsl::elm::CustomDrawer* warningText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
                 renderer->drawString("\uE150 Setting GPU Clocks past", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
                 renderer->drawString("1075MHz without UV, 1152MHz on SLT", false, x + 20, y + 50, 18, tsl::style::color::ColorText);

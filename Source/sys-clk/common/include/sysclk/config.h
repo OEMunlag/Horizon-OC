@@ -12,9 +12,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
- 
+
 /* --------------------------------------------------------------------------
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <p-sam@d3vs.net>, <natinusala@gmail.com>, <m4x@m4xw.net>
@@ -157,6 +157,8 @@ typedef enum {
     KipConfigValue_g_volt_e_998400,
     KipConfigValue_g_volt_e_1036800,
     KipConfigValue_g_volt_e_1075200,
+
+    KipConfigValue_t7_tWTR_fine_tune,
 
     KipCrc32,
     HocClkConfigValue_IsFirstLoad,
@@ -370,6 +372,7 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
         case KipConfigValue_g_volt_e_998400: return pretty ? "Erista GPU Volt 998 MHz" : "g_volt_e_998400";
         case KipConfigValue_g_volt_e_1036800: return pretty ? "Erista GPU Volt 1036 MHz" : "g_volt_e_1036800";
         case KipConfigValue_g_volt_e_1075200: return pretty ? "Erista GPU Volt 1075 MHz" : "g_volt_e_1075200";
+        case KipConfigValue_t7_tWTR_fine_tune: return pretty ? "t7 - tWTR Fine Tune" : "t7_tWTR_fine_tune";
         case KipCrc32:
             return pretty ? "CRC32" : "crc32";
         case HocClkConfigValue_IsFirstLoad:
@@ -429,7 +432,7 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case HocClkConfigValue_LiteTDPLimit:
         case SysClkConfigValue_PollingIntervalMs:
             return input > 0;
-        
+
         case SysClkConfigValue_TempLogIntervalMs:
         case SysClkConfigValue_FreqLogIntervalMs:
         case SysClkConfigValue_PowerLogIntervalMs:
@@ -444,7 +447,7 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case HorizonOCConfigValue_EnableUnsafeDisplayFreqs:
         case HocClkConfigValue_IsFirstLoad:
             return (input & 0x1) == input;
-        
+
         case KipConfigValue_custRev:
         // case KipConfigValue_mtcConf:
         case KipConfigValue_hpMode:
@@ -534,6 +537,7 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case KipConfigValue_g_volt_e_1075200:
         case KipConfigValue_eristaCpuVmin:
         case KipConfigValue_eristaCpuUnlock:
+        case KipConfigValue_t7_tWTR_fine_tune:
         case KipCrc32:
             return true;
         case HorizonOCConfigValue_BatteryChargeCurrent:

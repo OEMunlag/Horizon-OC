@@ -12,9 +12,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
- 
+
 
 #pragma once
 #include <switch.h>
@@ -77,7 +77,10 @@ typedef struct {
 
     u32 eristaGpuVoltArray[27];
     u32 marikoGpuVoltArray[24];
-    u32 reserved[64];
+
+    u32 t7_tWTR_fine_tune;
+
+    u32 reserved[60];
 } CustomizeTable;
 
 #pragma pack(pop)
@@ -200,6 +203,7 @@ static inline bool cust_set_tRFC(const char* p, u32 v) { CUST_WRITE_FIELD(p, t5_
 static inline bool cust_set_tRTW(const char* p, u32 v) { CUST_WRITE_FIELD(p, t6_tRTW, v); }
 static inline bool cust_set_tWTR(const char* p, u32 v) { CUST_WRITE_FIELD(p, t7_tWTR, v); }
 static inline bool cust_set_tREFI(const char* p, u32 v) { CUST_WRITE_FIELD(p, t8_tREFI, v); }
+static inline bool cust_set_tWTR_fine_tune(const char* p, u32 v) { CUST_WRITE_FIELD(p, t7_tWTR_fine_tune, v); }
 static inline bool cust_set_burst_read_lat(const char* p, u32 v) { CUST_WRITE_FIELD(p, mem_burst_read_latency, v); }
 static inline bool cust_set_burst_write_lat(const char* p, u32 v) { CUST_WRITE_FIELD(p, mem_burst_write_latency, v); }
 
@@ -267,6 +271,7 @@ static inline u32 cust_get_tRFC(const CustomizeTable* t) { return CUST_GET_FIELD
 static inline u32 cust_get_tRTW(const CustomizeTable* t) { return CUST_GET_FIELD(t, t6_tRTW); }
 static inline u32 cust_get_tWTR(const CustomizeTable* t) { return CUST_GET_FIELD(t, t7_tWTR); }
 static inline u32 cust_get_tREFI(const CustomizeTable* t) { return CUST_GET_FIELD(t, t8_tREFI); }
+static inline u32 cust_get_tWTR_fine_tune(const CustomizeTable* t) { return CUST_GET_FIELD(t, t7_tWTR_fine_tune); }
 static inline u32 cust_get_burst_read_lat(const CustomizeTable* t) { return CUST_GET_FIELD(t, mem_burst_read_latency); }
 static inline u32 cust_get_burst_write_lat(const CustomizeTable* t) { return CUST_GET_FIELD(t, mem_burst_write_latency); }
 

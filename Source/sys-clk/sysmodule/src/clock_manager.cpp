@@ -213,10 +213,10 @@ std::uint32_t ClockManager::GetMaxAllowedHz(SysClkModule module, SysClkProfile p
                                 return 614400000;
                             case 1:
                                 return 691200000;
-                            case 2: 
+                            case 2:
                                 return 768000000;
                             default:
-                                return 614400000;      
+                                return 614400000;
                         }
                     default:
                         return 460800000;
@@ -233,10 +233,10 @@ std::uint32_t ClockManager::GetMaxAllowedHz(SysClkModule module, SysClkProfile p
                                 return 844800000;
                             case 1:
                                 return 921600000;
-                            case 2: 
+                            case 2:
                                 return 998400000;
                             default:
-                                return 844800000;      
+                                return 844800000;
                         }
                     default:
                         return 768000000;
@@ -362,7 +362,7 @@ void ClockManager::GovernorThread(void* arg)
             svcSleepThread(50'000'000);
             continue;
         }
-        
+
         std::scoped_lock lock{mgr->contextMutex};
 
         u32 currentHz = Board::GetHz(SysClkModule_GPU);
@@ -586,7 +586,7 @@ void ClockManager::WaitForNextTick()
 bool ClockManager::RefreshContext()
 {
     bool hasChanged = false;
-    
+
     std::uint32_t mode = 0;
     Result rc = apmExtGetCurrentPerformanceConfiguration(&mode);
     ASSERT_RESULT_OK(rc, "apmExtGetCurrentPerformanceConfiguration");
@@ -816,6 +816,8 @@ void ClockManager::SetKipData() {
         table.eristaGpuVoltArray[i] = this->config->GetConfigValue((SysClkConfigValue)(KipConfigValue_g_volt_e_76800 + i));
     }
 
+    CUST_WRITE_FIELD_BATCH(&table, t7_tWTR_fine_tune, this->config->GetConfigValue(KipConfigValue_t7_tWTR_fine_tune));
+
     if (!cust_write_table("sdmc:/atmosphere/kips/hoc.kip", &table)) {
         FileUtils::LogLine("[clock_manager] Failed to write KIP file");
         writeNotification("Horizon OC\nKip write failed");
@@ -908,7 +910,6 @@ void ClockManager::GetKipData() {
             initialConfigValues[KipConfigValue_eristaCpuMaxVolt] = cust_get_erista_cpu_max_volt(&table);
             initialConfigValues[KipConfigValue_eristaCpuUnlock] = cust_get_eristaCpuUnlock(&table);
 
-
             initialConfigValues[KipConfigValue_marikoCpuUVLow] = cust_get_mariko_cpu_uv_low(&table);
             initialConfigValues[KipConfigValue_marikoCpuUVHigh] = cust_get_mariko_cpu_uv_high(&table);
             initialConfigValues[KipConfigValue_tableConf] = cust_get_table_conf(&table);
@@ -926,6 +927,7 @@ void ClockManager::GetKipData() {
             initialConfigValues[KipConfigValue_marikoGpuVmax] = cust_get_mariko_gpu_vmax(&table);
             initialConfigValues[KipConfigValue_commonGpuVoltOffset] = cust_get_common_gpu_offset(&table);
             initialConfigValues[KipConfigValue_gpuSpeedo] = cust_get_gpu_speedo(&table);
+            initialConfigValues[KipConfigValue_t7_tWTR_fine_tune] = cust_get_tWTR_fine_tune(&table);
         }
 
         // configValues.values[KipConfigValue_mtcConf] = cust_get_mtc_conf(&table);
@@ -981,6 +983,8 @@ void ClockManager::GetKipData() {
             configValues.values[KipConfigValue_g_volt_e_76800 + i] = cust_get_erista_gpu_volt(&table, i);
             initialConfigValues[KipConfigValue_g_volt_e_76800 + i] = cust_get_erista_gpu_volt(&table, i);
         }
+
+        configValues.values[KipConfigValue_t7_tWTR_fine_tune] = cust_get_tWTR_fine_tune(&table);
 
         // if(cust_get_cust_rev(&table) == KIP_CUST_REV)
         //     return;

@@ -121,12 +121,15 @@ typedef struct CustomizeTable {
 
     u32 commonGpuVoltOffset;
 
-    /* TODO: Automatically detect speedo. */
     u32 gpuSpeedo;
 
     u32 eristaGpuVoltArray[27];
     u32 marikoGpuVoltArray[24];
-    u32 reserved[64];
+
+    u32 fineTune_t7_tWTR;
+
+    u32 reserved[60];
+
     CustomizeCpuDvfsTable eristaCpuDvfsTable;
     CustomizeCpuDvfsTable eristaCpuDvfsTableSLT;
 
