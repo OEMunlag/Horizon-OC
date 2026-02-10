@@ -47,7 +47,7 @@ std::map<uint32_t, std::string> gpu_freq_label_e = {
     {768000000, "Docked"},
     {921600000, "Safe Max"},
     {960000000, "Unsafe Max"},
-    {1075200000, "Aboslute Max"},
+    {1075200000, "Absolute Max"},
 };
 
 std::map<uint32_t, std::string> gpu_freq_label_m = {
