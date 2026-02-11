@@ -560,13 +560,7 @@ void ClockManager::Tick()
                         targetHz / 1000000, targetHz / 100000 - targetHz / 1000000 * 10
                     );
 
-                        /* Dvfs here. */
-                        Board::SetHz((SysClkModule)module, nearestHz);
-                        this->context->freqs[module] = nearestHz;
-                        RefreshContext();
-                        continue;
-                    }
-
+                    /* Dvfs here. */
                     Board::SetHz((SysClkModule)module, nearestHz);
                     this->context->freqs[module] = nearestHz;
                 }
@@ -657,7 +651,11 @@ bool ClockManager::RefreshContext()
                     break;
                 case SysClkModule_MEM:
                     Board::ResetToStockMem();
-                    /* Dvfs with vmin = 0 here. */
+
+                    if (Board::GetSocType() == SysClkSocType_Mariko) {
+                        Board::PcvHijackDvfs(0);
+                    }
+
                     break;
                 }
             }
