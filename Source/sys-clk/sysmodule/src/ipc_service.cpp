@@ -12,9 +12,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
- 
+
 /* --------------------------------------------------------------------------
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <p-sam@d3vs.net>, <natinusala@gmail.com>, <m4x@m4xw.net>
@@ -43,7 +43,7 @@ IpcService::IpcService(ClockManager* clockMgr)
 
     this->running = false;
     this->clockMgr = clockMgr;
-    
+
 }
 
 void IpcService::SetRunning(bool running)
@@ -214,11 +214,6 @@ Result IpcService::ServiceHandlerFunc(void* arg, const IpcServerRequest* r, u8* 
                 return ipcSrv->UpdateEmcRegs();
             }
             break;
-        case HocClkIpcCmd_CalculateGpuVmin:
-            if (r->data.size >= 0) {
-                return ipcSrv->CalculateGPUVmin();
-            }
-            break;
     }
 
     return SYSCLK_ERROR(Generic);
@@ -377,23 +372,18 @@ Result IpcService::SetReverseNXRTMode(ReverseNXMode mode) {
 
 Result IpcService::SetKipData() {
     this->clockMgr->SetKipData();
-    
+
     return 0;
 }
 
 Result IpcService::GetKipData() {
     this->clockMgr->GetKipData();
-    
+
     return 0;
 }
 
 Result IpcService::UpdateEmcRegs() {
     this->clockMgr->UpdateRamTimings();
 
-    return 0;
-}
-
-Result IpcService::CalculateGPUVmin() {
-    this->clockMgr->calculateGpuVmin();
     return 0;
 }

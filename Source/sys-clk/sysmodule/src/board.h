@@ -12,9 +12,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
- 
+
 /* --------------------------------------------------------------------------
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <p-sam@d3vs.net>, <natinusala@gmail.com>, <m4x@m4xw.net>
@@ -33,6 +33,8 @@
 class Board
 {
   public:
+    static void PcvHijackDvfs(u32 vmin);
+    static u32 GetMinimumGpuVoltage(u32 freqMhz);
     static void fuseReadSpeedos();
     static u16 getSpeedo(HorizonOCSpeedo speedoType);
     static u16 getIDDQ(HorizonOCSpeedo speedoType);
@@ -67,4 +69,8 @@ class Board
     static void FetchHardwareInfos();
     static PcvModule GetPcvModule(SysClkModule sysclkModule);
     static PcvModuleId GetPcvModuleId(SysClkModule sysclkModule);
+  private:
+    static void SetSpeedoBracket();
+    static void CacheDvfsTable();
+    static Handle GetPcvHandle();
 };

@@ -12,9 +12,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
- 
+
 /* --------------------------------------------------------------------------
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <p-sam@d3vs.net>, <natinusala@gmail.com>, <m4x@m4xw.net>
@@ -96,8 +96,22 @@ std::atomic<uint64_t> idletick2{systemtickfrequency};
 std::atomic<uint64_t> idletick3{systemtickfrequency};
 u32 cpu0, cpu1, cpu2, cpu3, cpuAvg;
 u16 cpuSpeedo0, cpuSpeedo2, socSpeedo0; // CPU, GPU, SOC
+u32 speedoBracket;
 u16 cpuIDDQ, gpuIDDQ, socIDDQ;
 u8 g_dramID = 0;
+
+static const u32 ramBrackets[][22] = {
+    { 2133, 2200, 2266, 2300, 2366, 2400, 2433, 2466, 2533, 2566, 2600, 2633, 2700, 2733, 2766, 2833, 2866, 2900, 2933, 3033, 3066, 3100, },
+    { 2300, 2366, 2433, 2466, 2533, 2566, 2633, 2700, 2733, 2800, 2833, 2900, 2933, 2966, 3033, 3066, 3100, 3133, 3166, 3200, 3233, 3266, },
+    { 2433, 2466, 2533, 2600, 2666, 2733, 2766, 2800, 2833, 2866, 2933, 2966, 3033, 3066, 3100, 3133, 3166, 3200, 3233, 3300, 3333, 3366, },
+    { 2500, 2533, 2600, 2633, 2666, 2733, 2800, 2866, 2900, 2966, 3033, 3100, 3166, 3200, 3233, 3266, 3300, 3333, 3366, 3400, 3400, 3400, },
+};
+
+static const u32 gpuDvfsArray[] = { 590, 600, 610, 620, 630, 640, 650, 660, 670, 680, 690, 700, 710, 720, 730, 740, 750, 760, 770, 780, 790, 800};
+
+u32 dvfsTable[6][32] = {};
+u64 dvfsAddress;
+u32 ramVmin;
 
 const char* Board::GetModuleName(SysClkModule module, bool pretty)
 {
@@ -311,7 +325,7 @@ void Board::fuseReadSpeedos() {
                 cpuIDDQ = *reinterpret_cast<const u16*>(dump + FUSE_CPU_IDDQ_CALIB);
                 gpuIDDQ = *reinterpret_cast<const u16*>(dump + FUSE_SOC_IDDQ_CALIB);
                 socIDDQ = *reinterpret_cast<const u16*>(dump + FUSE_GPU_IDDQ_CALIB);
-                
+
                 svcCloseHandle(debug);
                 return;
             }
@@ -458,7 +472,7 @@ std::uint32_t Board::GetHz(SysClkModule module)
             hz = 60;
         return hz;
     }
-    
+
     if(HOSSVC_HAS_CLKRST)
     {
         ClkrstSession session = {0};
@@ -753,7 +767,7 @@ std::int32_t Board::GetPowerMw(SysClkPowerSensor sensor)
 }
 
 std::uint32_t Board::GetPartLoad(SysClkPartLoad loadSource)
-{		
+{
     switch(loadSource)
     {
         case SysClkPartLoad_EMC:
@@ -792,6 +806,7 @@ u8 Board::GetDramID() {
 void Board::FetchHardwareInfos()
 {
     fuseReadSpeedos();
+    SetSpeedoBracket();
     u64 sku = 0, dramID = 0;
     Result rc = splInitialize();
     ASSERT_RESULT_OK(rc, "splInitialize");
@@ -801,7 +816,7 @@ void Board::FetchHardwareInfos()
 
     rc = splGetConfig(SplConfigItem_DramId, &dramID);
     ASSERT_RESULT_OK(rc, "splGetConfig");
-    
+
     splExit();
 
     switch(sku)
@@ -816,9 +831,12 @@ void Board::FetchHardwareInfos()
             g_socType = SysClkSocType_Erista;
     }
 
+    if (g_socType == SysClkSocType_Mariko) {
+        CacheDvfsTable();
+    }
+
     g_consoleType = (HorizonOCConsoleType)sku;
     g_dramID = (u8)dramID;
-
 }
 
 /*
@@ -926,6 +944,168 @@ std::uint32_t Board::GetVoltage(HocClkVoltage voltage)
     return out > 0 ? out : 0;
 }
 
+void Board::SetSpeedoBracket() {
+    if (cpuSpeedo2 >= 1754) {
+        speedoBracket = 3;
+    } else if (cpuSpeedo2 >= 1690) {
+        speedoBracket = 2;
+    } else if (cpuSpeedo2 > 1625) {
+        speedoBracket = 1;
+    } else {
+        speedoBracket = 0;
+    }
+}
+
+u32 Board::GetMinimumGpuVoltage(u32 freqMhz) {
+    if (freqMhz <= 1600)
+        return 0;
+
+    for (u32 voltageIndex = 0; voltageIndex < 22; ++voltageIndex) {
+        if (freqMhz <= ramBrackets[speedoBracket][voltageIndex]) {
+            return gpuDvfsArray[voltageIndex];
+        }
+    }
+
+    return 800;
+}
+
+Handle Board::GetPcvHandle() {
+    constexpr u64 PcvID = 0x10000000000001a;
+    u64 processIDList[80]{};
+    s32 processCount    = 0;
+    Handle handle       = INVALID_HANDLE;
+
+    DebugEventInfo debugEvent{};
+
+    /* Get all running processes. */
+    Result resultGetProcessList = svcGetProcessList(&processCount, processIDList, std::size(processIDList));
+    if (R_FAILED(resultGetProcessList)) {
+        return INVALID_HANDLE;
+    }
+
+    /* Try to find pcv. */
+    for (int i = 0; i < processCount; ++i) {
+        if (handle != INVALID_HANDLE) {
+            svcCloseHandle(handle);
+            handle = INVALID_HANDLE;
+        }
+
+        /* Try to debug process, if it fails, try next process. */
+        Result resultSvcDebugProcess = svcDebugActiveProcess(&handle, processIDList[i]);
+        if (R_FAILED(resultSvcDebugProcess)) {
+            continue;
+        }
+
+        /* Try to get a debug event. */
+        Result resultDebugEvent = svcGetDebugEvent(&debugEvent, handle);
+        if (R_SUCCEEDED(resultDebugEvent)) {
+            if (debugEvent.info.create_process.program_id == PcvID) {
+                return handle;
+            }
+        }
+    }
+
+    /* Failed to get handle. */
+    return INVALID_HANDLE;
+}
+
+void Board::CacheDvfsTable() {
+    const u32 voltagePattern[] = { 600000, 12500, 1400000, };
+
+    Handle handle = GetPcvHandle();
+    if (handle == INVALID_HANDLE) {
+        FileUtils::LogLine("[Board] Invalid handle!");
+        return;
+    }
+
+    MemoryInfo memoryInfo = {};
+    u64 address = 0;
+    u32 pageInfo = 0;
+    constexpr u32 PageSize = 0x1000;
+    u8 buffer[PageSize];
+
+    /* Loop until failure. */
+    while (true) {
+        /* Find pcv heap. */
+        while (true) {
+            Result resultProcessMemory = svcQueryDebugProcessMemory(&memoryInfo, &pageInfo, handle, address);
+            address = memoryInfo.addr + memoryInfo.size;
+
+            if (R_FAILED(resultProcessMemory) || !address) {
+                svcCloseHandle(handle);
+                FileUtils::LogLine("[Board] Failed to get process data. %u", R_DESCRIPTION(resultProcessMemory));
+                handle = INVALID_HANDLE;
+                return;
+            }
+
+            if (memoryInfo.size && (memoryInfo.perm & 3) == 3 && static_cast<char>(memoryInfo.type) == 0x04) {
+                /* Found valid memory. */
+                break;
+            }
+        }
+
+        for (u64 base = 0; base < memoryInfo.size; base += PageSize) {
+            u32 memorySize = std::min(memoryInfo.size, static_cast<u64>(PageSize));
+            if (R_FAILED(svcReadDebugProcessMemory(buffer, handle, base + memoryInfo.addr, memorySize))) {
+                break;
+            }
+
+            u8 *resultPattern = static_cast<u8 *>(memmem(buffer, sizeof(buffer), voltagePattern, sizeof(voltagePattern)));
+            u32 index = resultPattern - buffer;
+
+            if (!resultPattern) {
+                continue;
+            }
+
+            /* Assuming mariko. */
+            const u32 vmax = 800;
+            constexpr u32 DvfsTableOffset = 312;
+            if (!std::memcmp(&buffer[index + DvfsTableOffset], &vmax, sizeof(vmax))) {
+                std::memcpy(dvfsTable, &buffer[index + DvfsTableOffset], sizeof(dvfsTable));
+                dvfsAddress = base + memoryInfo.addr + DvfsTableOffset + index;
+            }
+
+            svcCloseHandle(handle);
+            handle = INVALID_HANDLE;
+            return;
+        }
+    }
+
+    svcCloseHandle(handle);
+    handle = INVALID_HANDLE;
+    return;
+}
+
+void Board::PcvHijackDvfs(u32 vmin) {
+    u32 table[192];
+    static_assert(sizeof(table) == sizeof(dvfsTable));
+    std::memcpy(table, dvfsTable, sizeof(dvfsTable));
+
+    if (ramVmin == vmin) {
+        return;
+    }
+
+    for (u32 i = 0; i < std::size(table); ++i) {
+        if (table[i] && table[i] <= vmin) {
+            table[i] = vmin;
+        }
+    }
+
+    Handle handle = GetPcvHandle();
+    if (handle == INVALID_HANDLE) {
+        FileUtils::LogLine("Invalid handle!");
+        return;
+    }
+
+    Result rc = svcWriteDebugProcessMemory(handle, table, dvfsAddress, sizeof(table));
+
+    if (R_SUCCEEDED(rc)) {
+        ramVmin = vmin;
+    }
+
+    svcCloseHandle(handle);
+}
+
 #define MC_REGISTER_BASE 0x70019000
 #define MC_REGISTER_REGION_SIZE 0x1000
 
@@ -1021,13 +1201,13 @@ void Board::UpdateShadowRegs(u32 tRCD_i, u32 tRP_i, u32 tRAS_i, u32 tRRD_i, u32 
 
     double tXSR = (double) (tRFCab + 7.5);
 
-    args = {};                                         
-    args.X[0] = 0xF0000002;                             
-    args.X[1] = EMC_REGISTER_BASE + EMC_INTSTATUS_0;    
-    svcCallSecureMonitor(&args);                        
+    args = {};
+    args.X[0] = 0xF0000002;
+    args.X[1] = EMC_REGISTER_BASE + EMC_INTSTATUS_0;
+    svcCallSecureMonitor(&args);
 
     if(args.X[1] == (EMC_REGISTER_BASE + EMC_INTSTATUS_0)) { // if param 1 is identical read failed, exosphere needs patch!
-        writeNotification("Horizon OC\nExosphere not patched\nfor EMC r/w"); 
+        writeNotification("Horizon OC\nExosphere not patched\nfor EMC r/w");
         return;
     }
 
@@ -1079,20 +1259,20 @@ void Board::UpdateShadowRegs(u32 tRCD_i, u32 tRP_i, u32 tRAS_i, u32 tRRD_i, u32 
 
     WRITE_REGISTER_MC(MC_EMEM_ARB_DA_COVERS_0, da_covers);
     // TODO: modify mc_emem_arb_misc0
-    
+
     WRITE_REGISTER_MC(MC_TIMING_CONTROL_0, 0x1); // update timing regs as they are shadowed
     WRITE_REGISTER_EMC(EMC_TIMING_CONTROL_0, 0x1);
 }
 
 
 bool Board::IsDram8GB() {
-    SecmonArgs args = {};                                         
-    args.X[0] = 0xF0000002;                             
-    args.X[1] = MC_REGISTER_BASE + MC_EMEM_CFG_0;    
-    svcCallSecureMonitor(&args);                        
+    SecmonArgs args = {};
+    args.X[0] = 0xF0000002;
+    args.X[1] = MC_REGISTER_BASE + MC_EMEM_CFG_0;
+    svcCallSecureMonitor(&args);
 
     if(args.X[1] == (MC_REGISTER_BASE + MC_EMEM_CFG_0)) { // if param 1 is identical read failed
-        writeNotification("Horizon OC\nSecmon read failed!\n This may be a hardware issue!"); 
+        writeNotification("Horizon OC\nSecmon read failed!\n This may be a hardware issue!");
         return false;
     }  else
         return args.X[1] == 0x00002000 ? true : false;

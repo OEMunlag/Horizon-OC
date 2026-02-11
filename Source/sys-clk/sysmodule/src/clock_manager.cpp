@@ -441,6 +441,7 @@ void ClockManager::GovernorThread(void* arg)
 
 bool prevBoostMode = true;
 
+
 void ClockManager::Tick()
 {
     std::scoped_lock lock{this->contextMutex};
@@ -559,9 +560,17 @@ void ClockManager::Tick()
                         targetHz / 1000000, targetHz / 100000 - targetHz / 1000000 * 10
                     );
 
+                        /* Dvfs here. */
+                        Board::SetHz((SysClkModule)module, nearestHz);
+                        this->context->freqs[module] = nearestHz;
+                        RefreshContext();
+                        continue;
+                    }
+
                     Board::SetHz((SysClkModule)module, nearestHz);
                     this->context->freqs[module] = nearestHz;
                 }
+
                 if(module == SysClkModule_CPU && this->config->GetConfigValue(HocClkConfigValue_FixCpuVoltBug)) {
                     FixCpuBug();
                 }
@@ -648,6 +657,7 @@ bool ClockManager::RefreshContext()
                     break;
                 case SysClkModule_MEM:
                     Board::ResetToStockMem();
+                    /* Dvfs with vmin = 0 here. */
                     break;
                 }
             }
@@ -705,7 +715,7 @@ bool ClockManager::RefreshContext()
 
     for (unsigned int voltageSource = 0; voltageSource < HocClkVoltage_EnumMax; voltageSource++)
     {
-        this->context->voltages[voltageSource] = Board::GetVoltage((HocClkVoltage)voltageSource);
+        this->context->voltages[voltageSource] = Board::GetVoltage(HocClkVoltage_GPU);
     }
 
     if (this->ConfigIntervalTimeout(SysClkConfigValue_CsvWriteIntervalMs, ns, &this->lastCsvWriteNs))
@@ -1026,56 +1036,4 @@ void ClockManager::UpdateRamTimings() {
 
 
     Board::UpdateShadowRegs(t1_tRCD, t2_tRP, t3_tRAS, t4_tRRD, t5_tRFC, t6_tRTW, t7_tWTR, t8_tREFI, ramFreq, rlAdd, wlAdd, hpMode);
-}
-
-unsigned int ramBrackets[][22] =
-{
-    { 2133, 2200, 2266, 2300, 2366, 2400, 2433, 2466, 2533, 2566, 2600, 2633, 2700, 2733, 2766, 2833, 2866, 2900, 2933, 3033, 3066, 3100, },
-    { 2300, 2366, 2433, 2466, 2533, 2566, 2633, 2700, 2733, 2800, 2833, 2900, 2933, 2966, 3033, 3066, 3100, 3133, 3166, 3200, 3233, 3266, },
-    { 2433, 2466, 2533, 2600, 2666, 2733, 2766, 2800, 2833, 2866, 2933, 2966, 3033, 3066, 3100, 3133, 3166, 3200, 3233, 3300, 3333, 3366, },
-    { 2500, 2533, 2600, 2633, 2666, 2733, 2800, 2866, 2900, 2966, 3033, 3100, 3166, 3200, 3233, 3266, 3300, 3333, 3366, 3400, 3400, 3400, }
-};
-
-unsigned int gpuDvfsArray[] = { 590, 600, 610, 620, 630, 640, 650, 660, 670, 680, 690, 700, 710, 720, 730, 740, 750, 760, 770, 780, 790, 800};
-
-int ClockManager::GetSpeedoBracket (int speedo)
-{
-    int speedoBracket = 3;
-    if ((speedo < 1754) && (speedoBracket = 2, speedo < 1690)) {
-        speedoBracket = !!(1625 < speedo);
-    }
-
-    return speedoBracket;
-}
-
-unsigned int ClockManager::GetGpuVoltage (unsigned int freq, int speedo)
-{
-    long int loop;
-    int bracket = GetSpeedoBracket(speedo);
-
-    if (freq < 1601)
-        return 610;
-
-    loop = 0;
-    do
-    {
-        if (freq <= ramBrackets[bracket][loop])
-            return gpuDvfsArray[loop];
-
-        loop++;
-    } while (loop != 22);
-
-    return 800;
-}
-
-void ClockManager::calculateGpuVmin (void)
-{
-    if(this->config->Refresh()) {
-        SysClkConfigValueList configValues;
-        this->config->GetConfigValues(&configValues);
-
-        int speedo = Board::getSpeedo(HorizonOCSpeedo_CPU), freq = this->config->GetConfigValue(KipConfigValue_marikoEmcMaxClock);
-        configValues.values[KipConfigValue_marikoGpuVmin] = GetGpuVoltage(freq, speedo);
-        this->config->SetConfigValues(&configValues, true);
-    }
 }
