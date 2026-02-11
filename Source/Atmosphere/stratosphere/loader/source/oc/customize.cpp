@@ -22,7 +22,7 @@
 
 /* Never edit these. */
 #define AUTO 0
-#define AUTO_RAM 0
+#define AUTO_RAM 1
 #define ENABLED 1
 #define DISABLED 0
 #define DEACTIVATED_GPU_FREQ 2000
@@ -105,7 +105,7 @@ volatile CustomizeTable C = {
 /* For automatic vmin detection, set this to AUTO. */
 /* vmin past 795mV won't work due to HOS limitation */
 /* Vmin is automatically set to 800mV when SoC temperature is below 20C */
-.marikoGpuVmin = AUTO,
+.marikoGpuVmin = AUTO_RAM,
 
 .marikoGpuVmax = 800,
 
@@ -176,6 +176,8 @@ volatile CustomizeTable C = {
     DEACTIVATED_GPU_FREQ  /* 1536 (Disabled by default) */,
 },
 
+/* Advanced. */
+.fineTune_t6_tRTW = 0,
 .fineTune_t7_tWTR = 0,
 
 /* You shouldn't have to anything past here. */
