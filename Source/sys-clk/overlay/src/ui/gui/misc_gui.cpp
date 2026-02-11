@@ -652,6 +652,14 @@ protected:
         addConfigButton(KipConfigValue_t7_tWTR, "t7 tWTR", ValueRange(0, 10, 1, "", 1), "tWTR", &thresholdsDisabled, {}, {}, false);
         addConfigButton(KipConfigValue_t8_tREFI, "t8 tREFI", ValueRange(0, 6, 1, "", 1), "tREFI", &thresholdsDisabled, {}, {}, false);
 
+        std::vector<NamedValue> t6_tRTW_fine_tune = {
+            NamedValue("-2", 0xFFFFFFFE),
+            NamedValue("-1", 0xFFFFFFFF),
+            NamedValue(" 0", 0),
+            NamedValue("+1", 1),
+            NamedValue("+2", 2),
+        };
+
         std::vector<NamedValue> t7_tWTR_fine_tune = {
             NamedValue("-3", 0xFFFFFFFD),
             NamedValue("-2", 0xFFFFFFFE),
@@ -663,7 +671,8 @@ protected:
         };
 
         this->listElement->addItem(new tsl::elm::CategoryHeader("Advanced"));
-        addConfigButton(KipConfigValue_t7_tWTR_fine_tune, "t7 tWTR Fine Tune", ValueRange(0, 6, 1, "", 0), "t7 tWTR Fine Tune", &thresholdsDisabled, {}, t7_tWTR_fine_tune, false);
+        addConfigButton(KipConfigValue_t6_tRTW_fine_tune, "t6 tRTW Fine Tune", ValueRange(0, 4, 1, "", 0), "tRTW Fine Tune", &thresholdsDisabled, {}, t6_tRTW_fine_tune, false);
+        addConfigButton(KipConfigValue_t7_tWTR_fine_tune, "t7 tWTR Fine Tune", ValueRange(0, 6, 1, "", 0), "tWTR Fine Tune", &thresholdsDisabled, {}, t7_tWTR_fine_tune, false);
 
         #if IS_MINIMAL == 0
         if(IsMariko()) {

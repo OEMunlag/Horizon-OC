@@ -816,6 +816,7 @@ void ClockManager::SetKipData() {
         table.eristaGpuVoltArray[i] = this->config->GetConfigValue((SysClkConfigValue)(KipConfigValue_g_volt_e_76800 + i));
     }
 
+    CUST_WRITE_FIELD_BATCH(&table, t6_tRTW_fine_tune, this->config->GetConfigValue(KipConfigValue_t6_tRTW_fine_tune));
     CUST_WRITE_FIELD_BATCH(&table, t7_tWTR_fine_tune, this->config->GetConfigValue(KipConfigValue_t7_tWTR_fine_tune));
 
     if (!cust_write_table("sdmc:/atmosphere/kips/hoc.kip", &table)) {
@@ -927,6 +928,7 @@ void ClockManager::GetKipData() {
             initialConfigValues[KipConfigValue_marikoGpuVmax] = cust_get_mariko_gpu_vmax(&table);
             initialConfigValues[KipConfigValue_commonGpuVoltOffset] = cust_get_common_gpu_offset(&table);
             initialConfigValues[KipConfigValue_gpuSpeedo] = cust_get_gpu_speedo(&table);
+            initialConfigValues[KipConfigValue_t6_tRTW_fine_tune] = cust_get_tRTW_fine_tune(&table);
             initialConfigValues[KipConfigValue_t7_tWTR_fine_tune] = cust_get_tWTR_fine_tune(&table);
         }
 
@@ -985,6 +987,7 @@ void ClockManager::GetKipData() {
         }
 
         configValues.values[KipConfigValue_t7_tWTR_fine_tune] = cust_get_tWTR_fine_tune(&table);
+        configValues.values[KipConfigValue_t6_tRTW_fine_tune] = cust_get_tRTW_fine_tune(&table);
 
         // if(cust_get_cust_rev(&table) == KIP_CUST_REV)
         //     return;

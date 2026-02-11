@@ -126,6 +126,7 @@ typedef struct CustomizeTable {
     u32 eristaGpuVoltArray[27];
     u32 marikoGpuVoltArray[24];
 
+    u32 fineTune_t6_tRTW;
     u32 fineTune_t7_tWTR;
 
     u32 reserved[60];

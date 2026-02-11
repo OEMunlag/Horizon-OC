@@ -132,6 +132,7 @@ namespace ams::ldr::hoc {
         const double tRRD = tRRD_values[C.t4_tRRD];
         const u32 tRFCpb  = tRFC_values[C.t5_tRFC];
         const u32 tWTR    = 10 - tWTR_values[C.t7_tWTR];
+        const s32 finetRTW = C.fineTune_t6_tRTW;
         const s32 finetWTR = C.fineTune_t7_tWTR;
 
         const u32 tRC      = tRAS + tRPpb;
@@ -141,7 +142,7 @@ namespace ams::ldr::hoc {
         const double tRPab = tRPpb + 3;
 
         const u32 tR2P   = CEIL((RL_DBI * 0.426) - 2.0);
-        const u32 tR2W = FLOOR(FLOOR((5.0 / tCK_avg) + ((FLOOR(48.0 / WL) - 0.478) * 3.0)) / 1.501) + RL_DBI - (C.t6_tRTW * 3);
+        const u32 tR2W = FLOOR(FLOOR((5.0 / tCK_avg) + ((FLOOR(48.0 / WL) - 0.478) * 3.0)) / 1.501) + RL_DBI - (C.t6_tRTW * 3) + finetRTW;
         const u32 tRTM   = FLOOR((10.0 + RL_DBI) + (3.502 / tCK_avg)) + FLOOR(7.489 / tCK_avg);
         const u32 tRATM  = CEIL((tRTM - 10.0) + (RL_DBI * 0.426));
         inline u32 rext;
