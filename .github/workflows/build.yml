@@ -89,7 +89,7 @@ jobs:
           export CXX="ccache aarch64-none-elf-g++"
 
           ROOT_DIR="$GITHUB_WORKSPACE/Source/sys-clk"
-          DIST_DIR="$ROOT_DIR/dist"
+          DIST_DIR="$GITHUB_WORKSPACE/dist"
           
           mkdir -p "$DIST_DIR"
 
