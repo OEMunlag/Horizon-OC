@@ -12,7 +12,7 @@ jobs:
 
     # Minimal devkitA64 container
     container:
-      image: devkitpro/devkita64:20251231
+      image: devkitpro/devkita64:latest
 
     steps:
       - name: Checkout repository and submodules # needed for hoc-clk
