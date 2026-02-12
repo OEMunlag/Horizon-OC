@@ -577,7 +577,7 @@ void ClockManager::Tick()
 
                         /* Wait until it's safe to update clock. */
                         u32 gpuVolts;
-                        while ((gpuVolts = I2c_BuckConverter_GetMvOut(&I2c_Mariko_GPU) != vmin)) {
+                        while ((gpuVolts = I2c_BuckConverter_GetMvOut(&I2c_Mariko_GPU)) != vmin) {
                             svcSleepThread(50000);
                         }
 
