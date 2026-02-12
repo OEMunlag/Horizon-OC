@@ -116,33 +116,41 @@ ClockManager::ClockManager()
 
 
 void ClockManager::FixCpuBug() {
-    if(this->config->Refresh() && this->RefreshContext()) {
-        u32 targetHz = 0;
-        u32 maxHz = 0;
-        u32 nearestHz = 0;
+    static constexpr u64 freqs[] = {
+        1785000000, // this will just set to the max when kip is unloaded so idgaf
+        1887000000,
+        1963000000,
+        2091000000,
+        2193000000,
+        2295000000,
+        2397000000,
+        2499000000,
+        2601000000,
+        2703000000  // replicates manual fix; if unstable it resets to 1020 due to speed
+    };
 
-        // ResetToStockClocks();
-
-        targetHz = this->context->overrideFreqs[SysClkModule_CPU];
-        if (!targetHz) {
-            targetHz = this->config->GetAutoClockHz(this->context->applicationId, SysClkModule_CPU, this->context->profile, false);
-            if(!targetHz)
-                targetHz = this->config->GetAutoClockHz(GLOBAL_PROFILE_ID, SysClkModule_CPU, this->context->profile, false);
-        }
-
-        if (targetHz) {
-            maxHz = this->GetMaxAllowedHz(SysClkModule_CPU, this->context->profile);
-            nearestHz = this->GetNearestHz(SysClkModule_CPU, targetHz, maxHz);
-
-            while ((nearestHz = this->GetNearestHz(SysClkModule_CPU, targetHz, maxHz)) != targetHz) {
-                Board::SetHz(SysClkModule_CPU, 1020000000);
-                svcSleepThread(1'000'000);
-                Board::SetHz(SysClkModule_CPU, maxHz);
-                this->context->freqs[SysClkModule_CPU] = maxHz;
-            }
-            Board::SetHz(SysClkModule_CPU, targetHz);
-        }
+    for (u64 hz : freqs) {
+        Board::SetHz(SysClkModule_CPU, hz);
     }
+
+    svcSleepThread(1'000'000);
+
+    Board::SetHz(SysClkModule_CPU, 1020000000);
+    ResetToStockClocks();
+    u32 targetHz = this->context->overrideFreqs[SysClkModule_CPU];
+    if (!targetHz)
+    {
+        targetHz = this->config->GetAutoClockHz(this->context->applicationId, SysClkModule_CPU, this->context->profile, false);
+        if(!targetHz)
+            targetHz = this->config->GetAutoClockHz(GLOBAL_PROFILE_ID, SysClkModule_CPU, this->context->profile, false);
+    }
+
+    if (targetHz)
+    {
+        Board::SetHz(SysClkModule_CPU, targetHz);
+        this->context->freqs[SysClkModule_CPU] = targetHz;
+    }
+
 }
 
 ClockManager::~ClockManager()
@@ -656,11 +664,6 @@ bool ClockManager::RefreshContext()
     {
         // this->rnxSync->ToggleSync(this->GetConfig()->GetConfigValue(HocClkConfigValue_SyncReverseNXMode));
         Board::ResetToStock();
-        if (Board::GetSocType() == SysClkSocType_Mariko && this->config->GetConfigValue(HorizonOCConfigValue_DVFSMode) == DVFSMode_Hijack) {
-            Board::PcvHijackDvfs(0);
-            Board::SetHz(SysClkModule_GPU, ~0);
-            Board::ResetToStockGpu();
-        }
         this->WaitForNextTick();
     }
 
@@ -699,8 +702,21 @@ bool ClockManager::RefreshContext()
 
                     if (Board::GetSocType() == SysClkSocType_Mariko && this->config->GetConfigValue(HorizonOCConfigValue_DVFSMode) == DVFSMode_Hijack) {
                         Board::PcvHijackDvfs(0);
-                        Board::SetHz(SysClkModule_GPU, ~0);
-                        Board::ResetToStockGpu();
+
+                        u32 targetHz = this->context->overrideFreqs[SysClkModule_GPU];
+                        if (!targetHz)
+                        {
+                            targetHz = this->config->GetAutoClockHz(this->context->applicationId, SysClkModule_GPU, this->context->profile, false);
+                            if(!targetHz)
+                                targetHz = this->config->GetAutoClockHz(GLOBAL_PROFILE_ID, SysClkModule_GPU, this->context->profile, false);
+                        }
+                        if(targetHz) {
+                            Board::SetHz(SysClkModule_GPU, ~0);
+                            Board::SetHz(SysClkModule_GPU, targetHz);
+                        } else {
+                            Board::SetHz(SysClkModule_GPU, ~0);
+                            Board::ResetToStockGpu();
+                        }
                     }
 
                     break;
