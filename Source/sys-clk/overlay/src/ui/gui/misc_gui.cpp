@@ -318,19 +318,19 @@ void MiscGui::listUI()
         );
 
         std::vector<NamedValue> dvfsOffset = {
-            NamedValue("-50", 0xFFFFFFCE),
-            NamedValue("-45", 0xFFFFFFD3),
-            NamedValue("-40", 0xFFFFFFD8),
-            NamedValue("-30", 0xFFFFFFE2),
-            NamedValue("-25", 0xFFFFFFE7),
-            NamedValue("-20", 0xFFFFFFEC),
-            NamedValue("-10", 0xFFFFFFF6),
-            NamedValue(" -5", 0xFFFFFFFB),
-            NamedValue("  0",          0),
-            NamedValue(" +5",          5),
-            NamedValue("+10",         10),
-            NamedValue("+15",         15),
-            NamedValue("+20",         20),
+            NamedValue("-50 mV", 0xFFFFFFCE),
+            NamedValue("-45 mV", 0xFFFFFFD3),
+            NamedValue("-40 mV", 0xFFFFFFD8),
+            NamedValue("-30 mV", 0xFFFFFFE2),
+            NamedValue("-25 mV", 0xFFFFFFE7),
+            NamedValue("-20 mV", 0xFFFFFFEC),
+            NamedValue("-10 mV", 0xFFFFFFF6),
+            NamedValue(" -5 mV", 0xFFFFFFFB),
+            NamedValue("Disabled",          0),
+            NamedValue(" +5 mV",          5),
+            NamedValue("+10 mV",         10),
+            NamedValue("+15 mV",         15),
+            NamedValue("+20 mV",         20),
         };
 
         addConfigButton(HorizonOCConfigValue_DVFSOffset, "GPU DVFS Offset", ValueRange(0, 12, 1, "", 0), "GPU DVFS Offset", &thresholdsDisabled, {}, dvfsOffset, false);
@@ -631,7 +631,7 @@ protected:
             addConfigButton(
                 KipConfigValue_marikoEmcVddqVolt,
                 "RAM VDDQ Voltage",
-                ValueRange(550000, 700000, 5000, "mV", 1000),
+                ValueRange(400000, 700000, 5000, "mV", 1000),
                 "RAM VDDQ Voltage",
                 &thresholdsDisabled,
                 {},
