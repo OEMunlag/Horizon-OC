@@ -150,7 +150,6 @@ void ClockManager::FixCpuBug() {
         Board::SetHz(SysClkModule_CPU, targetHz);
         this->context->freqs[SysClkModule_CPU] = targetHz;
     }
-
 }
 
 ClockManager::~ClockManager()
@@ -664,6 +663,11 @@ bool ClockManager::RefreshContext()
     {
         // this->rnxSync->ToggleSync(this->GetConfig()->GetConfigValue(HocClkConfigValue_SyncReverseNXMode));
         Board::ResetToStock();
+        if (Board::GetSocType() == SysClkSocType_Mariko && this->config->GetConfigValue(HorizonOCConfigValue_DVFSMode) == DVFSMode_Hijack) {
+            Board::PcvHijackDvfs(0);
+            Board::SetHz(SysClkModule_GPU, ~0);
+            Board::ResetToStockGpu();
+        }
         this->WaitForNextTick();
     }
 
