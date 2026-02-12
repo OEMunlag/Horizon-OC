@@ -566,7 +566,10 @@ void ClockManager::Tick()
                     );
 
                     if(module == SysClkModule_MEM && Board::GetSocType() == SysClkSocType_Mariko && targetHz > oldHz && this->config->GetConfigValue(HorizonOCConfigValue_DVFSMode) == DVFSMode_Hijack) {
-                        u32 vmin = Board::GetMinimumGpuVoltage(targetHz / 1000000);
+                        s32 dvfsOffset = this->config->GetConfigValue(HorizonOCConfigValue_DVFSOffset);
+                        dvfsOffset = std::max(dvfsOffset, -50);
+                        u32 vmin = Board::GetMinimumGpuVoltage(targetHz / 1000000) + dvfsOffset;
+
                         Board::PcvHijackDvfs(vmin);
 
                         /* Update the voltage. */
@@ -586,7 +589,10 @@ void ClockManager::Tick()
                 }
 
                 if(module == SysClkModule_MEM && Board::GetSocType() == SysClkSocType_Mariko && targetHz < oldHz && this->config->GetConfigValue(HorizonOCConfigValue_DVFSMode) == DVFSMode_Hijack) {
-                    Board::PcvHijackDvfs(Board::GetMinimumGpuVoltage(targetHz / 1000000));
+                    s32 dvfsOffset = this->config->GetConfigValue(HorizonOCConfigValue_DVFSOffset);
+                    dvfsOffset = std::max(dvfsOffset, -50);
+                    u32 vmin = Board::GetMinimumGpuVoltage(targetHz / 1000000) + dvfsOffset;
+                    Board::PcvHijackDvfs(vmin);
 
                     targetHz = this->context->overrideFreqs[SysClkModule_GPU];
                     if (!targetHz)

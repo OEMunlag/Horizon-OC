@@ -298,6 +298,45 @@ void MiscGui::listUI()
         addFreqButton(HocClkConfigValue_EristaMaxCpuClock, nullptr, SysClkModule_CPU, cpu_freq_label_e);
     }
 
+    if (IsMariko()) {
+        std::vector<NamedValue> dvfsValues = {
+            NamedValue("Disabled", DVFSMode_Disabled),
+            NamedValue("PCV Hijack", DVFSMode_Hijack),
+            // NamedValue("Official Service", DVFSMode_OfficialService),
+            // NamedValue("Hack", DVFSMode_Hack),
+        };
+
+        addConfigButton(
+            HorizonOCConfigValue_DVFSMode,
+            "GPU DVFS Mode",
+            ValueRange(0, 0, 1, "", 0),
+            "GPU DVFS Mode",
+            &thresholdsDisabled,
+            {},
+            dvfsValues,
+            false
+        );
+
+        std::vector<NamedValue> dvfsOffset = {
+            NamedValue("-50", 0xFFFFFFCE),
+            NamedValue("-45", 0xFFFFFFD3),
+            NamedValue("-40", 0xFFFFFFD8),
+            NamedValue("-30", 0xFFFFFFE2),
+            NamedValue("-25", 0xFFFFFFE7),
+            NamedValue("-20", 0xFFFFFFEC),
+            NamedValue("-10", 0xFFFFFFF6),
+            NamedValue(" -5", 0xFFFFFFFB),
+            NamedValue("  0",          0),
+            NamedValue(" +5",          5),
+            NamedValue("+10",         10),
+            NamedValue("+15",         15),
+            NamedValue("+20",         20),
+        };
+
+        addConfigButton(HorizonOCConfigValue_DVFSOffset, "GPU DVFS Offset", ValueRange(0, 12, 1, "", 0), "GPU DVFS Offset", &thresholdsDisabled, {}, dvfsOffset, false);
+
+    }
+
     this->listElement->addItem(new tsl::elm::CategoryHeader("KIP"));
 
     tsl::elm::ListItem* saveBtn = new tsl::elm::ListItem("Save KIP Settings");
@@ -345,23 +384,6 @@ void MiscGui::listUI()
     this->listElement->addItem(gpuSubmenu);
 
     this->listElement->addItem(new tsl::elm::CategoryHeader("Experimental"));
-    std::vector<NamedValue> dvfsValues = {
-        NamedValue("Disabled", DVFSMode_Disabled),
-        NamedValue("PCV Hijack", DVFSMode_Hijack),
-        // NamedValue("Official Service", DVFSMode_OfficialService),
-        // NamedValue("Hack", DVFSMode_Hack),
-    };
-
-    addConfigButton(
-        HorizonOCConfigValue_DVFSMode,
-        "GPU DVFS Mode",
-        ValueRange(0, 0, 1, "", 0),
-        "GPU DVFS Mode",
-        &thresholdsDisabled,
-        {},
-        dvfsValues,
-        false
-    );
 
     #if IS_MINIMAL == 0
         std::vector<NamedValue> chargerCurrents = {
