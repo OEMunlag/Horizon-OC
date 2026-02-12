@@ -47,8 +47,9 @@ bool hasChanged = true;
 ClockManager *ClockManager::instance = NULL;
 Thread governorTHREAD;
 u32 initialConfigValues[SysClkConfigValue_EnumMax]; // initial config. used for safety checks
-
+u64 previousRamHz;
 bool kipAvailable = false;
+
 ClockManager *ClockManager::GetInstance()
 {
     return instance;
@@ -110,6 +111,7 @@ ClockManager::ClockManager()
 
     this->context->dramID = Board::GetDramID();
     this->context->isDram8GB = Board::IsDram8GB();
+    previousRamHz = Board::GetHz(SysClkModule_MEM);
 }
 
 
@@ -196,7 +198,7 @@ std::uint32_t ClockManager::GetMaxAllowedHz(SysClkModule module, SysClkProfile p
 {
     if (this->config->GetConfigValue(HocClkConfigValue_UncappedClocks))
     {
-        return 4294967294; // Integer limit, uncapped clocks ON
+        return ~0; // Integer limit, uncapped clocks ON
     }
     else
     {
@@ -246,7 +248,7 @@ std::uint32_t ClockManager::GetMaxAllowedHz(SysClkModule module, SysClkProfile p
             if(profile < SysClkProfile_HandheldCharging && Board::GetSocType() == SysClkSocType_Erista) {
                 return 1581000000;
             } else {
-                return 4294967294;
+                return ~0;
             }
         }
     }
@@ -441,7 +443,6 @@ void ClockManager::GovernorThread(void* arg)
 
 bool prevBoostMode = true;
 
-
 void ClockManager::Tick()
 {
     std::scoped_lock lock{this->contextMutex};
@@ -485,6 +486,7 @@ void ClockManager::Tick()
 
     if (this->RefreshContext() || this->config->Refresh())
     {
+
         if(this->config->GetConfigValue(HorizonOCConfigValue_BatteryChargeCurrent)) {
             I2c_Bq24193_SetFastChargeCurrentLimit(this->config->GetConfigValue(HorizonOCConfigValue_BatteryChargeCurrent));
         }
@@ -496,10 +498,13 @@ void ClockManager::Tick()
             // ResetToStockClocks();
             return;
         }
+        previousRamHz = Board::GetHz(SysClkModule_MEM);
 
         bool returnRaw = false;
         for (unsigned int module = 0; module < SysClkModule_EnumMax; module++)
         {
+            u32 oldHz = Board::GetHz((SysClkModule)module);
+
             if(module > SysClkModule_MEM)
                 returnRaw = true;
             else
@@ -559,16 +564,48 @@ void ClockManager::Tick()
                         nearestHz / 1000000, nearestHz / 100000 - nearestHz / 1000000 * 10,
                         targetHz / 1000000, targetHz / 100000 - targetHz / 1000000 * 10
                     );
-
                     /* Dvfs here. */
+                    if(module == SysClkModule_MEM && Board::GetSocType() == SysClkSocType_Mariko && targetHz > oldHz) {
+                        Board::PcvHijackDvfs(Board::GetMinimumGpuVoltage(targetHz / 1000000));
+                        I2c_BuckConverter_SetMvOut(&I2c_Mariko_GPU, Board::GetMinimumGpuVoltage(targetHz / 1000000));
+                        this->context->voltages[HocClkVoltage_GPU] = Board::GetMinimumGpuVoltage(targetHz / 1000000) * 1000;
+                    }
+
                     Board::SetHz((SysClkModule)module, nearestHz);
                     this->context->freqs[module] = nearestHz;
+
+                }
+
+                if(module == SysClkModule_MEM && Board::GetSocType() == SysClkSocType_Mariko && targetHz < oldHz) {
+                    Board::PcvHijackDvfs(0);
+                    // I2c_BuckConverter_SetMvOut(&I2c_Mariko_GPU, 0);
+
+                    targetHz = this->context->overrideFreqs[SysClkModule_GPU];
+                    if (!targetHz)
+                    {
+                        targetHz = this->config->GetAutoClockHz(this->context->applicationId, SysClkModule_GPU, this->context->profile, false);
+                        if(!targetHz)
+                            targetHz = this->config->GetAutoClockHz(GLOBAL_PROFILE_ID, SysClkModule_GPU, this->context->profile, false);
+                    }
+                    if(targetHz) {
+                        Board::SetHz(SysClkModule_GPU, ~0);
+                        Board::SetHz(SysClkModule_GPU, targetHz);
+                    } else {
+                        Board::SetHz(SysClkModule_GPU, ~0);
+                        Board::ResetToStockGpu();
+                    }
                 }
 
                 if(module == SysClkModule_CPU && this->config->GetConfigValue(HocClkConfigValue_FixCpuVoltBug)) {
                     FixCpuBug();
                 }
             }
+            //  else {
+            //     if(module == SysClkModule_MEM && Board::GetSocType() == SysClkSocType_Mariko) {
+            //         Board::PcvHijackDvfs(0);
+            //     }
+            // }
+
         }
     }
 }
@@ -713,7 +750,7 @@ bool ClockManager::RefreshContext()
 
     for (unsigned int voltageSource = 0; voltageSource < HocClkVoltage_EnumMax; voltageSource++)
     {
-        this->context->voltages[voltageSource] = Board::GetVoltage(HocClkVoltage_GPU);
+        this->context->voltages[voltageSource] = Board::GetVoltage((HocClkVoltage)voltageSource);
     }
 
     if (this->ConfigIntervalTimeout(SysClkConfigValue_CsvWriteIntervalMs, ns, &this->lastCsvWriteNs))

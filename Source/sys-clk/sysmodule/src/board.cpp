@@ -41,6 +41,7 @@
 #include <cstring>
 #include <registers.h>
 #include <notification.h>
+#include <memmem.h>
 
 #define MAX(A, B)   std::max(A, B)
 #define MIN(A, B)   std::min(A, B)
@@ -1050,7 +1051,7 @@ void Board::CacheDvfsTable() {
                 break;
             }
 
-            u8 *resultPattern = static_cast<u8 *>(memmem(buffer, sizeof(buffer), voltagePattern, sizeof(voltagePattern)));
+            u8 *resultPattern = static_cast<u8 *>(memmem_impl(buffer, sizeof(buffer), voltagePattern, sizeof(voltagePattern)));
             u32 index = resultPattern - buffer;
 
             if (!resultPattern) {
@@ -1104,6 +1105,7 @@ void Board::PcvHijackDvfs(u32 vmin) {
     }
 
     svcCloseHandle(handle);
+    FileUtils::LogLine("[dvfs] voltage set to %u mV", vmin);
 }
 
 #define MC_REGISTER_BASE 0x70019000

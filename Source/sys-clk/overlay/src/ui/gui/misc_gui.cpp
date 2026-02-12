@@ -344,8 +344,26 @@ void MiscGui::listUI()
     });
     this->listElement->addItem(gpuSubmenu);
 
+    this->listElement->addItem(new tsl::elm::CategoryHeader("Experimental"));
+    std::vector<NamedValue> dvfsValues = {
+        NamedValue("Disabled", DVFSMode_Disabled),
+        NamedValue("PCV Hijack", DVFSMode_Hijack),
+        // NamedValue("Official Service", DVFSMode_OfficialService),
+        // NamedValue("Hack", DVFSMode_Hack),
+    };
+
+    addConfigButton(
+        HorizonOCConfigValue_DVFSMode,
+        "GPU DVFS Mode",
+        ValueRange(0, 0, 1, "", 0),
+        "GPU DVFS Mode",
+        &thresholdsDisabled,
+        {},
+        dvfsValues,
+        false
+    );
+
     #if IS_MINIMAL == 0
-        this->listElement->addItem(new tsl::elm::CategoryHeader("Experimental"));
         std::vector<NamedValue> chargerCurrents = {
             NamedValue("Disabled", 0),
             NamedValue("1024mA", 1024),
