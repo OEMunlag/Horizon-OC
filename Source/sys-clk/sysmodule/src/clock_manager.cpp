@@ -577,7 +577,7 @@ void ClockManager::Tick()
                 }
 
                 if(module == SysClkModule_MEM && Board::GetSocType() == SysClkSocType_Mariko && targetHz < oldHz && this->config->GetConfigValue(HorizonOCConfigValue_DVFSMode) == DVFSMode_Hijack) {
-                    Board::PcvHijackDvfs(0);
+                    Board::PcvHijackDvfs(Board::GetMinimumGpuVoltage(targetHz / 1000000));
 
                     targetHz = this->context->overrideFreqs[SysClkModule_GPU];
                     if (!targetHz)
