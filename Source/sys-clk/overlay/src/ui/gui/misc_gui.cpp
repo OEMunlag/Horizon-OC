@@ -713,37 +713,6 @@ protected:
         this->listElement->addItem(new tsl::elm::CategoryHeader("Advanced"));
         addConfigButton(KipConfigValue_t6_tRTW_fine_tune, "t6 tRTW Fine Tune", ValueRange(0, 4, 1, "", 0), "tRTW Fine Tune", &thresholdsDisabled, {}, t6_tRTW_fine_tune, false);
         addConfigButton(KipConfigValue_t7_tWTR_fine_tune, "t7 tWTR Fine Tune", ValueRange(0, 6, 1, "", 0), "tWTR Fine Tune", &thresholdsDisabled, {}, t7_tWTR_fine_tune, false);
-
-        #if IS_MINIMAL == 0
-        if(IsMariko()) {
-            this->listElement->addItem(new tsl::elm::CategoryHeader("Experimental"));
-
-            tsl::elm::ListItem* emcUpdBtn = new tsl::elm::ListItem("Update RAM Timings");
-            emcUpdBtn->setClickListener([this](u64 keys) {
-                if (keys & HidNpadButton_A) {
-                    if(this->context->freqs[SysClkModule_MEM] > 1600000000) {
-                        Result rc = hocClkIpcUpdateEmcRegs();
-                        if (R_FAILED(rc)) {
-                            FatalGui::openWithResultCode("hocClkIpcUpdateEmcRegs", rc);
-                            return false;
-                        }
-                        return true;
-                    } else {
-                        writeNotification("Horizon OC\nSet your ram frequency to max\nbefore applying timings!");
-                    }
-                }
-                return false;
-            });
-
-            this->listElement->addItem(emcUpdBtn);
-            tsl::elm::CustomDrawer* warningText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
-                renderer->drawString("\uE150 This feature is EXPERIMENTAL", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
-                renderer->drawString("and should only be used for testing!", false, x + 20, y + 50, 18, tsl::style::color::ColorText);
-            });
-            warningText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 70);
-            this->listElement->addItem(warningText);
-        }
-        #endif
     }
 };
 

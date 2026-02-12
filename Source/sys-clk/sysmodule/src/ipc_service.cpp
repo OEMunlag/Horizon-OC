@@ -209,11 +209,6 @@ Result IpcService::ServiceHandlerFunc(void* arg, const IpcServerRequest* r, u8* 
                 return ipcSrv->SetKipData();
             }
             break;
-        case HocClkIpcCmd_UpdateEmcRegs:
-            if (r->data.size >= 0) {
-                return ipcSrv->UpdateEmcRegs();
-            }
-            break;
     }
 
     return SYSCLK_ERROR(Generic);
@@ -378,12 +373,6 @@ Result IpcService::SetKipData() {
 
 Result IpcService::GetKipData() {
     this->clockMgr->GetKipData();
-
-    return 0;
-}
-
-Result IpcService::UpdateEmcRegs() {
-    this->clockMgr->UpdateRamTimings();
 
     return 0;
 }

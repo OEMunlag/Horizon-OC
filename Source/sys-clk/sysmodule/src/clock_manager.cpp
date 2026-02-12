@@ -656,6 +656,11 @@ bool ClockManager::RefreshContext()
     {
         // this->rnxSync->ToggleSync(this->GetConfig()->GetConfigValue(HocClkConfigValue_SyncReverseNXMode));
         Board::ResetToStock();
+        if (Board::GetSocType() == SysClkSocType_Mariko && this->config->GetConfigValue(HorizonOCConfigValue_DVFSMode) == DVFSMode_Hijack) {
+            Board::PcvHijackDvfs(0);
+            Board::SetHz(SysClkModule_GPU, ~0);
+            Board::ResetToStockGpu();
+        }
         this->WaitForNextTick();
     }
 
@@ -694,21 +699,8 @@ bool ClockManager::RefreshContext()
 
                     if (Board::GetSocType() == SysClkSocType_Mariko && this->config->GetConfigValue(HorizonOCConfigValue_DVFSMode) == DVFSMode_Hijack) {
                         Board::PcvHijackDvfs(0);
-
-                        u32 targetHz = this->context->overrideFreqs[SysClkModule_GPU];
-                        if (!targetHz)
-                        {
-                            targetHz = this->config->GetAutoClockHz(this->context->applicationId, SysClkModule_GPU, this->context->profile, false);
-                            if(!targetHz)
-                                targetHz = this->config->GetAutoClockHz(GLOBAL_PROFILE_ID, SysClkModule_GPU, this->context->profile, false);
-                        }
-                        if(targetHz) {
-                            Board::SetHz(SysClkModule_GPU, ~0);
-                            Board::SetHz(SysClkModule_GPU, targetHz);
-                        } else {
-                            Board::SetHz(SysClkModule_GPU, ~0);
-                            Board::ResetToStockGpu();
-                        }
+                        Board::SetHz(SysClkModule_GPU, ~0);
+                        Board::ResetToStockGpu();
                     }
 
                     break;
@@ -1070,23 +1062,4 @@ void ClockManager::GetKipData() {
         FileUtils::LogLine("[clock_manager] Config refresh error in GetKipData!");
         writeNotification("Horizon OC\nConfig refresh failed");
     }
-}
-
-void ClockManager::UpdateRamTimings() {
-    u32 t1_tRCD = this->config->GetConfigValue(KipConfigValue_t1_tRCD);
-    u32 t2_tRP = this->config->GetConfigValue(KipConfigValue_t2_tRP);
-    u32 t3_tRAS = this->config->GetConfigValue(KipConfigValue_t3_tRAS);
-    u32 t4_tRRD = this->config->GetConfigValue(KipConfigValue_t4_tRRD);
-    u32 t5_tRFC = this->config->GetConfigValue(KipConfigValue_t5_tRFC);
-    u32 t6_tRTW = this->config->GetConfigValue(KipConfigValue_t6_tRTW);
-    u32 t7_tWTR = this->config->GetConfigValue(KipConfigValue_t7_tWTR);
-    u32 t8_tREFI = this->config->GetConfigValue(KipConfigValue_t8_tREFI);
-    bool hpMode = (bool)this->config->GetConfigValue(KipConfigValue_hpMode);
-
-    u64 ramFreq = initialConfigValues[KipConfigValue_marikoEmcMaxClock];
-    u32 rlAdd = initialConfigValues[KipConfigValue_mem_burst_read_latency];
-    u32 wlAdd = initialConfigValues[KipConfigValue_mem_burst_write_latency];
-
-
-    Board::UpdateShadowRegs(t1_tRCD, t2_tRP, t3_tRAS, t4_tRRD, t5_tRFC, t6_tRTW, t7_tWTR, t8_tREFI, ramFreq, rlAdd, wlAdd, hpMode);
 }

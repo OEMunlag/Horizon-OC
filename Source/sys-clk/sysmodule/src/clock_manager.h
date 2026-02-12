@@ -63,7 +63,6 @@ class ClockManager
     void SetKipData();
     void GetKipData();
     static void GovernorThread(void* arg);
-    void UpdateRamTimings();
     struct {
       std::uint32_t count;
       std::uint32_t list[SYSCLK_FREQ_LIST_MAX];
