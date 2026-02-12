@@ -578,7 +578,6 @@ void ClockManager::Tick()
 
                 if(module == SysClkModule_MEM && Board::GetSocType() == SysClkSocType_Mariko && targetHz < oldHz && this->config->GetConfigValue(HorizonOCConfigValue_DVFSMode) == DVFSMode_Hijack) {
                     Board::PcvHijackDvfs(0);
-                    // I2c_BuckConverter_SetMvOut(&I2c_Mariko_GPU, 0);
 
                     targetHz = this->context->overrideFreqs[SysClkModule_GPU];
                     if (!targetHz)
@@ -691,6 +690,21 @@ bool ClockManager::RefreshContext()
 
                     if (Board::GetSocType() == SysClkSocType_Mariko && this->config->GetConfigValue(HorizonOCConfigValue_DVFSMode) == DVFSMode_Hijack) {
                         Board::PcvHijackDvfs(0);
+
+                        u32 targetHz = this->context->overrideFreqs[SysClkModule_GPU];
+                        if (!targetHz)
+                        {
+                            targetHz = this->config->GetAutoClockHz(this->context->applicationId, SysClkModule_GPU, this->context->profile, false);
+                            if(!targetHz)
+                                targetHz = this->config->GetAutoClockHz(GLOBAL_PROFILE_ID, SysClkModule_GPU, this->context->profile, false);
+                        }
+                        if(targetHz) {
+                            Board::SetHz(SysClkModule_GPU, ~0);
+                            Board::SetHz(SysClkModule_GPU, targetHz);
+                        } else {
+                            Board::SetHz(SysClkModule_GPU, ~0);
+                            Board::ResetToStockGpu();
+                        }
                     }
 
                     break;
