@@ -567,7 +567,6 @@ void ClockManager::Tick()
 
                     if(module == SysClkModule_MEM && Board::GetSocType() == SysClkSocType_Mariko && targetHz > oldHz && this->config->GetConfigValue(HorizonOCConfigValue_DVFSMode) == DVFSMode_Hijack) {
                         s32 dvfsOffset = this->config->GetConfigValue(HorizonOCConfigValue_DVFSOffset);
-                        dvfsOffset = std::max(dvfsOffset, -50);
                         u32 vmin = Board::GetMinimumGpuVoltage(targetHz / 1000000) + dvfsOffset;
 
                         Board::PcvHijackDvfs(vmin);
