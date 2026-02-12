@@ -566,14 +566,23 @@ void ClockManager::Tick()
                     );
 
                     if(module == SysClkModule_MEM && Board::GetSocType() == SysClkSocType_Mariko && targetHz > oldHz && this->config->GetConfigValue(HorizonOCConfigValue_DVFSMode) == DVFSMode_Hijack) {
-                        Board::PcvHijackDvfs(Board::GetMinimumGpuVoltage(targetHz / 1000000));
-                        I2c_BuckConverter_SetMvOut(&I2c_Mariko_GPU, Board::GetMinimumGpuVoltage(targetHz / 1000000));
-                        this->context->voltages[HocClkVoltage_GPU] = Board::GetMinimumGpuVoltage(targetHz / 1000000) * 1000;
+                        u32 vmin = Board::GetMinimumGpuVoltage(targetHz / 1000000);
+                        Board::PcvHijackDvfs(vmin);
+
+                        /* Update the voltage. */
+                        I2c_BuckConverter_SetMvOut(&I2c_Mariko_GPU, vmin);
+
+                        /* Wait until it's safe to update clock. */
+                        u32 gpuVolts;
+                        while ((gpuVolts = I2c_BuckConverter_GetMvOut(&I2c_Mariko_GPU) != vmin)) {
+                            svcSleepThread(50000);
+                        }
+
+                        this->context->voltages[HocClkVoltage_GPU] = gpuVolts;
                     }
 
                     Board::SetHz((SysClkModule)module, nearestHz);
                     this->context->freqs[module] = nearestHz;
-
                 }
 
                 if(module == SysClkModule_MEM && Board::GetSocType() == SysClkSocType_Mariko && targetHz < oldHz && this->config->GetConfigValue(HorizonOCConfigValue_DVFSMode) == DVFSMode_Hijack) {
@@ -599,12 +608,6 @@ void ClockManager::Tick()
                     FixCpuBug();
                 }
             }
-            //  else {
-            //     if(module == SysClkModule_MEM && Board::GetSocType() == SysClkSocType_Mariko) {
-            //         Board::PcvHijackDvfs(0);
-            //     }
-            // }
-
         }
     }
 }
