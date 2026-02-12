@@ -573,15 +573,11 @@ void ClockManager::Tick()
                         Board::PcvHijackDvfs(vmin);
 
                         /* Update the voltage. */
-                        I2c_BuckConverter_SetMvOut(&I2c_Mariko_GPU, vmin);
-
-                        /* Wait until it's safe to update clock. */
-                        u32 gpuVolts;
-                        while ((gpuVolts = I2c_BuckConverter_GetMvOut(&I2c_Mariko_GPU)) != vmin) {
-                            svcSleepThread(50000);
+                        if (I2c_BuckConverter_GetMvOut(&I2c_Mariko_GPU) < vmin) {
+                            I2c_BuckConverter_SetMvOut(&I2c_Mariko_GPU, vmin);
                         }
 
-                        this->context->voltages[HocClkVoltage_GPU] = gpuVolts;
+                        this->context->voltages[HocClkVoltage_GPU] = vmin;
                     }
 
                     Board::SetHz((SysClkModule)module, nearestHz);
