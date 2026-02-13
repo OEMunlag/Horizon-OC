@@ -434,12 +434,12 @@ void ClockManager::Tick()
         }
     }
 
-    if(this->config->GetConfigValue(HocClkConfigValue_EnforceBoardLimit) && opMode == AppletOperationMode_Console ) {
-        if(Board::GetPowerMw(SysClkPowerSensor_Now) < 0) {
-            ResetToStockClocks();
-            return;
-        }
-    }
+    // if(this->config->GetConfigValue(HocClkConfigValue_EnforceBoardLimit) && opMode == AppletOperationMode_Console ) {
+    //     if(Board::GetPowerMw(SysClkPowerSensor_Now) < 0) {
+    //         ResetToStockClocks();
+    //         return;
+    //     }
+    // }
 
     if(((tmp451TempSoc() / 1000) > (int)this->config->GetConfigValue(HocClkConfigValue_ThermalThrottleThreshold)) && this->config->GetConfigValue(HocClkConfigValue_ThermalThrottle)) {
         ResetToStockClocks();

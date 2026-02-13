@@ -51,8 +51,6 @@ typedef enum {
 
     HocClkConfigValue_LiteTDPLimit,
 
-    HocClkConfigValue_EnforceBoardLimit,
-
     HorizonOCConfigValue_BatteryChargeCurrent,
 
     HorizonOCConfigValue_OverwriteRefreshRate,
@@ -60,8 +58,6 @@ typedef enum {
 
     HorizonOCConfigValue_DVFSMode,
     HorizonOCConfigValue_DVFSOffset,
-
-    HocClkConfigValue_FixCpuVoltBug,
 
     KipConfigValue_custRev,
     // KipConfigValue_mtcConf,
@@ -215,17 +211,11 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
         case HocClkConfigValue_LiteTDPLimit:
             return pretty ? "Handheld TDP Limit" : "tdp_limit_l";
 
-        case HocClkConfigValue_EnforceBoardLimit:
-            return pretty ? "Enforce Board Limit" : "enforce_board_limit";
-
         case HorizonOCConfigValue_BatteryChargeCurrent:
             return pretty ? "Battery Charge Current" : "bat_charge_current";
 
         case HorizonOCConfigValue_OverwriteRefreshRate:
             return pretty ? "Display Refresh Rate Changing" : "drr_changing";
-
-        case HocClkConfigValue_FixCpuVoltBug:
-            return pretty ? "Fix CPU Volt Bug" : "cpu_volt_bugfix";
 
         case HorizonOCConfigValue_EnableUnsafeDisplayFreqs:
             return pretty ? "Enable Unsafe Display Frequencies" : "drr_unsafe";
@@ -418,8 +408,6 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
 
         case HocClkConfigValue_ThermalThrottle:
         case HocClkConfigValue_HandheldTDP:
-        case HocClkConfigValue_EnforceBoardLimit:
-        case HocClkConfigValue_FixCpuVoltBug:
         case HocClkConfigValue_IsFirstLoad:
         case HorizonOCConfigValue_DVFSMode:
             return 1ULL;
@@ -454,9 +442,7 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case HocClkConfigValue_OverwriteBoostMode:
         case HocClkConfigValue_ThermalThrottle:
         case HocClkConfigValue_HandheldTDP:
-        case HocClkConfigValue_EnforceBoardLimit:
         case HorizonOCConfigValue_OverwriteRefreshRate:
-        case HocClkConfigValue_FixCpuVoltBug:
         case HorizonOCConfigValue_EnableUnsafeDisplayFreqs:
         case HocClkConfigValue_IsFirstLoad:
             return (input & 0x1) == input;

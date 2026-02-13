@@ -250,7 +250,7 @@ void MiscGui::listUI()
     addConfigToggle(HocClkConfigValue_OverwriteBoostMode, nullptr);
     addConfigToggle(HocClkConfigValue_ThermalThrottle, nullptr);
     addConfigToggle(HocClkConfigValue_HandheldTDP, nullptr);
-    addConfigToggle(HocClkConfigValue_EnforceBoardLimit, nullptr);
+//  addConfigToggle(HocClkConfigValue_EnforceBoardLimit, nullptr);
 
     #if IS_MINIMAL == 0
         std::map<uint32_t, std::string> labels_pwr_l = {
