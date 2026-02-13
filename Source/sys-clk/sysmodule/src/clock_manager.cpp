@@ -583,7 +583,7 @@ void ClockManager::Tick()
                             I2c_BuckConverter_SetMvOut(&I2c_Mariko_GPU, vmin);
                         }
 
-                        this->context->voltages[HocClkVoltage_GPU] = vmin;
+                        this->context->voltages[HocClkVoltage_GPU] = vmin * 1000;
                     }
 
                     Board::SetHz((SysClkModule)module, nearestHz);
