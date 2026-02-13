@@ -248,9 +248,6 @@ void MiscGui::listUI()
 
     addConfigToggle(HocClkConfigValue_UncappedClocks, nullptr);
     addConfigToggle(HocClkConfigValue_OverwriteBoostMode, nullptr);
-    #if IS_MINIMAL == 0
-        addConfigToggle(HocClkConfigValue_FixCpuVoltBug, nullptr);
-    #endif
     addConfigToggle(HocClkConfigValue_ThermalThrottle, nullptr);
     addConfigToggle(HocClkConfigValue_HandheldTDP, nullptr);
     addConfigToggle(HocClkConfigValue_EnforceBoardLimit, nullptr);
@@ -296,6 +293,45 @@ void MiscGui::listUI()
         addFreqButton(HocClkConfigValue_MarikoMaxCpuClock, nullptr, SysClkModule_CPU, cpu_freq_label_m);
     } else {
         addFreqButton(HocClkConfigValue_EristaMaxCpuClock, nullptr, SysClkModule_CPU, cpu_freq_label_e);
+    }
+
+    if (IsMariko()) {
+        std::vector<NamedValue> dvfsValues = {
+            NamedValue("Disabled", DVFSMode_Disabled),
+            NamedValue("PCV Hijack", DVFSMode_Hijack),
+            // NamedValue("Official Service", DVFSMode_OfficialService),
+            // NamedValue("Hack", DVFSMode_Hack),
+        };
+
+        addConfigButton(
+            HorizonOCConfigValue_DVFSMode,
+            "GPU DVFS Mode",
+            ValueRange(0, 0, 1, "", 0),
+            "GPU DVFS Mode",
+            &thresholdsDisabled,
+            {},
+            dvfsValues,
+            false
+        );
+
+        std::vector<NamedValue> dvfsOffset = {
+            NamedValue("-50 mV", 0xFFFFFFCE),
+            NamedValue("-45 mV", 0xFFFFFFD3),
+            NamedValue("-40 mV", 0xFFFFFFD8),
+            NamedValue("-30 mV", 0xFFFFFFE2),
+            NamedValue("-25 mV", 0xFFFFFFE7),
+            NamedValue("-20 mV", 0xFFFFFFEC),
+            NamedValue("-10 mV", 0xFFFFFFF6),
+            NamedValue(" -5 mV", 0xFFFFFFFB),
+            NamedValue("Disabled",          0),
+            NamedValue(" +5 mV",          5),
+            NamedValue("+10 mV",         10),
+            NamedValue("+15 mV",         15),
+            NamedValue("+20 mV",         20),
+        };
+
+        addConfigButton(HorizonOCConfigValue_DVFSOffset, "GPU DVFS Offset", ValueRange(0, 12, 1, "", 0), "GPU DVFS Offset", &thresholdsDisabled, {}, dvfsOffset, false);
+
     }
 
     this->listElement->addItem(new tsl::elm::CategoryHeader("KIP"));
@@ -344,8 +380,9 @@ void MiscGui::listUI()
     });
     this->listElement->addItem(gpuSubmenu);
 
+    this->listElement->addItem(new tsl::elm::CategoryHeader("Experimental"));
+
     #if IS_MINIMAL == 0
-        this->listElement->addItem(new tsl::elm::CategoryHeader("Experimental"));
         std::vector<NamedValue> chargerCurrents = {
             NamedValue("Disabled", 0),
             NamedValue("1024mA", 1024),
@@ -591,7 +628,7 @@ protected:
             addConfigButton(
                 KipConfigValue_marikoEmcVddqVolt,
                 "RAM VDDQ Voltage",
-                ValueRange(550000, 700000, 5000, "mV", 1000),
+                ValueRange(400000, 700000, 5000, "mV", 1000),
                 "RAM VDDQ Voltage",
                 &thresholdsDisabled,
                 {},
@@ -673,37 +710,6 @@ protected:
         this->listElement->addItem(new tsl::elm::CategoryHeader("Advanced"));
         addConfigButton(KipConfigValue_t6_tRTW_fine_tune, "t6 tRTW Fine Tune", ValueRange(0, 4, 1, "", 0), "tRTW Fine Tune", &thresholdsDisabled, {}, t6_tRTW_fine_tune, false);
         addConfigButton(KipConfigValue_t7_tWTR_fine_tune, "t7 tWTR Fine Tune", ValueRange(0, 6, 1, "", 0), "tWTR Fine Tune", &thresholdsDisabled, {}, t7_tWTR_fine_tune, false);
-
-        #if IS_MINIMAL == 0
-        if(IsMariko()) {
-            this->listElement->addItem(new tsl::elm::CategoryHeader("Experimental"));
-
-            tsl::elm::ListItem* emcUpdBtn = new tsl::elm::ListItem("Update RAM Timings");
-            emcUpdBtn->setClickListener([this](u64 keys) {
-                if (keys & HidNpadButton_A) {
-                    if(this->context->freqs[SysClkModule_MEM] > 1600000000) {
-                        Result rc = hocClkIpcUpdateEmcRegs();
-                        if (R_FAILED(rc)) {
-                            FatalGui::openWithResultCode("hocClkIpcUpdateEmcRegs", rc);
-                            return false;
-                        }
-                        return true;
-                    } else {
-                        writeNotification("Horizon OC\nSet your ram frequency to max\nbefore applying timings!");
-                    }
-                }
-                return false;
-            });
-
-            this->listElement->addItem(emcUpdBtn);
-            tsl::elm::CustomDrawer* warningText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
-                renderer->drawString("\uE150 This feature is EXPERIMENTAL", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
-                renderer->drawString("and should only be used for testing!", false, x + 20, y + 50, 18, tsl::style::color::ColorText);
-            });
-            warningText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 70);
-            this->listElement->addItem(warningText);
-        }
-        #endif
     }
 };
 
@@ -961,7 +967,7 @@ protected:
         };
 
         std::vector<NamedValue> mGpuVoltsVmin = {
-            NamedValue("Auto", 0), NamedValue("Auto (RAM)", 1),
+            NamedValue("Auto", 0),
             NamedValue("480mV", 480), NamedValue("485mV", 485), NamedValue("490mV", 490),
             NamedValue("495mV", 495), NamedValue("500mV", 500), NamedValue("505mV", 505),
             NamedValue("510mV", 510), NamedValue("515mV", 515), NamedValue("520mV", 520),

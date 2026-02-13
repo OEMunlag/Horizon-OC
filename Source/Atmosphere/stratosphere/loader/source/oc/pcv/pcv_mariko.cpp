@@ -50,30 +50,6 @@ namespace ams::ldr::hoc::pcv::mariko {
         return ramScale;
     }
 
-    u32 GetSpeedoBracket() {
-        u32 speedoBracket = 3;
-        if ((C.gpuSpeedo < 1754) && (speedoBracket = 2, C.gpuSpeedo < 1690)) {
-            speedoBracket = !!(1625 < C.gpuSpeedo);
-        }
-
-        return speedoBracket;
-    }
-
-    u32 GetGpuBudgetDvfsVoltage() {
-        u32 bracket = GetSpeedoBracket();
-
-        if (ramFreqMhz <= 1600)
-            return 0;
-
-        for (u32 voltageIndex = 0; voltageIndex < 22; voltageIndex++) {
-            if (ramFreqMhz <= ramBrackets[bracket][voltageIndex]) {
-                return gpuBudgetDvfsArray[voltageIndex];
-            }
-        }
-
-        return 800;
-    }
-
     /* Note: EOS (probably?) has a bug in this function that always results in high vmin, this is fixed here. */
     u32 GetAutoVoltage() {
         u32 voltage = GetGpuVminVoltage();
@@ -102,14 +78,13 @@ namespace ams::ldr::hoc::pcv::mariko {
         }
 
         /* C.marikoGpuVmin is non zero, user sets manual voltage. */
-        if (C.marikoGpuVmin != 0 && C.marikoGpuVmin != 1) {
+        if (C.marikoGpuVmin) {
             PATCH_OFFSET(ptr, C.marikoGpuVmin);
             R_SUCCEED();
         }
 
-        /* C.marikoGpuVmin is zero OR one, auto voltage is applied. */
-        /* Get vmin depending on speedo and ram clock. */
-        u32 autoVmin = C.marikoGpuVmin == 0 ? GetAutoVoltage() : GetGpuBudgetDvfsVoltage();
+        /* C.marikoGpuVmin is zero, auto voltage is applied. */
+        u32 autoVmin = GetAutoVoltage();
         PATCH_OFFSET(ptr, autoVmin);
         R_SUCCEED();
     }
@@ -122,8 +97,8 @@ namespace ams::ldr::hoc::pcv::mariko {
         u32 vmin = C.marikoGpuVmin;
 
         /* Automatic voltage. */
-        if (!C.marikoGpuVmin || C.marikoGpuVmin == 1) {
-            vmin = C.marikoGpuVmin == 0 ? GetAutoVoltage() : GetGpuBudgetDvfsVoltage();
+        if (!C.marikoGpuVmin) {
+            vmin = GetAutoVoltage();
             PATCH_OFFSET(ptr,     vmin);
             PATCH_OFFSET(ptr + 3, vmin);
             PATCH_OFFSET(ptr + 6, vmin);

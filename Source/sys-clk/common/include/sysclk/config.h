@@ -57,6 +57,10 @@ typedef enum {
 
     HorizonOCConfigValue_OverwriteRefreshRate,
     HorizonOCConfigValue_EnableUnsafeDisplayFreqs,
+
+    HorizonOCConfigValue_DVFSMode,
+    HorizonOCConfigValue_DVFSOffset,
+
     HocClkConfigValue_FixCpuVoltBug,
 
     KipConfigValue_custRev,
@@ -225,6 +229,12 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
 
         case HorizonOCConfigValue_EnableUnsafeDisplayFreqs:
             return pretty ? "Enable Unsafe Display Frequencies" : "drr_unsafe";
+
+        case HorizonOCConfigValue_DVFSMode:
+            return pretty ? "DVFS Mode" : "dvfs_mode";
+
+        case HorizonOCConfigValue_DVFSOffset:
+            return pretty ? "DVFS Offset" : "dvfs_offset";
 
         // KIP config values
         case KipConfigValue_custRev:
@@ -411,6 +421,7 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
         case HocClkConfigValue_EnforceBoardLimit:
         case HocClkConfigValue_FixCpuVoltBug:
         case HocClkConfigValue_IsFirstLoad:
+        case HorizonOCConfigValue_DVFSMode:
             return 1ULL;
         case HocClkConfigValue_ThermalThrottleThreshold:
             return 70ULL;
@@ -542,6 +553,8 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case KipConfigValue_t6_tRTW_fine_tune:
         case KipConfigValue_t7_tWTR_fine_tune:
         case KipCrc32:
+        case HorizonOCConfigValue_DVFSMode:
+        case HorizonOCConfigValue_DVFSOffset:
             return true;
         case HorizonOCConfigValue_BatteryChargeCurrent:
             return ((input >= 1024) && (input <= 3072)) || !input;
