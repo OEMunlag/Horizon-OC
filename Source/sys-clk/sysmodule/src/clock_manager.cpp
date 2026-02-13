@@ -114,44 +114,6 @@ ClockManager::ClockManager()
     previousRamHz = Board::GetHz(SysClkModule_MEM);
 }
 
-
-void ClockManager::FixCpuBug() {
-    static constexpr u64 freqs[] = {
-        1785000000, // this will just set to the max when kip is unloaded so idgaf
-        1887000000,
-        1963000000,
-        2091000000,
-        2193000000,
-        2295000000,
-        2397000000,
-        2499000000,
-        2601000000,
-        2703000000  // replicates manual fix; if unstable it resets to 1020 due to speed
-    };
-
-    for (u64 hz : freqs) {
-        Board::SetHz(SysClkModule_CPU, hz);
-    }
-
-    svcSleepThread(1'000'000);
-
-    Board::SetHz(SysClkModule_CPU, 1020000000);
-    ResetToStockClocks();
-    u32 targetHz = this->context->overrideFreqs[SysClkModule_CPU];
-    if (!targetHz)
-    {
-        targetHz = this->config->GetAutoClockHz(this->context->applicationId, SysClkModule_CPU, this->context->profile, false);
-        if(!targetHz)
-            targetHz = this->config->GetAutoClockHz(GLOBAL_PROFILE_ID, SysClkModule_CPU, this->context->profile, false);
-    }
-
-    if (targetHz)
-    {
-        Board::SetHz(SysClkModule_CPU, targetHz);
-        this->context->freqs[SysClkModule_CPU] = targetHz;
-    }
-}
-
 ClockManager::~ClockManager()
 {
     threadClose(&governorTHREAD);
@@ -610,10 +572,6 @@ void ClockManager::Tick()
                         Board::SetHz(SysClkModule_GPU, ~0);
                         Board::ResetToStockGpu();
                     }
-                }
-
-                if(module == SysClkModule_CPU && this->config->GetConfigValue(HocClkConfigValue_FixCpuVoltBug)) {
-                    FixCpuBug();
                 }
             }
         }

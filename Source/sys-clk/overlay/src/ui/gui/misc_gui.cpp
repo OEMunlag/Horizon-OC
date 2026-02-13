@@ -248,9 +248,6 @@ void MiscGui::listUI()
 
     addConfigToggle(HocClkConfigValue_UncappedClocks, nullptr);
     addConfigToggle(HocClkConfigValue_OverwriteBoostMode, nullptr);
-    #if IS_MINIMAL == 0
-        addConfigToggle(HocClkConfigValue_FixCpuVoltBug, nullptr);
-    #endif
     addConfigToggle(HocClkConfigValue_ThermalThrottle, nullptr);
     addConfigToggle(HocClkConfigValue_HandheldTDP, nullptr);
     addConfigToggle(HocClkConfigValue_EnforceBoardLimit, nullptr);

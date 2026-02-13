@@ -49,7 +49,6 @@ class ClockManager
 
     ClockManager();
     virtual ~ClockManager();
-    void FixCpuBug();
 
     SysClkContext GetCurrentContext();
     Config* GetConfig();
