@@ -22,19 +22,3 @@ cd ../../
 cd Source/Horizon-OC-Monitor/
 make -j"$(nproc)"
 cp Horizon-OC-Monitor.ovl ../../dist/switch/.overlays/Horizon-OC-Monitor.ovl
-
-cd ../../
-
-ROOT="build"
-PATCHES="Source/Atmosphere-Patches"
-
-cp "$PATCHES/secmon_memory_layout.hpp" "$ROOT/libraries/libexosphere/include/exosphere/secmon/"
-cp "$PATCHES/secmon_emc_access_table_data.inc" "$ROOT/exosphere/program/source/smc/"
-cp "$PATCHES/secmon_define_emc_access_table.inc" "$ROOT/exosphere/program/source/smc/"
-cp "$PATCHES/secmon_smc_register_access.cpp" "$ROOT/exosphere/program/source/smc/"
-cd build/exosphere
-
-make -j"$(nproc)"
-
-cd out/nintendo_nx_arm64_armv8a/release
-cp "exosphere.bin" "../../../../../dist/"
