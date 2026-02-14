@@ -285,7 +285,7 @@ void GlobalOverrideGui::listUI()
     }
 
     this->listElement->addItem(new tsl::elm::CategoryHeader(
-    "Temporary Overrides " + ult::DIVIDER_SYMBOL + "  Reset"));
+    "Temporary Overrides " + ult::DIVIDER_SYMBOL + " \ue0e3 Reset"));
     this->addModuleListItem(SysClkModule_CPU);
     this->addModuleListItem(SysClkModule_GPU);
     this->addModuleListItem(SysClkModule_MEM);
