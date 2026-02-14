@@ -12,9 +12,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
- 
+
 /* --------------------------------------------------------------------------
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <p-sam@d3vs.net>, <natinusala@gmail.com>, <m4x@m4xw.net>
@@ -102,7 +102,7 @@ typedef enum
     SysClkPartLoad_EMC = 0,
     SysClkPartLoad_EMCCpu,
     HocClkPartLoad_GPU,
-    HocClkPartLoad_CPUAvg,
+    HocClkPartLoad_CPUMax,
     HocClkPartLoad_BAT,
     HocClkPartLoad_FAN,
     SysClkPartLoad_EnumMax
