@@ -24,7 +24,7 @@
 
 #include "memmem.h"
 
-void *memmem_impl(void *haystack, size_t haystacklen, const void *needle, size_t needlelen)
+void *memmem_impl(const void *haystack, size_t haystacklen, const void *needle, size_t needlelen)
 {
 	const unsigned char *cmpp;
 	const unsigned char *p;
@@ -39,7 +39,7 @@ void *memmem_impl(void *haystack, size_t haystacklen, const void *needle, size_t
 	}
 	if(needle == NULL)
 	{
-		return haystack;
+		return (void*)haystack;
 	}
 	if(haystacklen == 0)
 	{
@@ -47,7 +47,7 @@ void *memmem_impl(void *haystack, size_t haystacklen, const void *needle, size_t
 	}
 	if(needlelen == 0)
 	{
-		return haystack;
+		return (void*)haystack;
 	}
 
 	if(needlelen > haystacklen)
