@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: devkitpro/devkita64:20251231
+      image: devkitpro/devkita64:latest
 
     steps:
       - name: Checkout repository and submodules # needed for hoc-clk
@@ -43,7 +43,7 @@ jobs:
         run: |
           git clone --depth=1 --single-branch https://github.com/switchbrew/libnx.git
           make -C libnx/nx -j$(nproc) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
-          make -C libnx/nx install
+          sudo make -C libnx/nx install
         shell: bash
 
       # -------------------------------------------------
