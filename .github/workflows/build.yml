@@ -21,9 +21,11 @@ jobs:
 
       - name: Install devkitPro
         run: |
-             wget https://apt.devkitpro.org/install-devkitpro-pacman
-             chmod +x ./install-devkitpro-pacman
-             sudo bash ./install-devkitpro-pacman
+          apt-get install apt-transport-https
+          mkdir -p /usr/share/keyring/
+          wget -U "dkp apt" -O /usr/share/keyring/devkitpro-pub.gpg https://apt.devkitpro.org/devkitpro-pub.gpg
+          echo "deb [signed-by=/usr/share/keyring/devkitpro-pub.gpg] https://apt.devkitpro.org stable main" > /etc/apt/sources.list.d/devkitpro.list
+          apt-get install devkitpro-pacman
 
       - name: Install devkitPro packages
         run: |
