@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: devkitpro/devkita64:latest
+      image: devkitpro/devkita64:20251231
 
     steps:
       - name: Checkout repository and submodules # needed for hoc-clk
