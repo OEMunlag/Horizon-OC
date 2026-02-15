@@ -239,15 +239,22 @@ void MiscGui::addFreqButton(SysClkConfigValue configVal,
 
 void MiscGui::listUI()
 {
+    Result rc = sysclkIpcGetConfigValues(configList);
+    if (R_FAILED(rc)) [[unlikely]] {
+        FatalGui::openWithResultCode("sysclkIpcGetConfigValues", rc);
+        return;
+    }    
+
     ValueThresholds thresholdsDisabled(0, 0);
     std::vector<NamedValue> noNamedValues = {};
 
-
-
     this->listElement->addItem(new tsl::elm::CategoryHeader("Settings"));
 
-    addConfigToggle(HocClkConfigValue_UncappedClocks, nullptr);
     addConfigToggle(HocClkConfigValue_OverwriteBoostMode, nullptr);
+
+
+    this->listElement->addItem(new tsl::elm::CategoryHeader("Safety Settings"));
+    addConfigToggle(HocClkConfigValue_UncappedClocks, nullptr);
     addConfigToggle(HocClkConfigValue_ThermalThrottle, nullptr);
     addConfigToggle(HocClkConfigValue_HandheldTDP, nullptr);
 //  addConfigToggle(HocClkConfigValue_EnforceBoardLimit, nullptr);
@@ -289,13 +296,8 @@ void MiscGui::listUI()
         );
     #endif
 
-    if(IsMariko()) {
-        addFreqButton(HocClkConfigValue_MarikoMaxCpuClock, nullptr, SysClkModule_CPU, cpu_freq_label_m);
-    } else {
-        addFreqButton(HocClkConfigValue_EristaMaxCpuClock, nullptr, SysClkModule_CPU, cpu_freq_label_e);
-    }
-
     if (IsMariko()) {
+        this->listElement->addItem(new tsl::elm::CategoryHeader("DVFS"));
         std::vector<NamedValue> dvfsValues = {
             NamedValue("Disabled", DVFSMode_Disabled),
             NamedValue("PCV Hijack", DVFSMode_Hijack),
@@ -331,8 +333,20 @@ void MiscGui::listUI()
         };
 
         addConfigButton(HorizonOCConfigValue_DVFSOffset, "GPU DVFS Offset", ValueRange(0, 12, 1, "", 0), "GPU DVFS Offset", &thresholdsDisabled, {}, dvfsOffset, false);
-
     }
+        
+    this->listElement->addItem(new tsl::elm::CategoryHeader("Display"));
+
+    addConfigToggle(HorizonOCConfigValue_OverwriteRefreshRate, nullptr);
+    tsl::elm::CustomDrawer* warningText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
+        renderer->drawString("\uE150 Enabling unsafe display", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
+        renderer->drawString("refresh rates may cause stress", false, x + 20, y + 50, 18, tsl::style::color::ColorText);
+        renderer->drawString("or damage to your display! ", false, x + 20, y + 70, 18, tsl::style::color::ColorText);
+        renderer->drawString("Proceed at your own risk!", false, x + 20, y + 90, 18, tsl::style::color::ColorText);
+    });
+    warningText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 110);
+    this->listElement->addItem(warningText);
+    addConfigToggle(HorizonOCConfigValue_EnableUnsafeDisplayFreqs, nullptr);
 
     this->listElement->addItem(new tsl::elm::CategoryHeader("KIP"));
 
@@ -394,92 +408,92 @@ void MiscGui::listUI()
         //     NamedValue("2816mA", 2816),
         //     NamedValue("3072mA", 3072),
         // };
-        this->listElement->addItem(new tsl::elm::CategoryHeader("Experimental"));
-        
-        std::vector<NamedValue> gpuSchedValues = {
-            NamedValue("Do not override", GpuSchedulingMode_DoNotOverride),
-            NamedValue("Enabled", GpuSchedulingMode_Enabled, "96.5% limit"),
-            NamedValue("Disabled", GpuSchedulingMode_Disabled, "99.7% limit"),
-        };
-        tsl::elm::CustomDrawer* gpuSchedInfoText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
-            renderer->drawString("\uE150 This option requires a reboot", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
-            renderer->drawString("to take effect", false, x + 20, y + 50, 18, tsl::style::color::ColorText);
-        });
-        gpuSchedInfoText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 70);
-        this->listElement->addItem(gpuSchedInfoText);
-        addConfigButton(
-            HorizonOCConfigValue_GPUScheduling,
-            "GPU Scheduling Override",
-            ValueRange(0, 0, 1, "", 0),
-            "GPU Scheduling Override",
-            &thresholdsDisabled,
-            {},
-            gpuSchedValues,
-            false
-        );
-        if(!IsHoag()) {
-            //     std::vector<NamedValue> chargerCurrents = {
-            //         NamedValue("Disabled", 0),
-            //         NamedValue("1024mA", 1024),
-            //         NamedValue("1280mA", 1280),
-            //         NamedValue("1536mA", 1536),
-            //         NamedValue("1792mA", 1792),
-            //         NamedValue("2048mA", 2048),
-            //         NamedValue("2304mA", 2304),
-            //         NamedValue("2560mA", 2560),
-            //         NamedValue("2816mA", 2816),
-            //         NamedValue("3072mA", 3072),
-            //     };
-
-            //     ValueThresholds chargerThresholds(2048, 2560);
-
-            //     addConfigButton(
-            //         HorizonOCConfigValue_BatteryChargeCurrent,
-            //         "Charge Current Override",
-            //         ValueRange(0, 0, 1, "", 0),
-            //         "Charge Current Override",
-            //         &chargerThresholds,
-            //         {},
-            //         chargerCurrents,
-            //         false
-            //     );
-            addConfigToggle(HorizonOCConfigValue_OverwriteRefreshRate, nullptr);
-            tsl::elm::CustomDrawer* warningText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
-                renderer->drawString("\uE150 Enabling unsafe display", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
-                renderer->drawString("refresh rates may cause stress", false, x + 20, y + 50, 18, tsl::style::color::ColorText);
-                renderer->drawString("or damage to your display! ", false, x + 20, y + 70, 18, tsl::style::color::ColorText);
-                renderer->drawString("Proceed at your own risk!", false, x + 20, y + 90, 18, tsl::style::color::ColorText);
+        if(this->configList->values[HorizonOCConfigValue_EnableExperimentalSettings]) {
+            this->listElement->addItem(new tsl::elm::CategoryHeader("Experimental"));
+            
+            std::vector<NamedValue> gpuSchedValues = {
+                NamedValue("Do not override", GpuSchedulingMode_DoNotOverride),
+                NamedValue("Enabled", GpuSchedulingMode_Enabled, "96.5% limit"),
+                NamedValue("Disabled", GpuSchedulingMode_Disabled, "99.7% limit"),
+            };
+            tsl::elm::CustomDrawer* gpuSchedInfoText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
+                renderer->drawString("\uE150 This option requires a reboot", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
+                renderer->drawString("to take effect", false, x + 20, y + 50, 18, tsl::style::color::ColorText);
             });
-            warningText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 110);
-            this->listElement->addItem(warningText);
-            addConfigToggle(HorizonOCConfigValue_EnableUnsafeDisplayFreqs, nullptr);
+            gpuSchedInfoText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 70);
+            this->listElement->addItem(gpuSchedInfoText);
+            addConfigButton(
+                HorizonOCConfigValue_GPUScheduling,
+                "GPU Scheduling Override",
+                ValueRange(0, 0, 1, "", 0),
+                "GPU Scheduling Override",
+                &thresholdsDisabled,
+                {},
+                gpuSchedValues,
+                false
+            );
+            tsl::elm::CustomDrawer* chargeWarningText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
+                renderer->drawString("\uE150 Overriding the charge current", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
+                renderer->drawString("can be dangerous and may cause", false, x + 20, y + 50, 18, tsl::style::color::ColorText);
+                renderer->drawString("damage to your battery or charger!", false, x + 20, y + 70, 18, tsl::style::color::ColorText);
+            });
+            chargeWarningText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 90);
+            this->listElement->addItem(chargeWarningText);
+
+            if(!IsHoag()) {
+                    std::vector<NamedValue> chargerCurrents = {
+                        NamedValue("Disabled", 0),
+                        NamedValue("1024mA", 1024),
+                        NamedValue("1280mA", 1280),
+                        NamedValue("1536mA", 1536),
+                        NamedValue("1792mA", 1792),
+                        NamedValue("2048mA", 2048),
+                        NamedValue("2304mA", 2304),
+                        NamedValue("2560mA", 2560),
+                        NamedValue("2816mA", 2816),
+                        NamedValue("3072mA", 3072),
+                    };
+
+                    ValueThresholds chargerThresholds(2048, 2049);
+
+                    addConfigButton(
+                        HorizonOCConfigValue_BatteryChargeCurrent,
+                        "Charge Current Override",
+                        ValueRange(0, 0, 1, "", 0),
+                        "Charge Current Override",
+                        &chargerThresholds,
+                        {},
+                        chargerCurrents,
+                        false
+                    );
+            }
+            else {
+                std::vector<NamedValue> chargerCurrents = {
+                    NamedValue("Disabled", 0),
+                    NamedValue("1024mA", 1024),
+                    NamedValue("1280mA", 1280),
+                    NamedValue("1536mA", 1536),
+                    NamedValue("1792mA", 1792),
+                    NamedValue("2048mA", 2048),
+                    NamedValue("2304mA", 2304),
+                    NamedValue("2560mA", 2560),
+                };
+
+                ValueThresholds chargerThresholds(1792, 1793);
+
+                addConfigButton(
+                    HorizonOCConfigValue_BatteryChargeCurrent,
+                    "Charge Current Override",
+                    ValueRange(0, 0, 1, "", 0),
+                    "Charge Current Override",
+                    &chargerThresholds,
+                    {},
+                    chargerCurrents,
+                    false
+                );
+
+            }
         }
-        //  else {
-        //     std::vector<NamedValue> chargerCurrents = {
-        //         NamedValue("Disabled", 0),
-        //         NamedValue("1024mA", 1024),
-        //         NamedValue("1280mA", 1280),
-        //         NamedValue("1536mA", 1536),
-        //         NamedValue("1792mA", 1792),
-        //         NamedValue("2048mA", 2048),
-        //         NamedValue("2304mA", 2304),
-        //         NamedValue("2560mA", 2560),
-        //     };
-
-        //     ValueThresholds chargerThresholds(1792, 2048);
-
-        //     addConfigButton(
-        //         HorizonOCConfigValue_BatteryChargeCurrent,
-        //         "Charge Current Override",
-        //         ValueRange(0, 0, 1, "", 0),
-        //         "Charge Current Override",
-        //         &chargerThresholds,
-        //         {},
-        //         chargerCurrents,
-        //         false
-        //     );
-
-        // }
     #endif
 
 }

@@ -59,6 +59,8 @@ typedef enum {
     HorizonOCConfigValue_DVFSMode,
     HorizonOCConfigValue_DVFSOffset,
 
+    HorizonOCConfigValue_EnableExperimentalSettings,
+
     HorizonOCConfigValue_GPUScheduling,
 
     KipConfigValue_custRev,
@@ -230,6 +232,10 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
 
         case HorizonOCConfigValue_GPUScheduling:
             return pretty ? "GPU Scheduling" : "gpu_scheduling";
+
+        case HorizonOCConfigValue_EnableExperimentalSettings:
+            return pretty ? "Enable Experimental Settings" : "enable_experimental_settings";
+
         // KIP config values
         case KipConfigValue_custRev:
             return pretty ? "Custom Revision" : "kip_cust_rev";
@@ -450,6 +456,7 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case HorizonOCConfigValue_OverwriteRefreshRate:
         case HorizonOCConfigValue_EnableUnsafeDisplayFreqs:
         case HocClkConfigValue_IsFirstLoad:
+        case HorizonOCConfigValue_EnableExperimentalSettings:
             return (input & 0x1) == input;
 
         case KipConfigValue_custRev:

@@ -95,7 +95,8 @@ void AppProfileGui::openValueChoiceGui(
         enableThresholds,
         labels,
         namedValues,
-        showDefaultValue
+        showDefaultValue,
+        true
     );
 }
 
@@ -158,12 +159,12 @@ void AppProfileGui::addModuleListItemValue(
     const std::string& suffix,
     std::uint32_t divisor,
     int decimalPlaces,
-    ValueThresholds thresholds
+    ValueThresholds thresholds,
+    std::vector<NamedValue> namedValues
 )
 {
     tsl::elm::ListItem* listItem =
         new tsl::elm::ListItem(sysclkFormatModule(module, true));
-
     std::uint32_t storedValue = this->profileList->mhzMap[profile][module];
     if (storedValue == 0) {
         listItem->setValue(FREQ_DEFAULT_TEXT);
@@ -177,7 +178,6 @@ void AppProfileGui::addModuleListItemValue(
         }
         listItem->setValue(buf);
     }
-
     listItem->setClickListener(
         [this,
          listItem,
@@ -190,13 +190,13 @@ void AppProfileGui::addModuleListItemValue(
          suffix,
          divisor,
          decimalPlaces,
-         thresholds](u64 keys)
+         thresholds,
+         namedValues](u64 keys)
         {
             if ((keys & HidNpadButton_A) == HidNpadButton_A)
             {
                 std::uint32_t currentValue =
                     this->profileList->mhzMap[profile][module] * divisor;
-
                 ValueRange range(
                     min,
                     max,
@@ -205,17 +205,14 @@ void AppProfileGui::addModuleListItemValue(
                     divisor,
                     decimalPlaces
                 );
-
                 this->openValueChoiceGui(
                     listItem,
                     currentValue,
                     range,
                     categoryName,
-
                     [this, listItem, profile, module, divisor, suffix, decimalPlaces, thresholds](std::uint32_t value) -> bool
                     {
                         this->profileList->mhzMap[profile][module] = value / divisor;
-
                         if (value == 0) {
                             listItem->setValue(FREQ_DEFAULT_TEXT);
                         } else {
@@ -230,11 +227,9 @@ void AppProfileGui::addModuleListItemValue(
                             }
                             listItem->setValue(buf);
                         }
-
                         Result rc =
                             sysclkIpcSetProfiles(this->applicationId,
                                                  this->profileList);
-
                         if (R_FAILED(rc))
                         {
                             FatalGui::openWithResultCode(
@@ -243,34 +238,30 @@ void AppProfileGui::addModuleListItemValue(
                         }
                         return true;
                     },
-
                     thresholds,
-                    false
+                    false,
+                    {},
+                    namedValues,
+                    true
                 );
-
                 return true;
             }
             else if ((keys & HidNpadButton_Y) == HidNpadButton_Y)
             {
                 this->profileList->mhzMap[profile][module] = 0;
                 listItem->setValue(FREQ_DEFAULT_TEXT);
-
                 Result rc =
                     sysclkIpcSetProfiles(this->applicationId,
                                          this->profileList);
-
                 if (R_FAILED(rc))
                 {
                     FatalGui::openWithResultCode("sysclkIpcSetProfiles", rc);
                     return false;
                 }
-
                 return true;
             }
-
             return false;
         });
-
     this->listElement->addItem(listItem);
 }
 
@@ -279,7 +270,7 @@ void AppProfileGui::addProfileUI(SysClkProfile profile)
     BaseMenuGui::refresh();
     if(!this->context)
         return;
-    Result rc = sysclkIpcGetConfigValues(&configList); // idk why this is needed, probably some refreshing issue
+    Result rc = sysclkIpcGetConfigValues(&configList);
     if (R_FAILED(rc)) [[unlikely]] {
         FatalGui::openWithResultCode("sysclkIpcGetConfigValues", rc);
         return;
@@ -291,10 +282,77 @@ void AppProfileGui::addProfileUI(SysClkProfile profile)
     #if IS_MINIMAL == 0
         ValueThresholds lcdThresholds(60, 65);
         if(!IsHoag() && configList.values[HorizonOCConfigValue_OverwriteRefreshRate]) {
-            if(profile != SysClkProfile_Docked)
+            if(profile != SysClkProfile_Docked) {
                 this->addModuleListItemValue(profile, HorizonOCModule_Display, "Display", IsAula() ? 45 : 40, configList.values[HorizonOCConfigValue_EnableUnsafeDisplayFreqs] ? IsAula() ? 65 : 72 : 60, 1, " Hz", 1, 0, lcdThresholds);
-            else
-                this->addModuleListItemValue(profile, HorizonOCModule_Display, "Display", 50, IsAula() ? this->context->isSysDockInstalled ? 120 : 75 : 120, 5, " Hz", 1, 0);
+            } else {
+                if(IsAula() && this->context->isSysDockInstalled) {
+                    std::vector<NamedValue> dockedFreqs = {
+                        NamedValue("40 Hz", 40),
+                        NamedValue("45 Hz", 45),
+                        NamedValue("50 Hz", 50),
+                        NamedValue("55 Hz", 55),
+                        NamedValue("60 Hz", 60),
+                        NamedValue("70 Hz", 70),
+                        NamedValue("72 Hz", 72),
+                        NamedValue("75 Hz", 75),
+                        NamedValue("80 Hz", 80),
+                        NamedValue("90 Hz", 90),
+                        NamedValue("95 Hz", 95),
+                        NamedValue("100 Hz", 100),
+                        NamedValue("110 Hz", 110),
+                        NamedValue("120 Hz", 120),
+                        NamedValue("130 Hz", 130),
+                        NamedValue("140 Hz", 140),
+                        NamedValue("144 Hz", 144),
+                        NamedValue("150 Hz", 150),
+                        NamedValue("160 Hz", 160),
+                        NamedValue("165 Hz", 165),
+                        NamedValue("170 Hz", 170),
+                        NamedValue("180 Hz", 180),
+                        NamedValue("190 Hz", 190),
+                        NamedValue("200 Hz", 200),
+                        NamedValue("210 Hz", 210),
+                        NamedValue("220 Hz", 220),
+                        NamedValue("230 Hz", 230),
+                        NamedValue("240 Hz", 240)
+                    };
+                    
+                    this->addModuleListItemValue(profile, HorizonOCModule_Display, "Display", 40, 240, 1, " Hz", 1, 0, ValueThresholds(), dockedFreqs);
+                } else if (IsAula() && !this->context->isSysDockInstalled) {
+                    std::vector<NamedValue> dockedFreqsLimited = {
+                        NamedValue("50 Hz", 50),
+                        NamedValue("55 Hz", 55),
+                        NamedValue("60 Hz", 60),
+                        NamedValue("65 Hz", 65),
+                        NamedValue("70 Hz", 70),
+                        NamedValue("72 Hz", 72),
+                        NamedValue("75 Hz", 75)
+                    };
+                    
+                    this->addModuleListItemValue(profile, HorizonOCModule_Display, "Display", 50, 75, 1, " Hz", 1, 0, ValueThresholds(), dockedFreqsLimited);
+                } else {
+                    std::vector<NamedValue> dockedFreqsStandard = {
+                        NamedValue("50 Hz", 50),
+                        NamedValue("55 Hz", 55),
+                        NamedValue("60 Hz", 60),
+                        NamedValue("65 Hz", 65),
+                        NamedValue("70 Hz", 70),
+                        NamedValue("72 Hz", 72),
+                        NamedValue("75 Hz", 75),
+                        NamedValue("80 Hz", 80),
+                        NamedValue("85 Hz", 85),
+                        NamedValue("90 Hz", 90),
+                        NamedValue("95 Hz", 95),
+                        NamedValue("100 Hz", 100),
+                        NamedValue("105 Hz", 105),
+                        NamedValue("110 Hz", 110),
+                        NamedValue("115 Hz", 115),
+                        NamedValue("120 Hz", 120)
+                    };
+                    
+                    this->addModuleListItemValue(profile, HorizonOCModule_Display, "Display", 50, 120, 1, " Hz", 1, 0, ValueThresholds(), dockedFreqsStandard);
+                }
+            }
         }
     #endif
     this->addModuleListItemToggle(profile, HorizonOCModule_Governor);

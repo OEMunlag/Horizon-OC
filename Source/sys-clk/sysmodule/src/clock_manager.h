@@ -37,7 +37,7 @@
 #include "integrations.h"
 void governorThread(void*);
 
-class ReverseNXSync;
+class SysDockIntegration;
 
 class ClockManager
 {
@@ -58,7 +58,6 @@ class ClockManager
     void Tick();
     void ResetToStockClocks();
     void WaitForNextTick();
-    void SetRNXRTMode(ReverseNXMode mode);
     void SetKipData();
     void GetKipData();
     static void GovernorThread(void* arg);
@@ -87,5 +86,5 @@ class ClockManager
     std::uint64_t lastFreqLogNs;
     std::uint64_t lastPowerLogNs;
     std::uint64_t lastCsvWriteNs;
-    ReverseNXSync *rnxSync;
+    SysDockIntegration *sysDockIntegration;
 };

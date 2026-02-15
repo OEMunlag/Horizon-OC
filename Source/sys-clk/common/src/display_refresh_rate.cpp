@@ -42,10 +42,25 @@ static bool g_canChangeRefreshRateDocked = false;
 static uint8_t g_lastVActiveSet = 0;
 
 // Refresh rate tables
-static const uint8_t g_dockedRefreshRates[] = {40, 45, 50, 55, 60, 70, 72, 75, 80, 90, 95, 100, 110, 120, 130, 144, 150, 160, 165, 170, 180, 190, 200, 210, 220, 230, 240};
+static const uint8_t g_dockedRefreshRates[] = {40, 45, 50, 55, 60, 70, 72, 75, 80, 90, 95, 100, 110, 120, 130, 140, 144, 150, 160, 165, 170, 180, 190, 200, 210, 220, 230, 240};
 static bool g_dockedAllowed[sizeof(g_dockedRefreshRates) / sizeof(g_dockedRefreshRates[0])] = {0};
 static bool g_dockedAllowed720p[sizeof(g_dockedRefreshRates) / sizeof(g_dockedRefreshRates[0])] = {0};
+// Calculate with this tool:
 
+// https://tomverbeure.github.io/video_timings_calculator?horiz_pixels=1920&vert_pixels=1080&refresh_rate=240&margins=false&interlaced=false&bpc=8&color_fmt=rgb444&video_opt=false&custom_hblank=80&custom_vblank=6
+
+/*
+typedef struct {
+    uint16_t hFrontPorch;
+    uint8_t hSyncWidth;
+    uint8_t hBackPorch;
+    uint8_t vFrontPorch;
+    uint8_t vSyncWidth;
+    uint8_t vBackPorch;
+    uint8_t VIC;
+    uint32_t pixelClock_kHz;
+} DockedTimings;
+*/
 static const DockedTimings g_dockedTimings1080p[] = {
     {8, 32, 40, 7, 8, 6, 0, 88080},        // 40Hz
     {8, 32, 40, 9, 8, 6, 0, 99270},        // 45Hz
@@ -60,7 +75,21 @@ static const DockedTimings g_dockedTimings1080p[] = {
     {8, 32, 40, 36, 8, 6, 0, 214700},      // 95Hz
     {528, 44, 148, 4, 5, 36, 64, 297000},  // 100Hz
     {8, 32, 40, 44, 8, 6, 0, 250360},      // 110Hz
-    {88, 44, 148, 4, 5, 36, 63, 297000}    // 120Hz
+    {88, 44, 148, 4, 5, 36, 63, 297000},   // 120Hz
+    {8, 32, 40, 55, 8, 6, 0, 298750},      //130Hz CVT-RBv2
+    {8, 32, 40, 61, 8, 6, 0, 323400},      //140Hz CVT-RBv2
+    {8, 32, 40, 63, 8, 6, 0, 333216},      //144Hz CVT-RBv2
+    {8, 32, 40, 67, 8, 6, 0, 348300},      //150Hz CVT-RBv2
+    {8, 32, 40, 72, 8, 6, 0, 373120},      //160Hz CVT-RBv2
+    {8, 32, 40, 75, 8, 6, 0, 385770},      //165Hz CVT-RBv2
+    {8, 32, 40, 78, 8, 6, 0, 398480},      //170Hz CVT-RBv2
+    {8, 32, 40, 84, 8, 6, 0, 424080},      //180Hz CVT-RBv2
+    {8, 32, 40, 90, 8, 6, 0, 449920},      //190Hz CVT-RBv2
+    {8, 32, 40, 96, 8, 6, 0, 476000},      //200Hz CVT-RBv2
+    {8, 32, 40, 102, 8, 6, 0, 502320},     //210Hz CVT-RBv2
+    {8, 32, 40, 108, 8, 6, 0, 528880},     //220Hz CVT-RBv2
+    {8, 32, 40, 114, 8, 6, 0, 555680},     //230Hz CVT-RBv2
+    {8, 32, 40, 121, 8, 6, 0, 583200},     //240Hz CVT-RBv2
 };
 
 static const HandheldTimings g_handheldTimingsRETRO[] = {

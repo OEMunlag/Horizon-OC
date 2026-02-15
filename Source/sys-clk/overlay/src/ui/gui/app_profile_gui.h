@@ -64,7 +64,8 @@ class AppProfileGui : public BaseMenuGui
             const std::string& suffix,
             std::uint32_t divisor,
             int decimalPlaces,
-            ValueThresholds thresholds = {}
+            ValueThresholds thresholds,
+            std::vector<NamedValue> namedValues = {}
         );
         void addProfileUI(SysClkProfile profile);
 

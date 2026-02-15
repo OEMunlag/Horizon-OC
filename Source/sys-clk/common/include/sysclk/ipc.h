@@ -48,9 +48,8 @@ enum SysClkIpcCmd
     SysClkIpcCmd_GetConfigValues = 9,
     SysClkIpcCmd_SetConfigValues = 10,
     SysClkIpcCmd_GetFreqList = 11,
-    SysClkIpcCmd_SetReverseNXRTMode = 12,
-    HocClkIpcCmd_SetKipData = 13,
-    HocClkIpcCmd_GetKipData = 14,
+    HocClkIpcCmd_SetKipData = 12,
+    HocClkIpcCmd_GetKipData = 13,
 };
 
 

@@ -71,7 +71,7 @@ protected:
     
     std::vector<NamedValue> namedValues;
     bool showDefaultValue = true;
-    
+    bool showDNO = false;
     tsl::elm::ListItem* createValueListItem(std::uint32_t value, bool selected, int safety);
     tsl::elm::ListItem* createNamedValueListItem(const NamedValue& namedValue, bool selected, int safety);
     std::string formatValue(std::uint32_t value);
@@ -86,7 +86,8 @@ public:
                    bool enableThresholds = false,
                    std::map<std::uint32_t, std::string> labels = {},
                    std::vector<NamedValue> namedValues = {},
-                   bool showDefaultValue = true);
+                   bool showDefaultValue = true,
+                   bool showDNO = false);
     ~ValueChoiceGui();
     
     void addNamedValue(const std::string& name, std::uint32_t value, const std::string& rightText = "")

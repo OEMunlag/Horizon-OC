@@ -108,16 +108,6 @@ typedef enum
     SysClkPartLoad_EnumMax
 } SysClkPartLoad;
 
-
-typedef enum
-{
-    ReverseNX_NotFound = 0,
-    ReverseNX_SystemDefault = 0,
-    ReverseNX_Handheld,
-    ReverseNX_Docked,
-} ReverseNXMode;
-
-
 typedef enum {
     HorizonOCSpeedo_CPU = 0,
     HorizonOCSpeedo_GPU,

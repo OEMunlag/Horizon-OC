@@ -39,7 +39,6 @@
 #include <cstring>
 #include <cstdio>
 #include <crc32.h>
-#include <sys/stat.h>
 
 #define HOSPPC_HAS_BOOST (hosversionAtLeast(7,0,0))
 bool isGovernorEnabled = false; // to avoid thread messes
@@ -90,7 +89,7 @@ ClockManager::ClockManager()
     this->lastTempLogNs = 0;
     this->lastCsvWriteNs = 0;
 
-    this->rnxSync = new ReverseNXSync;
+    this->sysDockIntegration = new SysDockIntegration;
     memset(&initialConfigValues, 0, sizeof(initialConfigValues));
     this->GetKipData();
     threadCreate(
@@ -115,13 +114,7 @@ ClockManager::ClockManager()
     previousRamHz = Board::GetHz(SysClkModule_MEM);
     Board::SetGpuSchedulingMode((GpuSchedulingMode)this->config->GetConfigValue(HorizonOCConfigValue_GPUScheduling));
     this->context->gpuSchedulingMode = (GpuSchedulingMode)this->config->GetConfigValue(HorizonOCConfigValue_GPUScheduling);
-    
-    struct stat st = {0};
-    if (stat("sdmc:/atmosphere/contents/42000000000000A0", &st) == 0 && S_ISDIR(st.st_mode)) {
-        this->context->isSysDockInstalled = true;
-    } else {
-        this->context->isSysDockInstalled = false;
-    }
+    this->context->isSysDockInstalled = this->sysDockIntegration->getCurrentSysDockState();
 }
 
 ClockManager::~ClockManager()
@@ -615,7 +608,6 @@ bool ClockManager::RefreshContext()
         FileUtils::LogLine("[mgr] TitleID change: %016lX", applicationId);
         this->context->applicationId = applicationId;
         hasChanged = true;
-        this->rnxSync->Reset(applicationId);
     }
 
     SysClkProfile profile = Board::GetProfile();
@@ -629,7 +621,6 @@ bool ClockManager::RefreshContext()
     // restore clocks to stock values on app or profile change
     if (hasChanged)
     {
-        // this->rnxSync->ToggleSync(this->GetConfig()->GetConfigValue(HocClkConfigValue_SyncReverseNXMode));
         Board::ResetToStock();
         if (Board::GetSocType() == SysClkSocType_Mariko && this->config->GetConfigValue(HorizonOCConfigValue_DVFSMode) == DVFSMode_Hijack) {
             Board::PcvHijackDvfs(0);
@@ -771,11 +762,6 @@ bool ClockManager::RefreshContext()
 
 
     return hasChanged;
-}
-
-void ClockManager::SetRNXRTMode(ReverseNXMode mode)
-{
-    this->rnxSync->SetRTMode(mode);
 }
 
 void ClockManager::SetKipData() {

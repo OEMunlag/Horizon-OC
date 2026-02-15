@@ -198,12 +198,6 @@ Result IpcService::ServiceHandlerFunc(void* arg, const IpcServerRequest* r, u8* 
                 );
             }
             break;
-        case SysClkIpcCmd_SetReverseNXRTMode:
-            if (r->data.size >= sizeof(ReverseNXMode)) {
-                ReverseNXMode mode = *((ReverseNXMode*)r->data.ptr);
-                return ipcSrv->SetReverseNXRTMode(mode);
-            }
-            break;
         case HocClkIpcCmd_SetKipData:
             if (r->data.size >= 0) {
                 return ipcSrv->SetKipData();
@@ -358,10 +352,6 @@ Result IpcService::GetFreqList(SysClkIpc_GetFreqList_Args* args, std::uint32_t* 
 
     this->clockMgr->GetFreqList(args->module, out_list, args->maxCount, out_count);
 
-    return 0;
-}
-
-Result IpcService::SetReverseNXRTMode(ReverseNXMode mode) {
     return 0;
 }
 

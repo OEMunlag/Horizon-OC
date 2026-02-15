@@ -118,32 +118,32 @@ void FreqChoiceGui::listUI()
         std::uint32_t hz = this->hzList[i];
         uint32_t mhz = hz / 1000000;
 
-        if (checkMax && IsMariko()) {
-            if (moduleName == "cpu" &&
-                this->configList->values[HocClkConfigValue_MarikoMaxCpuClock] < mhz)
-                continue;
+        // if (checkMax && IsMariko()) {
+        //     if (moduleName == "cpu" &&
+        //         this->configList->values[HocClkConfigValue_MarikoMaxCpuClock] < mhz)
+        //         continue;
 
-            // if (moduleName == "gpu" &&
-            //     this->configList->values[HocClkConfigValue_MarikoMaxGpuClock] < mhz)
-            //     continue;
+        //     // if (moduleName == "gpu" &&
+        //     //     this->configList->values[HocClkConfigValue_MarikoMaxGpuClock] < mhz)
+        //     //     continue;
 
-            // if (moduleName == "mem" &&
-            //     this->configList->values[HocClkConfigValue_MarikoMaxMemClock] < mhz)
-            //     continue;
+        //     // if (moduleName == "mem" &&
+        //     //     this->configList->values[HocClkConfigValue_MarikoMaxMemClock] < mhz)
+        //     //     continue;
 
-        } else if (checkMax && IsErista()) {
-            if (moduleName == "cpu" &&
-                this->configList->values[HocClkConfigValue_EristaMaxCpuClock] < mhz)
-                continue;
+        // } else if (checkMax && IsErista()) {
+        //     if (moduleName == "cpu" &&
+        //         this->configList->values[HocClkConfigValue_EristaMaxCpuClock] < mhz)
+        //         continue;
 
-            // if (moduleName == "gpu" &&
-            //     this->configList->values[HocClkConfigValue_EristaMaxGpuClock] < mhz)
-            //     continue;
+        //     // if (moduleName == "gpu" &&
+        //     //     this->configList->values[HocClkConfigValue_EristaMaxGpuClock] < mhz)
+        //     //     continue;
 
-            // if (moduleName == "mem" &&
-            //     this->configList->values[HocClkConfigValue_EristaMaxMemClock] < mhz)
-            //     continue;
-        }
+        //     // if (moduleName == "mem" &&
+        //     //     this->configList->values[HocClkConfigValue_EristaMaxMemClock] < mhz)
+        //     //     continue;
+        // }
 
         if (moduleName == "mem" && mhz <= 600)
             continue;

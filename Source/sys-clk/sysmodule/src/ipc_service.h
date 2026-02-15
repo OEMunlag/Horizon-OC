@@ -54,7 +54,6 @@ class IpcService
     Result GetConfigValues(SysClkConfigValueList* out_configValues);
     Result SetConfigValues(SysClkConfigValueList* configValues);
     Result GetFreqList(SysClkIpc_GetFreqList_Args* args, std::uint32_t* out_list, std::size_t size, std::uint32_t* out_count);
-    Result SetReverseNXRTMode(ReverseNXMode mode);
     Result SetKipData();
     Result GetKipData();
     bool running;
