@@ -64,6 +64,7 @@ class Board
     static u8 GetFanRotationLevel();
     static u8 GetDramID();
     static bool IsDram8GB();
+    static void SetGpuSchedulingMode(GpuSchedulingMode mode);
   protected:
     static void FetchHardwareInfos();
     static PcvModule GetPcvModule(SysClkModule sysclkModule);

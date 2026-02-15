@@ -65,11 +65,14 @@
 #define HOSSVC_HAS_CLKRST (hosversionAtLeast(8,0,0))
 #define HOSSVC_HAS_TC (hosversionAtLeast(5,0,0))
 #define NVGPU_GPU_IOCTL_PMU_GET_GPU_LOAD 0x80044715
+#define NVSCHED_CTRL_ENABLE 0x00000601
+#define NVSCHED_CTRL_DISABLE 0x00000602
 
 constexpr u64 CpuTimeOutNs = 500'000'000;
 constexpr double Systemtickfrequency = 19200000.0 * (static_cast<double>(CpuTimeOutNs) / 1'000'000'000.0);
-
+Result nvInitialize_rc;
 Result nvCheck = 1;
+Result nvCheck_sched = 1;
 
 LEvent threadexit;
 Thread gpuLThread;
@@ -86,7 +89,7 @@ Result pwmDutyCycleCheck = 1;
 double Rotation_Duty = 0;
 u8 fanLevel;
 
-uint32_t GPU_Load_u = 0, fd = 0;
+uint32_t GPU_Load_u = 0, fd = 0, fd2 = 0;
 BatteryChargeInfo info;
 
 static SysClkSocType g_socType = SysClkSocType_Erista;
@@ -238,8 +241,11 @@ void Board::Initialize()
 
     rc = tmp451Initialize();
     ASSERT_RESULT_OK(rc, "tmp451Initialize");
-
-    if (R_SUCCEEDED(nvInitialize())) nvCheck = nvOpen(&fd, "/dev/nvhost-ctrl-gpu");
+    nvInitialize_rc = nvInitialize();
+    if (R_SUCCEEDED(nvInitialize_rc)) {
+        nvCheck = nvOpen(&fd, "/dev/nvhost-ctrl-gpu");
+        nvCheck_sched = nvOpen(&fd2, "/dev/nvsched-ctrl");
+    }
 
     rc = rgltrInitialize();
     ASSERT_RESULT_OK(rc, "rgltrInitialize");
@@ -402,6 +408,7 @@ void Board::Exit()
     rgltrExit();
     batteryInfoExit();
     pmdmntExit();
+    nvExit();
     if(Board::GetConsoleType() != HorizonOCConsoleType_Hoag)
         DisplayRefresh_Shutdown();
 }
@@ -1141,4 +1148,23 @@ bool Board::IsDram8GB() {
         return false;
     }  else
         return args.X[1] == 0x00002000 ? true : false;
+}
+
+void Board::SetGpuSchedulingMode(GpuSchedulingMode mode) {
+    if (nvCheck_sched == 1) {
+        return;
+    }
+    u32 temp;
+    switch(mode) {
+        case GpuSchedulingMode_DoNotOverride:
+            return;
+        case GpuSchedulingMode_Disabled:
+            nvIoctl(fd2, NVSCHED_CTRL_DISABLE, &temp);
+            break;
+        case GpuSchedulingMode_Enabled:
+            nvIoctl(fd2, NVSCHED_CTRL_ENABLE, &temp);
+            break;
+        default:
+            ASSERT_ENUM_VALID(GpuSchedulingMode, mode);
+    }
 }

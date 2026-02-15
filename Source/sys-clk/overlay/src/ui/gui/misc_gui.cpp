@@ -394,8 +394,30 @@ void MiscGui::listUI()
         //     NamedValue("2816mA", 2816),
         //     NamedValue("3072mA", 3072),
         // };
+        this->listElement->addItem(new tsl::elm::CategoryHeader("Experimental"));
+        
+        std::vector<NamedValue> gpuSchedValues = {
+            NamedValue("Do not override", GpuSchedulingMode_DoNotOverride),
+            NamedValue("Enabled", GpuSchedulingMode_Enabled, "96.5% limit"),
+            NamedValue("Disabled", GpuSchedulingMode_Disabled, "99.7% limit"),
+        };
+        tsl::elm::CustomDrawer* gpuSchedInfoText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
+            renderer->drawString("\uE150 This option requires a reboot", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
+            renderer->drawString("to take effect", false, x + 20, y + 50, 18, tsl::style::color::ColorText);
+        });
+        gpuSchedInfoText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 70);
+        this->listElement->addItem(gpuSchedInfoText);
+        addConfigButton(
+            HorizonOCConfigValue_GPUScheduling,
+            "GPU Scheduling Override",
+            ValueRange(0, 0, 1, "", 0),
+            "GPU Scheduling Override",
+            &thresholdsDisabled,
+            {},
+            gpuSchedValues,
+            false
+        );
         if(!IsHoag()) {
-            this->listElement->addItem(new tsl::elm::CategoryHeader("Experimental"));
             //     std::vector<NamedValue> chargerCurrents = {
             //         NamedValue("Disabled", 0),
             //         NamedValue("1024mA", 1024),

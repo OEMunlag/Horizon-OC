@@ -59,6 +59,8 @@ typedef enum {
     HorizonOCConfigValue_DVFSMode,
     HorizonOCConfigValue_DVFSOffset,
 
+    HorizonOCConfigValue_GPUScheduling,
+
     KipConfigValue_custRev,
     // KipConfigValue_mtcConf,
     KipConfigValue_hpMode,
@@ -226,6 +228,8 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
         case HorizonOCConfigValue_DVFSOffset:
             return pretty ? "DVFS Offset" : "dvfs_offset";
 
+        case HorizonOCConfigValue_GPUScheduling:
+            return pretty ? "GPU Scheduling" : "gpu_scheduling";
         // KIP config values
         case KipConfigValue_custRev:
             return pretty ? "Custom Revision" : "kip_cust_rev";
@@ -399,6 +403,7 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
         case HorizonOCConfigValue_BatteryChargeCurrent:
         case HorizonOCConfigValue_OverwriteRefreshRate:
         case HorizonOCConfigValue_EnableUnsafeDisplayFreqs:
+        case HorizonOCConfigValue_GPUScheduling:
             return 0ULL;
         case HocClkConfigValue_EristaMaxCpuClock:
             return 1785ULL;
@@ -541,6 +546,7 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case KipCrc32:
         case HorizonOCConfigValue_DVFSMode:
         case HorizonOCConfigValue_DVFSOffset:
+        case HorizonOCConfigValue_GPUScheduling:
             return true;
         case HorizonOCConfigValue_BatteryChargeCurrent:
             return ((input >= 1024) && (input <= 3072)) || !input;

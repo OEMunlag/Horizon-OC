@@ -112,6 +112,7 @@ ClockManager::ClockManager()
     this->context->dramID = Board::GetDramID();
     this->context->isDram8GB = Board::IsDram8GB();
     previousRamHz = Board::GetHz(SysClkModule_MEM);
+    Board::SetGpuSchedulingMode((GpuSchedulingMode)this->config->GetConfigValue(HorizonOCConfigValue_GPUScheduling));
 }
 
 ClockManager::~ClockManager()
