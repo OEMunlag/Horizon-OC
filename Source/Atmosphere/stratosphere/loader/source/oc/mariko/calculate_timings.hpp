@@ -19,5 +19,6 @@
 namespace ams::ldr::hoc::pcv::mariko {
 
     void CalculateTimings();
+    void CalculateMrw2();
 
 }
