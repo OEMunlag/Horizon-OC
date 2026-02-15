@@ -8,4 +8,4 @@
 
 ## Reporting a Vulnerability
 
-Contact me on discord (soul_9017) or email me (souldbminer@gmail.com)
+Contact Souldbminer or Lightos_ on discord (souldbminer, lightos_)

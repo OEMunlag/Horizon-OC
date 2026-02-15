@@ -285,14 +285,14 @@ void GlobalOverrideGui::listUI()
     }
 
     this->listElement->addItem(new tsl::elm::CategoryHeader(
-    "Temporary Overrides " + ult::DIVIDER_SYMBOL + "  Reset"));
+    "Temporary Overrides " + ult::DIVIDER_SYMBOL + " \ue0e3 Reset"));
     this->addModuleListItem(SysClkModule_CPU);
     this->addModuleListItem(SysClkModule_GPU);
     this->addModuleListItem(SysClkModule_MEM);
     #if IS_MINIMAL == 0
         ValueThresholds lcdThresholds(60, 65);
         if(!IsHoag() && configList.values[HorizonOCConfigValue_OverwriteRefreshRate])
-            this->addModuleListItemValue(HorizonOCModule_Display, "Display", 40, configList.values[HorizonOCConfigValue_EnableUnsafeDisplayFreqs] ? IsAula() ? 65 : 72 : 60, 1, " Hz", 1, 0, lcdThresholds);
+            this->addModuleListItemValue(HorizonOCModule_Display, "Display", IsAula() ? 45 : 40, configList.values[HorizonOCConfigValue_EnableUnsafeDisplayFreqs] ? IsAula() ? 65 : 72 : 60, 1, " Hz", 1, 0, lcdThresholds);
     #endif
     this->addModuleToggleItem(HorizonOCModule_Governor);
 }

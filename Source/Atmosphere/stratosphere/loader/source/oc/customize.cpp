@@ -36,6 +36,8 @@ volatile CustomizeTable C = {
 
 .commonEmcMemVolt  = 1175000, /* LPDDR4X JEDEC Specification */
 .eristaEmcMaxClock = 1600000, /* Maximum HB-MGCH ram rating */
+.eristaEmcMaxClock1 = 1600000,
+.eristaEmcMaxClock2 = 1600000,
 
 .marikoEmcMaxClock = 1866000, /* 1866MHz @ 1866tWRL is guaranteed to work on all Mariko units */
 .marikoEmcVddqVolt = 600000, /* Micron: 600mV, other manafacturers: 640mV */
@@ -463,7 +465,7 @@ volatile CustomizeTable C = {
     {  921600, { }, {  970060,-10108, -614,-179,  1508, -13 } },
     {  998400, { }, { 1065665,-16075, -497,-179,  3213,   9 } },
     { 1075200, { }, { 1132576,-16093, -648,   0,  1077,  40 } },
-    { 1152000, { }, { 1180029,-14534, -830,   0,  1469, 110 } },
+//  { 1152000, { }, { 1180029,-14534, -830,   0,  1469, 110 } },
 //  { 1228800, { }, { 1248293,-16383, -859,   0,  3722, 313 } },
 //  { 1267200, { }, { 1286399,-17475, -867,   0,  3681, 559 } },
 },

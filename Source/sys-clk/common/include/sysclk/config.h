@@ -51,8 +51,6 @@ typedef enum {
 
     HocClkConfigValue_LiteTDPLimit,
 
-    HocClkConfigValue_EnforceBoardLimit,
-
     HorizonOCConfigValue_BatteryChargeCurrent,
 
     HorizonOCConfigValue_OverwriteRefreshRate,
@@ -61,7 +59,7 @@ typedef enum {
     HorizonOCConfigValue_DVFSMode,
     HorizonOCConfigValue_DVFSOffset,
 
-    HocClkConfigValue_FixCpuVoltBug,
+    HorizonOCConfigValue_GPUScheduling,
 
     KipConfigValue_custRev,
     // KipConfigValue_mtcConf,
@@ -69,6 +67,8 @@ typedef enum {
 
     KipConfigValue_commonEmcMemVolt,
     KipConfigValue_eristaEmcMaxClock,
+    KipConfigValue_eristaEmcMaxClock1,
+    KipConfigValue_eristaEmcMaxClock2,
     KipConfigValue_marikoEmcMaxClock,
     KipConfigValue_marikoEmcVddqVolt,
     KipConfigValue_emcDvbShift,
@@ -215,17 +215,11 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
         case HocClkConfigValue_LiteTDPLimit:
             return pretty ? "Handheld TDP Limit" : "tdp_limit_l";
 
-        case HocClkConfigValue_EnforceBoardLimit:
-            return pretty ? "Enforce Board Limit" : "enforce_board_limit";
-
         case HorizonOCConfigValue_BatteryChargeCurrent:
             return pretty ? "Battery Charge Current" : "bat_charge_current";
 
         case HorizonOCConfigValue_OverwriteRefreshRate:
             return pretty ? "Display Refresh Rate Changing" : "drr_changing";
-
-        case HocClkConfigValue_FixCpuVoltBug:
-            return pretty ? "Fix CPU Volt Bug" : "cpu_volt_bugfix";
 
         case HorizonOCConfigValue_EnableUnsafeDisplayFreqs:
             return pretty ? "Enable Unsafe Display Frequencies" : "drr_unsafe";
@@ -236,6 +230,8 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
         case HorizonOCConfigValue_DVFSOffset:
             return pretty ? "DVFS Offset" : "dvfs_offset";
 
+        case HorizonOCConfigValue_GPUScheduling:
+            return pretty ? "GPU Scheduling" : "gpu_scheduling";
         // KIP config values
         case KipConfigValue_custRev:
             return pretty ? "Custom Revision" : "kip_cust_rev";
@@ -248,7 +244,11 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
         case KipConfigValue_commonEmcMemVolt:
             return pretty ? "Common EMC/MEM Voltage" : "common_emc_mem_volt";
         case KipConfigValue_eristaEmcMaxClock:
-            return pretty ? "Erista EMC Max Clock" : "erista_emc_max_clock";
+            return pretty ? "Erista EMC Max Clock 1" : "erista_emc_max_clock";
+        case KipConfigValue_eristaEmcMaxClock1:
+            return pretty ? "Erista EMC Max Clock 2" : "erista_emc_max_clock1";
+        case KipConfigValue_eristaEmcMaxClock2:
+            return pretty ? "Erista EMC Max Clock 3" : "erista_emc_max_clock2";
         case KipConfigValue_marikoEmcMaxClock:
             return pretty ? "Mariko EMC Max Clock" : "mariko_emc_max_clock";
         case KipConfigValue_marikoEmcVddqVolt:
@@ -409,6 +409,7 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
         case HorizonOCConfigValue_BatteryChargeCurrent:
         case HorizonOCConfigValue_OverwriteRefreshRate:
         case HorizonOCConfigValue_EnableUnsafeDisplayFreqs:
+        case HorizonOCConfigValue_GPUScheduling:
             return 0ULL;
         case HocClkConfigValue_EristaMaxCpuClock:
             return 1785ULL;
@@ -418,8 +419,6 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
 
         case HocClkConfigValue_ThermalThrottle:
         case HocClkConfigValue_HandheldTDP:
-        case HocClkConfigValue_EnforceBoardLimit:
-        case HocClkConfigValue_FixCpuVoltBug:
         case HocClkConfigValue_IsFirstLoad:
         case HorizonOCConfigValue_DVFSMode:
             return 1ULL;
@@ -454,9 +453,7 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case HocClkConfigValue_OverwriteBoostMode:
         case HocClkConfigValue_ThermalThrottle:
         case HocClkConfigValue_HandheldTDP:
-        case HocClkConfigValue_EnforceBoardLimit:
         case HorizonOCConfigValue_OverwriteRefreshRate:
-        case HocClkConfigValue_FixCpuVoltBug:
         case HorizonOCConfigValue_EnableUnsafeDisplayFreqs:
         case HocClkConfigValue_IsFirstLoad:
             return (input & 0x1) == input;
@@ -466,6 +463,8 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case KipConfigValue_hpMode:
         case KipConfigValue_commonEmcMemVolt:
         case KipConfigValue_eristaEmcMaxClock:
+        case KipConfigValue_eristaEmcMaxClock1:
+        case KipConfigValue_eristaEmcMaxClock2:
         case KipConfigValue_marikoEmcMaxClock:
         case KipConfigValue_marikoEmcVddqVolt:
         case KipConfigValue_emcDvbShift:
@@ -555,6 +554,7 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case KipCrc32:
         case HorizonOCConfigValue_DVFSMode:
         case HorizonOCConfigValue_DVFSOffset:
+        case HorizonOCConfigValue_GPUScheduling:
             return true;
         case HorizonOCConfigValue_BatteryChargeCurrent:
             return ((input >= 1024) && (input <= 3072)) || !input;

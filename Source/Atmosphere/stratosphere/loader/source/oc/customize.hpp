@@ -80,6 +80,8 @@ typedef struct CustomizeTable {
 
     u32 commonEmcMemVolt;
     u32 eristaEmcMaxClock;
+    u32 eristaEmcMaxClock1;
+    u32 eristaEmcMaxClock2;
     u32 marikoEmcMaxClock;
     u32 marikoEmcVddqVolt;
     u32 emcDvbShift;

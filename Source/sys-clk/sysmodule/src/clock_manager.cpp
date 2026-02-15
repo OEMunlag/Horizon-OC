@@ -39,6 +39,7 @@
 #include <cstring>
 #include <cstdio>
 #include <crc32.h>
+#include <sys/stat.h>
 
 #define HOSPPC_HAS_BOOST (hosversionAtLeast(7,0,0))
 bool isGovernorEnabled = false; // to avoid thread messes
@@ -112,6 +113,15 @@ ClockManager::ClockManager()
     this->context->dramID = Board::GetDramID();
     this->context->isDram8GB = Board::IsDram8GB();
     previousRamHz = Board::GetHz(SysClkModule_MEM);
+    Board::SetGpuSchedulingMode((GpuSchedulingMode)this->config->GetConfigValue(HorizonOCConfigValue_GPUScheduling));
+    this->context->gpuSchedulingMode = (GpuSchedulingMode)this->config->GetConfigValue(HorizonOCConfigValue_GPUScheduling);
+
+    struct stat st = {0};
+    if (stat("sdmc:/atmosphere/contents/42000000000000A0", &st) == 0 && S_ISDIR(st.st_mode)) {
+        this->context->isSysDockInstalled = true;
+    } else {
+        this->context->isSysDockInstalled = false;
+    }
 }
 
 ClockManager::~ClockManager()
@@ -434,12 +444,12 @@ void ClockManager::Tick()
         }
     }
 
-    if(this->config->GetConfigValue(HocClkConfigValue_EnforceBoardLimit) && opMode == AppletOperationMode_Console ) {
-        if(Board::GetPowerMw(SysClkPowerSensor_Now) < 0) {
-            ResetToStockClocks();
-            return;
-        }
-    }
+    // if(this->config->GetConfigValue(HocClkConfigValue_EnforceBoardLimit) && opMode == AppletOperationMode_Console ) {
+    //     if(Board::GetPowerMw(SysClkPowerSensor_Now) < 0) {
+    //         ResetToStockClocks();
+    //         return;
+    //     }
+    // }
 
     if(((tmp451TempSoc() / 1000) > (int)this->config->GetConfigValue(HocClkConfigValue_ThermalThrottleThreshold)) && this->config->GetConfigValue(HocClkConfigValue_ThermalThrottle)) {
         ResetToStockClocks();
@@ -801,6 +811,8 @@ void ClockManager::SetKipData() {
 
     CUST_WRITE_FIELD_BATCH(&table, commonEmcMemVolt, this->config->GetConfigValue(KipConfigValue_commonEmcMemVolt));
     CUST_WRITE_FIELD_BATCH(&table, eristaEmcMaxClock, this->config->GetConfigValue(KipConfigValue_eristaEmcMaxClock));
+    CUST_WRITE_FIELD_BATCH(&table, eristaEmcMaxClock1, this->config->GetConfigValue(KipConfigValue_eristaEmcMaxClock1));
+    CUST_WRITE_FIELD_BATCH(&table, eristaEmcMaxClock2, this->config->GetConfigValue(KipConfigValue_eristaEmcMaxClock2));
     CUST_WRITE_FIELD_BATCH(&table, marikoEmcMaxClock, this->config->GetConfigValue(KipConfigValue_marikoEmcMaxClock));
     CUST_WRITE_FIELD_BATCH(&table, marikoEmcVddqVolt, this->config->GetConfigValue(KipConfigValue_marikoEmcVddqVolt));
     CUST_WRITE_FIELD_BATCH(&table, emcDvbShift, this->config->GetConfigValue(KipConfigValue_emcDvbShift));
@@ -924,6 +936,8 @@ void ClockManager::GetKipData() {
 
             initialConfigValues[KipConfigValue_commonEmcMemVolt] = cust_get_common_emc_volt(&table);
             initialConfigValues[KipConfigValue_eristaEmcMaxClock] = cust_get_erista_emc_max(&table);
+            initialConfigValues[KipConfigValue_eristaEmcMaxClock1] = cust_get_erista_emc_max1(&table);
+            initialConfigValues[KipConfigValue_eristaEmcMaxClock2] = cust_get_erista_emc_max2(&table);
             initialConfigValues[KipConfigValue_marikoEmcMaxClock] = cust_get_mariko_emc_max(&table);
             initialConfigValues[KipConfigValue_marikoEmcVddqVolt] = cust_get_mariko_emc_vddq(&table);
             initialConfigValues[KipConfigValue_emcDvbShift] = cust_get_emc_dvb_shift(&table);
@@ -970,6 +984,8 @@ void ClockManager::GetKipData() {
 
         configValues.values[KipConfigValue_commonEmcMemVolt] = cust_get_common_emc_volt(&table);
         configValues.values[KipConfigValue_eristaEmcMaxClock] = cust_get_erista_emc_max(&table);
+        configValues.values[KipConfigValue_eristaEmcMaxClock1] = cust_get_erista_emc_max1(&table);
+        configValues.values[KipConfigValue_eristaEmcMaxClock2] = cust_get_erista_emc_max2(&table);
         configValues.values[KipConfigValue_marikoEmcMaxClock] = cust_get_mariko_emc_max(&table);
         configValues.values[KipConfigValue_marikoEmcVddqVolt] = cust_get_mariko_emc_vddq(&table);
         configValues.values[KipConfigValue_emcDvbShift] = cust_get_emc_dvb_shift(&table);

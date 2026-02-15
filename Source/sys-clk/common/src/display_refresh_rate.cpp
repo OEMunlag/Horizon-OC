@@ -42,9 +42,9 @@ static bool g_canChangeRefreshRateDocked = false;
 static uint8_t g_lastVActiveSet = 0;
 
 // Refresh rate tables
-static const uint8_t g_dockedRefreshRates[] = {40, 45, 50, 55, 60, 70, 72, 75, 80, 90, 95, 100, 110, 120};
-static bool g_dockedAllowed[14] = {0};
-static bool g_dockedAllowed720p[14] = {0};
+static const uint8_t g_dockedRefreshRates[] = {40, 45, 50, 55, 60, 70, 72, 75, 80, 90, 95, 100, 110, 120, 130, 144, 150, 160, 165, 170, 180, 190, 200, 210, 220, 230, 240};
+static bool g_dockedAllowed[sizeof(g_dockedRefreshRates) / sizeof(g_dockedRefreshRates[0])] = {0};
+static bool g_dockedAllowed720p[sizeof(g_dockedRefreshRates) / sizeof(g_dockedRefreshRates[0])] = {0};
 
 static const DockedTimings g_dockedTimings1080p[] = {
     {8, 32, 40, 7, 8, 6, 0, 88080},        // 40Hz

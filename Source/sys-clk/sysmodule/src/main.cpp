@@ -12,9 +12,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
- 
+
 /* --------------------------------------------------------------------------
  * "THE BEER-WARE LICENSE" (Revision 42):
  * <p-sam@d3vs.net>, <natinusala@gmail.com>, <m4x@m4xw.net>
@@ -36,7 +36,7 @@
 #include "process_management.h"
 #include "clock_manager.h"
 #include "ipc_service.h"
-#define INNER_HEAP_SIZE 0x30000
+#define INNER_HEAP_SIZE 0x40000
 
 extern "C"
 {
@@ -80,11 +80,11 @@ extern "C"
                 hosversionSet(MAKEHOSVERSION(fw.major, fw.minor, fw.micro));
             setsysExit();
         }
-        
+
         // rc = fanInitialize();
         // if (R_FAILED(rc))
         //     diagAbortWithResult(MAKERESULT(Module_Libnx, LibnxError_ShouldNotHappen));
-    
+
         rc = i2cInitialize();
         if (R_FAILED(rc))
             diagAbortWithResult(MAKERESULT(Module_Libnx, LibnxError_ShouldNotHappen));
@@ -96,7 +96,7 @@ extern "C"
         // fanExit();
         i2cExit();
         fsExit();
-        fsdevUnmountAll();    
+        fsdevUnmountAll();
         }
 }
 
@@ -154,6 +154,6 @@ int main(int argc, char** argv)
     FileUtils::LogLine("Exit");
     svcSleepThread(1000000ULL);
     FileUtils::Exit();
-    
+
     return 0;
 }

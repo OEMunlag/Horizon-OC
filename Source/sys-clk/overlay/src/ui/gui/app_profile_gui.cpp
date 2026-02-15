@@ -275,13 +275,16 @@ void AppProfileGui::addModuleListItemValue(
 }
 
 void AppProfileGui::addProfileUI(SysClkProfile profile)
-{
+{    
+    BaseMenuGui::refresh();
+    if(!this->context)
+        return;
     Result rc = sysclkIpcGetConfigValues(&configList); // idk why this is needed, probably some refreshing issue
     if (R_FAILED(rc)) [[unlikely]] {
         FatalGui::openWithResultCode("sysclkIpcGetConfigValues", rc);
         return;
     }
-    this->listElement->addItem(new tsl::elm::CategoryHeader(sysclkFormatProfile(profile, true) + std::string(" ") + ult::DIVIDER_SYMBOL + "  Reset"));
+    this->listElement->addItem(new tsl::elm::CategoryHeader(sysclkFormatProfile(profile, true) + std::string(" ") + ult::DIVIDER_SYMBOL + " \ue0e3 Reset"));
     this->addModuleListItem(profile, SysClkModule_CPU);
     this->addModuleListItem(profile, SysClkModule_GPU);
     this->addModuleListItem(profile, SysClkModule_MEM);
@@ -289,9 +292,9 @@ void AppProfileGui::addProfileUI(SysClkProfile profile)
         ValueThresholds lcdThresholds(60, 65);
         if(!IsHoag() && configList.values[HorizonOCConfigValue_OverwriteRefreshRate]) {
             if(profile != SysClkProfile_Docked)
-                this->addModuleListItemValue(profile, HorizonOCModule_Display, "Display", 40, configList.values[HorizonOCConfigValue_EnableUnsafeDisplayFreqs] ? IsAula() ? 65 : 72 : 60, 1, " Hz", 1, 0, lcdThresholds);
+                this->addModuleListItemValue(profile, HorizonOCModule_Display, "Display", IsAula() ? 45 : 40, configList.values[HorizonOCConfigValue_EnableUnsafeDisplayFreqs] ? IsAula() ? 65 : 72 : 60, 1, " Hz", 1, 0, lcdThresholds);
             else
-                this->addModuleListItemValue(profile, HorizonOCModule_Display, "Display", 50, 120, 5, " Hz", 1, 0);
+                this->addModuleListItemValue(profile, HorizonOCModule_Display, "Display", 50, IsAula() ? this->context->isSysDockInstalled ? 120 : 75 : 120, 5, " Hz", 1, 0);
         }
     #endif
     this->addModuleListItemToggle(profile, HorizonOCModule_Governor);

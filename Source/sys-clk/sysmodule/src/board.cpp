@@ -65,12 +65,16 @@
 #define HOSSVC_HAS_CLKRST (hosversionAtLeast(8,0,0))
 #define HOSSVC_HAS_TC (hosversionAtLeast(5,0,0))
 #define NVGPU_GPU_IOCTL_PMU_GET_GPU_LOAD 0x80044715
+#define NVSCHED_CTRL_ENABLE 0x00000601
+#define NVSCHED_CTRL_DISABLE 0x00000602
 
-#define systemtickfrequency 19200000
-#define systemtickfrequencyF 19200000.0f
-#define CPU_TICK_WAIT (1'000'000'000 / 60)
+constexpr u64 CpuTimeOutNs = 500'000'000;
+constexpr double Systemtickfrequency = 19200000.0 * (static_cast<double>(CpuTimeOutNs) / 1'000'000'000.0);
+Result nvInitialize_rc;
 Result nvCheck = 1;
+Result nvCheck_sched = 1;
 
+LEvent threadexit;
 Thread gpuLThread;
 Thread cpuCore0Thread;
 Thread cpuCore1Thread;
@@ -85,16 +89,17 @@ Result pwmDutyCycleCheck = 1;
 double Rotation_Duty = 0;
 u8 fanLevel;
 
-uint32_t GPU_Load_u = 0, fd = 0;
+uint32_t GPU_Load_u = 0, fd = 0, fd2 = 0;
 BatteryChargeInfo info;
 
 static SysClkSocType g_socType = SysClkSocType_Erista;
 static HorizonOCConsoleType g_consoleType = HorizonOCConsoleType_Iowa;
 
-std::atomic<uint64_t> idletick0{systemtickfrequency};
-std::atomic<uint64_t> idletick1{systemtickfrequency};
-std::atomic<uint64_t> idletick2{systemtickfrequency};
-std::atomic<uint64_t> idletick3{systemtickfrequency};
+u64 idletick0 = 0;
+u64 idletick1 = 0;
+u64 idletick2 = 0;
+// u64 idletick3 = 0;
+
 u32 cpu0, cpu1, cpu2, cpu3, cpuAvg;
 u16 cpuSpeedo0, cpuSpeedo2, socSpeedo0; // CPU, GPU, SOC
 u32 speedoBracket;
@@ -164,16 +169,16 @@ PcvModuleId Board::GetPcvModuleId(SysClkModule sysclkModule)
     return pcvModuleId;
 }
 
-void CheckCore(void* idletick_ptr) {
-    std::atomic<uint64_t>* idletick = (std::atomic<uint64_t>*)idletick_ptr;
-    while (true) {
-        uint64_t idletick_a;
-        uint64_t idletick_b;
-        svcGetInfo(&idletick_b, InfoType_IdleTickCount, INVALID_HANDLE, -1);
-        svcSleepThread(CPU_TICK_WAIT);
-        svcGetInfo(&idletick_a, InfoType_IdleTickCount, INVALID_HANDLE, -1);
-        idletick->store(idletick_a - idletick_b, std::memory_order_release);
-    }
+void CheckCore(void *idletickPtr) {
+	u64* idletick = static_cast<u64 *>(idletickPtr);
+	while(true) {
+		u64 idletickA;
+		u64 idletickB;
+		svcGetInfo(&idletickB, InfoType_IdleTickCount, INVALID_HANDLE, -1);
+		svcWaitForAddress(&threadexit, ArbitrationType_WaitIfEqual, 0, CpuTimeOutNs);
+		svcGetInfo(&idletickA, InfoType_IdleTickCount, INVALID_HANDLE, -1);
+		*idletick = idletickA - idletickB;
+	}
 }
 
 void gpuLoadThread(void*) {
@@ -204,7 +209,6 @@ void miscThreadFunc(void*) {
         svcSleepThread(300'000'000);
     }
 }
-
 
 void Board::Initialize()
 {
@@ -237,8 +241,11 @@ void Board::Initialize()
 
     rc = tmp451Initialize();
     ASSERT_RESULT_OK(rc, "tmp451Initialize");
-
-    if (R_SUCCEEDED(nvInitialize())) nvCheck = nvOpen(&fd, "/dev/nvhost-ctrl-gpu");
+    nvInitialize_rc = nvInitialize();
+    if (R_SUCCEEDED(nvInitialize_rc)) {
+        nvCheck = nvOpen(&fd, "/dev/nvhost-ctrl-gpu");
+        nvCheck_sched = nvOpen(&fd2, "/dev/nvsched-ctrl");
+    }
 
     rc = rgltrInitialize();
     ASSERT_RESULT_OK(rc, "rgltrInitialize");
@@ -253,17 +260,17 @@ void Board::Initialize()
 
     threadCreate(&gpuLThread, gpuLoadThread, NULL, NULL, 0x1000, 0x3F, -2);
 	threadStart(&gpuLThread);
-
-    threadCreate(&cpuCore0Thread, CheckCore, &idletick0, NULL, 0x500, 0x10, 0);
-    threadCreate(&cpuCore1Thread, CheckCore, &idletick1, NULL, 0x500, 0x10, 1);
-    threadCreate(&cpuCore2Thread, CheckCore, &idletick2, NULL, 0x500, 0x10, 2);
-    threadCreate(&cpuCore3Thread, CheckCore, &idletick3, NULL, 0x500, 0x10, 3);
-    threadCreate(&miscThread, miscThreadFunc, NULL, NULL, 0x1000, 0x3F, 3);
+    leventClear(&threadexit);
+    threadCreate(&cpuCore0Thread, CheckCore, &idletick0, NULL, 0x1000, 0x10, 0);
+    threadCreate(&cpuCore1Thread, CheckCore, &idletick1, NULL, 0x1000, 0x10, 1);
+    threadCreate(&cpuCore2Thread, CheckCore, &idletick2, NULL, 0x1000, 0x10, 2);
+    // threadCreate(&cpuCore3Thread, CheckCore, &idletick3, NULL, 0x1000, 0x10, 3);
+    threadCreate(&miscThread, miscThreadFunc, NULL, NULL, 0x1000, 0x10, 3);
 
     threadStart(&cpuCore0Thread);
     threadStart(&cpuCore1Thread);
     threadStart(&cpuCore2Thread);
-    threadStart(&cpuCore3Thread);
+    // threadStart(&cpuCore3Thread);
     threadStart(&miscThread);
     batteryInfoInitialize();
 
@@ -393,7 +400,7 @@ void Board::Exit()
     threadClose(&cpuCore0Thread);
     threadClose(&cpuCore1Thread);
     threadClose(&cpuCore2Thread);
-    threadClose(&cpuCore3Thread);
+    // threadClose(&cpuCore3Thread);
     threadClose(&miscThread);
 
     pwmChannelSessionClose(&g_ICon);
@@ -401,6 +408,7 @@ void Board::Exit()
     rgltrExit();
     batteryInfoExit();
     pmdmntExit();
+    nvExit();
     if(Board::GetConsoleType() != HorizonOCConsoleType_Hoag)
         DisplayRefresh_Shutdown();
 }
@@ -451,8 +459,8 @@ void Board::SetHz(SysClkModule module, std::uint32_t hz)
         ASSERT_RESULT_OK(rc, "clkrstOpenSession");
         rc = clkrstSetClockRate(&session, hz);
         ASSERT_RESULT_OK(rc, "clkrstSetClockRate");
-        if(module == SysClkModule_CPU) {
-            svcSleepThread(200'000'000);
+        if (module == SysClkModule_CPU) {
+            svcSleepThread(300'000);
             rc = clkrstSetClockRate(&session, hz);
             ASSERT_RESULT_OK(rc, "clkrstSetClockRate");
         }
@@ -462,8 +470,8 @@ void Board::SetHz(SysClkModule module, std::uint32_t hz)
     {
         rc = pcvSetClockRate(Board::GetPcvModule(module), hz);
         ASSERT_RESULT_OK(rc, "pcvSetClockRate");
-        if(module == SysClkModule_CPU) {
-            svcSleepThread(200'000'000);
+        if (module == SysClkModule_CPU) {
+            svcSleepThread(300'000);
             rc = pcvSetClockRate(Board::GetPcvModule(module), hz);
             ASSERT_RESULT_OK(rc, "pcvSetClockRate");
         }
@@ -776,6 +784,15 @@ std::int32_t Board::GetPowerMw(SysClkPowerSensor sensor)
     return 0;
 }
 
+u32 GetMaxCpuLoad() {
+    float cpuUsage0 = std::clamp(((Systemtickfrequency - idletick0) / static_cast<double>(Systemtickfrequency)) * 1000.0, 0.0, 1000.0);
+    float cpuUsage1 = std::clamp(((Systemtickfrequency - idletick1) / static_cast<double>(Systemtickfrequency)) * 1000.0, 0.0, 1000.0);
+    float cpuUsage2 = std::clamp(((Systemtickfrequency - idletick2) / static_cast<double>(Systemtickfrequency)) * 1000.0, 0.0, 1000.0);
+    // float cpuUsage3 = std::clamp(((Systemtickfrequency - idletick3) / static_cast<double>(Systemtickfrequency)) * 1000.0, 0.0, 1000.0);
+
+    return std::round(std::max({cpuUsage0, cpuUsage1, cpuUsage2}));
+}
+
 std::uint32_t Board::GetPartLoad(SysClkPartLoad loadSource)
 {
     switch(loadSource)
@@ -786,8 +803,8 @@ std::uint32_t Board::GetPartLoad(SysClkPartLoad loadSource)
             return t210EmcLoadCpu();
         case HocClkPartLoad_GPU:
             return GPU_Load_u;
-        case HocClkPartLoad_CPUAvg:
-            return idletick0;
+        case HocClkPartLoad_CPUMax:
+            return GetMaxCpuLoad();
         case HocClkPartLoad_BAT:
             batteryInfoGetChargeInfo(&info);
             return info.RawBatteryCharge;
@@ -1131,4 +1148,23 @@ bool Board::IsDram8GB() {
         return false;
     }  else
         return args.X[1] == 0x00002000 ? true : false;
+}
+
+void Board::SetGpuSchedulingMode(GpuSchedulingMode mode) {
+    if (nvCheck_sched == 1) {
+        return;
+    }
+    u32 temp;
+    switch(mode) {
+        case GpuSchedulingMode_DoNotOverride:
+            return;
+        case GpuSchedulingMode_Disabled:
+            nvIoctl(fd2, NVSCHED_CTRL_DISABLE, &temp);
+            break;
+        case GpuSchedulingMode_Enabled:
+            nvIoctl(fd2, NVSCHED_CTRL_ENABLE, &temp);
+            break;
+        default:
+            ASSERT_ENUM_VALID(GpuSchedulingMode, mode);
+    }
 }
