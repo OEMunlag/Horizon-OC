@@ -24,8 +24,8 @@ jobs:
       # -------------------------------------------------
       - name: Install devkitPro packages
         run: |
-          pacman -Syu --noconfirm
-          pacman -S --noconfirm switch-dev switch-glm switch-libjpeg-turbo devkitARM devkitarm-rules hactool
+          dkp-pacman -Syu --noconfirm
+          dkp-pacman -S --noconfirm switch-dev switch-glm switch-libjpeg-turbo devkitARM devkitarm-rules hactool
         shell: bash
 
       # -------------------------------------------------
