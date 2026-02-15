@@ -67,6 +67,8 @@ typedef enum {
 
     KipConfigValue_commonEmcMemVolt,
     KipConfigValue_eristaEmcMaxClock,
+    KipConfigValue_eristaEmcMaxClock1,
+    KipConfigValue_eristaEmcMaxClock2,
     KipConfigValue_marikoEmcMaxClock,
     KipConfigValue_marikoEmcVddqVolt,
     KipConfigValue_emcDvbShift,
@@ -242,7 +244,11 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
         case KipConfigValue_commonEmcMemVolt:
             return pretty ? "Common EMC/MEM Voltage" : "common_emc_mem_volt";
         case KipConfigValue_eristaEmcMaxClock:
-            return pretty ? "Erista EMC Max Clock" : "erista_emc_max_clock";
+            return pretty ? "Erista EMC Max Clock 1" : "erista_emc_max_clock";
+        case KipConfigValue_eristaEmcMaxClock1:
+            return pretty ? "Erista EMC Max Clock 2" : "erista_emc_max_clock1";
+        case KipConfigValue_eristaEmcMaxClock2:
+            return pretty ? "Erista EMC Max Clock 3" : "erista_emc_max_clock2";
         case KipConfigValue_marikoEmcMaxClock:
             return pretty ? "Mariko EMC Max Clock" : "mariko_emc_max_clock";
         case KipConfigValue_marikoEmcVddqVolt:
@@ -457,6 +463,8 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case KipConfigValue_hpMode:
         case KipConfigValue_commonEmcMemVolt:
         case KipConfigValue_eristaEmcMaxClock:
+        case KipConfigValue_eristaEmcMaxClock1:
+        case KipConfigValue_eristaEmcMaxClock2:
         case KipConfigValue_marikoEmcMaxClock:
         case KipConfigValue_marikoEmcVddqVolt:
         case KipConfigValue_emcDvbShift:

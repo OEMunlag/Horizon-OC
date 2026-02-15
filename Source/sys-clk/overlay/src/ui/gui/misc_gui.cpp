@@ -242,8 +242,6 @@ void MiscGui::listUI()
     ValueThresholds thresholdsDisabled(0, 0);
     std::vector<NamedValue> noNamedValues = {};
 
-
-
     this->listElement->addItem(new tsl::elm::CategoryHeader("Settings"));
 
     addConfigToggle(HocClkConfigValue_UncappedClocks, nullptr);
@@ -277,7 +275,6 @@ void MiscGui::listUI()
                 &tdpThresholds
             );
         }
-
 
         ValueThresholds throttleThresholds(70, 80);
         addConfigButton(
@@ -395,7 +392,7 @@ void MiscGui::listUI()
         //     NamedValue("3072mA", 3072),
         // };
         this->listElement->addItem(new tsl::elm::CategoryHeader("Experimental"));
-        
+
         std::vector<NamedValue> gpuSchedValues = {
             NamedValue("Do not override", GpuSchedulingMode_DoNotOverride),
             NamedValue("Enabled", GpuSchedulingMode_Enabled, "96.5% limit"),
@@ -603,16 +600,9 @@ protected:
         };
 
         if(IsErista()) {
-            addConfigButton(
-                KipConfigValue_eristaEmcMaxClock,
-                "RAM Max Clock",
-                ValueRange(0, 1, 1, "", 1),
-                "RAM Max Clock",
-                &eristaRamThresholds,
-                {},
-                eristaMaxEmcClock,
-                false
-            );
+            addConfigButton(KipConfigValue_eristaEmcMaxClock, "RAM Max Clock", ValueRange(0, 1, 1, "", 1), "RAM Max Clock", &eristaRamThresholds, {}, eristaMaxEmcClock, false);
+            addConfigButton(KipConfigValue_eristaEmcMaxClock1, "RAM Max Clock", ValueRange(0, 1, 1, "", 1), "RAM Max Clock", &eristaRamThresholds, {}, eristaMaxEmcClock, false);
+            addConfigButton(KipConfigValue_eristaEmcMaxClock2, "RAM Max Clock", ValueRange(0, 1, 1, "", 1), "RAM Max Clock", &eristaRamThresholds, {}, eristaMaxEmcClock, false);
         } else {
             addConfigButton(
                 KipConfigValue_marikoEmcMaxClock,

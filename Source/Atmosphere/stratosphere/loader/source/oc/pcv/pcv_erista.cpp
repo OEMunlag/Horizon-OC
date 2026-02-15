@@ -20,6 +20,7 @@
 
 #include "pcv.hpp"
 #include "../mtc_timing_value.hpp"
+#include "../erista/calculate_timings_erista.hpp"
 
 namespace ams::ldr::hoc::pcv::erista {
 
@@ -184,12 +185,15 @@ namespace ams::ldr::hoc::pcv::erista {
     /* However, it may still achieve a slightly higher frequency, but not as much as it could be.     */
     /* I'm certainly not insane enough to attempt this pain again, so this will have to do *for now*. */
     void MemMtcTableAutoAdjust(EristaMtcTable *table) {
+        const double tCK_avg = 1000'000.0 / table->rate_khz;
+
         #define WRITE_PARAM_ALL_REG(TABLE, PARAM, VALUE) \
             TABLE->burst_regs.PARAM = VALUE;             \
             TABLE->shadow_regs_ca_train.PARAM   = VALUE; \
             TABLE->shadow_regs_rdwr_train.PARAM = VALUE;
 
         #define GET_CYCLE_CEIL(PARAM) u32(CEIL(double(PARAM) / tCK_avg))
+
         /* Ram power down       */
         /* B31: DRAM_CLKSTOP_PD */
         /* B30: DRAM_CLKSTOP_SR */
@@ -206,10 +210,9 @@ namespace ams::ldr::hoc::pcv::erista {
             refresh_raw = MIN(refresh_raw, static_cast<u32>(0xFFFF));
         }
 
-        u32 rext;
-        if (C.eristaEmcMaxClock > 3200000) {
+        if (table->rate_khz > 3200000) {
             rext = 30;
-        } else if (C.eristaEmcMaxClock >= 2133001) {
+        } else if (table->rate_khz >= 2133001) {
             rext = 28;
         } else {
             rext = 26;
@@ -217,6 +220,8 @@ namespace ams::ldr::hoc::pcv::erista {
 
         u32 trefbw = refresh_raw + 0x40;
         trefbw = MIN(trefbw, static_cast<u32>(0x3FFF));
+
+        CalculateTimings(tCK_avg);
 
         WRITE_PARAM_ALL_REG(table, emc_rd_rcd, GET_CYCLE_CEIL(tRCD));
         WRITE_PARAM_ALL_REG(table, emc_wr_rcd, GET_CYCLE_CEIL(tRCD));
@@ -239,7 +244,7 @@ namespace ams::ldr::hoc::pcv::erista {
         WRITE_PARAM_ALL_REG(table, emc_w2p, tW2P);
         WRITE_PARAM_ALL_REG(table, emc_w2r, tW2R);
         WRITE_PARAM_ALL_REG(table, emc_rext, rext);
-        WRITE_PARAM_ALL_REG(table, emc_wext, (C.eristaEmcMaxClock >= 2533000) ? 0x19 : 0x16);
+        WRITE_PARAM_ALL_REG(table, emc_wext, (table->rate_khz >= 2533000) ? 0x19 : 0x16);
         WRITE_PARAM_ALL_REG(table, emc_refresh, refresh_raw);
         WRITE_PARAM_ALL_REG(table, emc_pre_refresh_req_cnt, refresh_raw / 4);
         WRITE_PARAM_ALL_REG(table, emc_trefbw, trefbw);
@@ -286,7 +291,7 @@ namespace ams::ldr::hoc::pcv::erista {
         constexpr double MC_ARB_DIV = 4.0;
         constexpr u32 MC_ARB_SFA = 2;
 
-        table->burst_mc_regs.mc_emem_arb_cfg          = C.eristaEmcMaxClock         / (33.3 * 1000) / MC_ARB_DIV;
+        table->burst_mc_regs.mc_emem_arb_cfg          = table->rate_khz             / (33.3 * 1000) / MC_ARB_DIV;
         table->burst_mc_regs.mc_emem_arb_timing_rcd   = CEIL(GET_CYCLE_CEIL(tRCD)   / MC_ARB_DIV) - 2;
         table->burst_mc_regs.mc_emem_arb_timing_rp    = CEIL(GET_CYCLE_CEIL(tRPpb)  / MC_ARB_DIV) - 1;
         table->burst_mc_regs.mc_emem_arb_timing_rc    = CEIL(GET_CYCLE_CEIL(tRC)    / MC_ARB_DIV) - 1;
@@ -319,24 +324,24 @@ namespace ams::ldr::hoc::pcv::erista {
 
         table->burst_mc_regs.mc_emem_arb_misc0 = (table->burst_mc_regs.mc_emem_arb_misc0 & 0xFFE08000) | (table->burst_mc_regs.mc_emem_arb_timing_rc + 1);
 
-        u32 mpcorer_ptsa_rate = MAX(static_cast<u32>(227), (C.eristaEmcMaxClock / 1600000) * 208);
+        u32 mpcorer_ptsa_rate = MAX(static_cast<u32>(227), (table->rate_khz / 1600000) * 208);
         table->la_scale_regs.mc_mll_mpcorer_ptsa_rate = mpcorer_ptsa_rate;
 
-        u32 ftop_ptsa_rate = MAX(static_cast<u32>(31), (C.eristaEmcMaxClock / 1600000) * 24);
+        u32 ftop_ptsa_rate = MAX(static_cast<u32>(31), (table->rate_khz / 1600000) * 24);
         table->la_scale_regs.mc_ftop_ptsa_rate = ftop_ptsa_rate;
 
-        u32 grant_decrement = MAX(static_cast<u32>(6143), (C.eristaEmcMaxClock / 1600000) * 4611);
+        u32 grant_decrement = MAX(static_cast<u32>(6143), (table->rate_khz / 1600000) * 4611);
         table->la_scale_regs.mc_ptsa_grant_decrement = grant_decrement;
 
         constexpr u32 MaskHigh = 0xFF00FFFF;
         constexpr u32 Mask2 = 0xFFFFFF00;
         constexpr u32 Mask3 = 0xFF00FF00;
 
-        const u32 allowance1 = static_cast<u32>(0x32000 / (C.eristaEmcMaxClock / 0x3E8)) & 0xFF;
-        const u32 allowance2 = static_cast<u32>(0x9C40  / (C.eristaEmcMaxClock / 0x3E8)) & 0xFF;
-        const u32 allowance3 = static_cast<u32>(0xB540  / (C.eristaEmcMaxClock / 0x3E8)) & 0xFF;
-        const u32 allowance4 = static_cast<u32>(0x9600  / (C.eristaEmcMaxClock / 0x3E8)) & 0xFF;
-        const u32 allowance5 = static_cast<u32>(0x8980  / (C.eristaEmcMaxClock / 0x3E8)) & 0xFF;
+        const u32 allowance1 = static_cast<u32>(0x32000 / (table->rate_khz / 0x3E8)) & 0xFF;
+        const u32 allowance2 = static_cast<u32>(0x9C40  / (table->rate_khz / 0x3E8)) & 0xFF;
+        const u32 allowance3 = static_cast<u32>(0xB540  / (table->rate_khz / 0x3E8)) & 0xFF;
+        const u32 allowance4 = static_cast<u32>(0x9600  / (table->rate_khz / 0x3E8)) & 0xFF;
+        const u32 allowance5 = static_cast<u32>(0x8980  / (table->rate_khz / 0x3E8)) & 0xFF;
 
         table->la_scale_regs.mc_latency_allowance_xusb_0    =              (table->la_scale_regs.mc_latency_allowance_xusb_0    & MaskHigh) | (allowance1 << 16);
         table->la_scale_regs.mc_latency_allowance_xusb_1    =              (table->la_scale_regs.mc_latency_allowance_xusb_1    & MaskHigh) | (allowance1 << 16);
@@ -377,25 +382,32 @@ namespace ams::ldr::hoc::pcv::erista {
             R_UNLESS(table_list[i]->rev == MTC_TABLE_REV, ldr::ResultInvalidMtcTable());
         }
 
-        if (C.eristaEmcMaxClock <= EmcClkOSLimit)
+        if (GET_MAX_OF_ARR(maxClocks) <= EmcClkOSLimit) {
             R_SKIP();
+        }
 
-        // Make room for new mtc table, discarding useless 40.8 MHz table
-        // 40800 overwritten by 68000, ..., 1331200 overwritten by 1600000, leaving table_list[0] not overwritten
-        for (u32 i = khz_list_size - 1; i > 0; i--)
-            std::memcpy(static_cast<void *>(table_list[i]), static_cast<void *>(table_list[i - 1]), sizeof(EristaMtcTable));
+        // Make room for new mtc table, discarding useless 40.8, 68000 and 102000 MHz table
+        // 40800 overwritten by 68000, ..., 1331200 overwritten by 1600000, leaving table_list[0], table_list[1] and table_list[2] not overwritten
+        for (u32 i = khz_list_size - 1; i > 2; --i) {
+            std::memcpy(static_cast<void *>(table_list[i]), static_cast<void *>(table_list[i - 3]), sizeof(EristaMtcTable));
+        }
 
-        MemMtcTableAutoAdjust(table_list[0]);
+        for (u32 i = 0; i < std::size(maxClocks); ++i) {
+            if (maxClocks[i] > EmcClkOSLimit) {
+                table_list[i]->rate_khz = maxClocks[i];
+                MemMtcTableAutoAdjust(table_list[i]);
+            }
+        }
 
-        PATCH_OFFSET(ptr, C.eristaEmcMaxClock);
         R_SUCCEED();
     }
 
     Result MemFreqMax(u32 *ptr) {
-        if (C.eristaEmcMaxClock <= EmcClkOSLimit)
+        if (GET_MAX_OF_ARR(maxClocks) <= EmcClkOSLimit) {
             R_SKIP();
+        }
 
-        PATCH_OFFSET(ptr, C.eristaEmcMaxClock);
+        PATCH_OFFSET(ptr, GET_MAX_OF_ARR(maxClocks));
 
         R_SUCCEED();
     }
