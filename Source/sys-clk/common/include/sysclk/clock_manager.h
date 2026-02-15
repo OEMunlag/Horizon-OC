@@ -43,10 +43,12 @@ typedef struct
     uint32_t voltages[HocClkVoltage_EnumMax];
     u16 speedos[HorizonOCSpeedo_EnumMax];
     u16 iddq[HorizonOCSpeedo_EnumMax];
+    GpuSchedulingMode gpuSchedulingMode;
+    bool isSysDockInstalled;
     u8 maxDisplayFreq;
-    u8 fps;
     u8 dramID;
     bool isDram8GB;
+    u8 fps;
 } SysClkContext;
 
 typedef struct

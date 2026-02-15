@@ -39,6 +39,7 @@
 #include <cstring>
 #include <cstdio>
 #include <crc32.h>
+#include <sys/stat.h>
 
 #define HOSPPC_HAS_BOOST (hosversionAtLeast(7,0,0))
 bool isGovernorEnabled = false; // to avoid thread messes
@@ -113,6 +114,14 @@ ClockManager::ClockManager()
     this->context->isDram8GB = Board::IsDram8GB();
     previousRamHz = Board::GetHz(SysClkModule_MEM);
     Board::SetGpuSchedulingMode((GpuSchedulingMode)this->config->GetConfigValue(HorizonOCConfigValue_GPUScheduling));
+    this->context->gpuSchedulingMode = (GpuSchedulingMode)this->config->GetConfigValue(HorizonOCConfigValue_GPUScheduling);
+    
+    struct stat st = {0};
+    if (stat("sdmc:/atmosphere/contents/42000000000000A0", &st) == 0 && S_ISDIR(st.st_mode)) {
+        this->context->isSysDockInstalled = true;
+    } else {
+        this->context->isSysDockInstalled = false;
+    }
 }
 
 ClockManager::~ClockManager()
