@@ -10,8 +10,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    container:
-      image: devkitpro/toolchain-base:latest
+    #container:
+      #image: devkitpro/toolchain-base:latest
 
     steps:
       - name: Checkout repository and submodules # needed for hoc-clk
@@ -19,9 +19,12 @@ jobs:
         with:
           submodules: recursive
 
-      # -------------------------------------------------
-      # Install devkitPro packages via pacman
-      # -------------------------------------------------
+      - name: Install devkitPro
+        run: |
+             curl -O https://apt.devkitpro.org/install-devkitpro-pacman
+             chmod +x ./install-devkitpro-pacman
+             sudo ./install-devkitpro-pacman
+
       - name: Install devkitPro packages
         run: |
           dkp-pacman -Syu --noconfirm
@@ -52,7 +55,7 @@ jobs:
         shell: bash
 
       - name: Build libnx
-        run: 
+        run: |
           git clone --depth=1 --single-branch https://github.com/switchbrew/libnx.git
           make -C libnx/nx -j$(nproc) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
           make -C libnx/nx install
