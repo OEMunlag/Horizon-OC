@@ -21,9 +21,9 @@ jobs:
 
       - name: Install devkitPro
         run: |
-             curl -O https://apt.devkitpro.org/install-devkitpro-pacman
+             wget https://apt.devkitpro.org/install-devkitpro-pacman
              chmod +x ./install-devkitpro-pacman
-             sudo ./install-devkitpro-pacman
+             sudo bash ./install-devkitpro-pacman
 
       - name: Install devkitPro packages
         run: |
@@ -31,9 +31,6 @@ jobs:
           dkp-pacman -S --noconfirm switch-dev switch-glm switch-libjpeg-turbo devkitARM devkitarm-rules hactool
         shell: bash
 
-      # -------------------------------------------------
-      # Fix PATH for devkitA64 and devkitARM
-      # -------------------------------------------------
       - name: Set devkitPro PATH
         run: |
           echo "DEVKITPRO=/opt/devkitpro" >> $GITHUB_ENV
