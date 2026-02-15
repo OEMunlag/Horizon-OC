@@ -10,31 +10,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    #container:
-      #image: devkitpro/toolchain-base:latest
+    container:
+      image: devkitpro/devkita64:latest
 
     steps:
       - name: Checkout repository and submodules # needed for hoc-clk
         uses: actions/checkout@v6.0.2
         with:
           submodules: recursive
-
-      - name: Install devkitPro
-        run: |
-          sudo apt-get install apt-transport-https
-          sudo mkdir -p /usr/share/keyring/
-          sudo wget -U "dkp apt" -O /usr/share/keyring/devkitpro-pub.gpg https://apt.devkitpro.org/devkitpro-pub.gpg
-          echo "deb [signed-by=/usr/share/keyring/devkitpro-pub.gpg] https://apt.devkitpro.org stable main" | sudo tee /etc/apt/sources.list.d/devkitpro.list
-          sudo apt update
-          sudo apt-get install devkitpro-pacman
-        shell: bash
-
-      - name: Install devkitPro packages
-        run: |
-          dkp-pacman -Syu --noconfirm
-          dkp-pacman -S --noconfirm switch-dev switch-glm switch-libjpeg-turbo devkitARM devkitarm-rules hactool
-        shell: bash
-
+          
       - name: Set devkitPro PATH
         run: |
           echo "DEVKITPRO=/opt/devkitpro" >> $GITHUB_ENV
