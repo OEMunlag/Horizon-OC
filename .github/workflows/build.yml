@@ -10,9 +10,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # Minimal devkitA64 container
     container:
-      image: devkitpro/devkita64:latest
+      image: devkitpro/toolchain-base:latest
 
     steps:
       - name: Checkout repository and submodules # needed for hoc-clk
@@ -20,6 +19,14 @@ jobs:
         with:
           submodules: recursive
 
+      # -------------------------------------------------
+      # Install devkitPro packages via pacman
+      # -------------------------------------------------
+      - name: Install devkitPro packages
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm switch-dev switch-glm switch-libjpeg-turbo devkitARM devkitarm-rules hactool
+        shell: bash
 
       # -------------------------------------------------
       # Fix PATH for devkitA64 and devkitARM
@@ -36,12 +43,19 @@ jobs:
         run: |
           aarch64-none-elf-gcc --version
           aarch64-none-elf-g++ --version
-        shell: bash # is this even needed? but for consistency let's keep using it
+        shell: bash
 
       - name: Install ccache
         run: |
           apt-get update
           apt-get install -y ccache
+        shell: bash
+
+      - name: Build libnx
+        run: 
+          git clone --depth=1 --single-branch https://github.com/switchbrew/libnx.git
+          make -C libnx/nx -j$(nproc) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
+          make -C libnx/nx install
         shell: bash
 
       # -------------------------------------------------
@@ -70,7 +84,7 @@ jobs:
         uses: actions/cache@v5.0.3
         with:
           path: /root/.cache/ccache
-          key: ccache-${{ runner.os }}-devkitpro-ams-${{ hashFiles('ams_ver.txt') }} # last key was utter garbage, stick to ams versions, 
+          key: ccache-${{ runner.os }}-devkitpro-ams-${{ hashFiles('ams_ver.txt') }}
           restore-keys: |
             ccache-${{ runner.os }}-devkitpro-
 
@@ -81,7 +95,7 @@ jobs:
           ccache --set-config=max_size=10G
           ccache --set-config=compiler_check=content
           ccache --zero-stats
-          
+
       - name: Build hoc-clk sysmodule and overlay
         shell: bash
         run: |
