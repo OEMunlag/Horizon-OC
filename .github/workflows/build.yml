@@ -21,12 +21,13 @@ jobs:
 
       - name: Install devkitPro
         run: |
-          apt-get install apt-transport-https
-          mkdir -p /usr/share/keyring/
-          wget -U "dkp apt" -O /usr/share/keyring/devkitpro-pub.gpg https://apt.devkitpro.org/devkitpro-pub.gpg
-          echo "deb [signed-by=/usr/share/keyring/devkitpro-pub.gpg] https://apt.devkitpro.org stable main" > /etc/apt/sources.list.d/devkitpro.list
-          apt-get install devkitpro-pacman
-        shell: sudo bash
+          sudo apt-get install apt-transport-https
+          sudo mkdir -p /usr/share/keyring/
+          sudo wget -U "dkp apt" -O /usr/share/keyring/devkitpro-pub.gpg https://apt.devkitpro.org/devkitpro-pub.gpg
+          sudo echo "deb [signed-by=/usr/share/keyring/devkitpro-pub.gpg] https://apt.devkitpro.org stable main" > /etc/apt/sources.list.d/devkitpro.list
+          sudo apt update
+          sudo apt-get install devkitpro-pacman
+        shell: bash
 
       - name: Install devkitPro packages
         run: |
