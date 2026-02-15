@@ -285,7 +285,6 @@ void MiscGui::listUI()
             );
         }
 
-
         ValueThresholds throttleThresholds(70, 80);
         addConfigButton(
             HocClkConfigValue_ThermalThrottleThreshold,
@@ -617,16 +616,9 @@ protected:
         };
 
         if(IsErista()) {
-            addConfigButton(
-                KipConfigValue_eristaEmcMaxClock,
-                "RAM Max Clock",
-                ValueRange(0, 1, 1, "", 1),
-                "RAM Max Clock",
-                &eristaRamThresholds,
-                {},
-                eristaMaxEmcClock,
-                false
-            );
+            addConfigButton(KipConfigValue_eristaEmcMaxClock, "RAM Max Clock", ValueRange(0, 1, 1, "", 1), "RAM Max Clock", &eristaRamThresholds, {}, eristaMaxEmcClock, false);
+            addConfigButton(KipConfigValue_eristaEmcMaxClock1, "RAM Max Clock", ValueRange(0, 1, 1, "", 1), "RAM Max Clock", &eristaRamThresholds, {}, eristaMaxEmcClock, false);
+            addConfigButton(KipConfigValue_eristaEmcMaxClock2, "RAM Max Clock", ValueRange(0, 1, 1, "", 1), "RAM Max Clock", &eristaRamThresholds, {}, eristaMaxEmcClock, false);
         } else {
             addConfigButton(
                 KipConfigValue_marikoEmcMaxClock,

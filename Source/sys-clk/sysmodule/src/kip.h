@@ -32,6 +32,8 @@ typedef struct {
     u32 hpMode;
     u32 commonEmcMemVolt;
     u32 eristaEmcMaxClock;
+    u32 eristaEmcMaxClock1;
+    u32 eristaEmcMaxClock2;
     u32 marikoEmcMaxClock;
     u32 marikoEmcVddqVolt;
     u32 emcDvbShift;
@@ -192,6 +194,8 @@ static inline bool cust_set_hp_mode(const char* p, u32 v) { CUST_WRITE_FIELD(p, 
 
 static inline bool cust_set_common_emc_volt(const char* p, u32 v) { CUST_WRITE_FIELD(p, commonEmcMemVolt, v); }
 static inline bool cust_set_erista_emc_max(const char* p, u32 v) { CUST_WRITE_FIELD(p, eristaEmcMaxClock, v); }
+static inline bool cust_set_erista_emc_max1(const char* p, u32 v) { CUST_WRITE_FIELD(p, eristaEmcMaxClock1, v); }
+static inline bool cust_set_erista_emc_max2(const char* p, u32 v) { CUST_WRITE_FIELD(p, eristaEmcMaxClock2, v); }
 static inline bool cust_set_mariko_emc_max(const char* p, u32 v) { CUST_WRITE_FIELD(p, marikoEmcMaxClock, v); }
 static inline bool cust_set_mariko_emc_vddq(const char* p, u32 v) { CUST_WRITE_FIELD(p, marikoEmcVddqVolt, v); }
 static inline bool cust_set_emc_dvb_shift(const char* p, u32 v) { CUST_WRITE_FIELD(p, emcDvbShift, v); }
@@ -261,6 +265,8 @@ static inline u32 cust_get_hp_mode(const CustomizeTable* t) { return CUST_GET_FI
 
 static inline u32 cust_get_common_emc_volt(const CustomizeTable* t) { return CUST_GET_FIELD(t, commonEmcMemVolt); }
 static inline u32 cust_get_erista_emc_max(const CustomizeTable* t) { return CUST_GET_FIELD(t, eristaEmcMaxClock); }
+static inline u32 cust_get_erista_emc_max1(const CustomizeTable* t) { return CUST_GET_FIELD(t, eristaEmcMaxClock1); }
+static inline u32 cust_get_erista_emc_max2(const CustomizeTable* t) { return CUST_GET_FIELD(t, eristaEmcMaxClock2); }
 static inline u32 cust_get_mariko_emc_max(const CustomizeTable* t) { return CUST_GET_FIELD(t, marikoEmcMaxClock); }
 static inline u32 cust_get_mariko_emc_vddq(const CustomizeTable* t) { return CUST_GET_FIELD(t, marikoEmcVddqVolt); }
 static inline u32 cust_get_emc_dvb_shift(const CustomizeTable* t) { return CUST_GET_FIELD(t, emcDvbShift); }
