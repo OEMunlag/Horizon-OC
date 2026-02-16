@@ -444,7 +444,6 @@ SysClkProfile Board::GetProfile()
 void Board::SetHz(SysClkModule module, std::uint32_t hz)
 {
     Result rc = 0;
-    u32 out_rate = 0;
     if(module == HorizonOCModule_Display && Board::GetConsoleType() != HorizonOCConsoleType_Hoag) {     
         DisplayRefresh_SetRate(hz);
         return;
