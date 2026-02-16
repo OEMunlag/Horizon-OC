@@ -747,7 +747,7 @@ bool ClockManager::RefreshContext()
         FileUtils::WriteContextToCsv(this->context);
     }
 
-    this->context->maxDisplayFreq = Board::GetHighestDockedDisplayRate();
+    // this->context->maxDisplayFreq = Board::GetHighestDockedDisplayRate();
 
     u32 targetHz = this->context->overrideFreqs[HorizonOCModule_Display];
     if (!targetHz)
@@ -757,10 +757,13 @@ bool ClockManager::RefreshContext()
             targetHz = this->config->GetAutoClockHz(GLOBAL_PROFILE_ID, HorizonOCModule_Display, this->context->profile, true);
     }
 
-    if(targetHz && this->context->realFreqs[HorizonOCModule_Display] > targetHz)
-        this->context->realFreqs[HorizonOCModule_Display] = targetHz; // clean up display real freqs, should probably be moved to the real freqs loop?
+    if(targetHz && this->context->realFreqs[HorizonOCModule_Display] > targetHz && this->context->profile != SysClkProfile_Docked)
+        this->context->realFreqs[HorizonOCModule_Display] = targetHz; // clean up display real freqs, should probably be moved to the real freqs loop? 
+    
+    if(Board::GetConsoleType() != HorizonOCConsoleType_Hoag)
+        Board::SetDisplayRefreshDockedState(this->context->profile == SysClkProfile_Docked);
 
-
+    FileUtils::LogLine("[mgr] highest rate: %u", Board::GetHighestDockedDisplayRate());
     return hasChanged;
 }
 

@@ -65,6 +65,7 @@ class Board
     static u8 GetDramID();
     static bool IsDram8GB();
     static void SetGpuSchedulingMode(GpuSchedulingMode mode);
+    static void SetDisplayRefreshDockedState(bool docked);
   protected:
     static void FetchHardwareInfos();
     static PcvModule GetPcvModule(SysClkModule sysclkModule);

@@ -43,8 +43,6 @@ static uint8_t g_lastVActiveSet = 0;
 
 // Refresh rate tables
 static const uint8_t g_dockedRefreshRates[] = {40, 45, 50, 55, 60, 70, 72, 75, 80, 90, 95, 100, 110, 120, 130, 140, 144, 150, 160, 165, 170, 180, 190, 200, 210, 220, 230, 240};
-static bool g_dockedAllowed[sizeof(g_dockedRefreshRates) / sizeof(g_dockedRefreshRates[0])] = {0};
-static bool g_dockedAllowed720p[sizeof(g_dockedRefreshRates) / sizeof(g_dockedRefreshRates[0])] = {0};
 // Calculate with this tool:
 
 // https://tomverbeure.github.io/video_timings_calculator?horiz_pixels=1920&vert_pixels=1080&refresh_rate=240&margins=false&interlaced=false&bpc=8&color_fmt=rgb444&video_opt=false&custom_hblank=80&custom_vblank=6
@@ -110,15 +108,6 @@ static uint8_t _getDockedRefreshRateIterator(uint32_t refreshRate) {
     return 0xFF;
 }
 
-static void _setDefaultDockedSettings(void) {
-    memset(g_dockedAllowed, 0, sizeof(g_dockedAllowed));
-    g_dockedAllowed[_getDockedRefreshRateIterator(50)] = true;
-    g_dockedAllowed[_getDockedRefreshRateIterator(60)] = true;
-    memset(g_dockedAllowed720p, 0, sizeof(g_dockedAllowed720p));
-    g_dockedAllowed720p[_getDockedRefreshRateIterator(50)] = true;
-    g_dockedAllowed720p[_getDockedRefreshRateIterator(60)] = true;
-}
-
 static void _changeOledElvssSettings(const uint32_t* offsets, const uint32_t* value, uint32_t size, uint32_t start) {
     if (!g_config.dsiVirtAddr || !value || !size) return;
 
@@ -155,13 +144,14 @@ static void _changeOledElvssSettings(const uint32_t* offsets, const uint32_t* va
     dsi[DSI_VIDEO_MODE_CONTROL] = false;
     svcSleepThread(20000000);
 }
-
+void DisplayRefresh_SetDockedState(bool isDocked) {
+    g_config.isDocked = isDocked;
+}
 
 bool DisplayRefresh_Initialize(const DisplayRefreshConfig* config) {
     if (!config) return false;
     
     g_config = *config;
-    _setDefaultDockedSettings();
     g_initialized = true;
     return true;
 }
@@ -209,69 +199,20 @@ void DisplayRefresh_CorrectOledGamma(uint32_t refresh_rate) {
 }
 
 void DisplayRefresh_SetAllowedDockedRatesIPC(uint32_t refreshRates, bool is720p) {
-    struct {
-        unsigned int Hz_40: 1;
-        unsigned int Hz_45: 1;
-        unsigned int Hz_50: 1;
-        unsigned int Hz_55: 1;
-        unsigned int Hz_60: 1;
-        unsigned int Hz_70: 1;
-        unsigned int Hz_72: 1;
-        unsigned int Hz_75: 1;
-        unsigned int Hz_80: 1;
-        unsigned int Hz_90: 1;
-        unsigned int Hz_95: 1;
-        unsigned int Hz_100: 1;
-        unsigned int Hz_110: 1;
-        unsigned int Hz_120: 1;
-        unsigned int reserved: 18;
-    } rates;
-
-    memcpy(&rates, &refreshRates, 4);
-    
-    bool* target = is720p ? g_dockedAllowed720p : g_dockedAllowed;
-    target[_getDockedRefreshRateIterator(40)] = rates.Hz_40;
-    target[_getDockedRefreshRateIterator(45)] = rates.Hz_45;
-    target[_getDockedRefreshRateIterator(50)] = rates.Hz_50;
-    target[_getDockedRefreshRateIterator(55)] = rates.Hz_55;
-    target[_getDockedRefreshRateIterator(60)] = true;
-    target[_getDockedRefreshRateIterator(70)] = rates.Hz_70;
-    target[_getDockedRefreshRateIterator(72)] = rates.Hz_72;
-    target[_getDockedRefreshRateIterator(75)] = rates.Hz_75;
-    target[_getDockedRefreshRateIterator(80)] = rates.Hz_80;
-    target[_getDockedRefreshRateIterator(90)] = rates.Hz_90;
-    target[_getDockedRefreshRateIterator(95)] = rates.Hz_95;
-    target[_getDockedRefreshRateIterator(100)] = rates.Hz_100;
-    target[_getDockedRefreshRateIterator(110)] = rates.Hz_110;
-    target[_getDockedRefreshRateIterator(120)] = rates.Hz_120;
+    // Function kept for API compatibility but does nothing
+    (void)refreshRates;
+    (void)is720p;
 }
 
 uint8_t DisplayRefresh_GetDockedHighestAllowed(void) {
-    const size_t numRates = sizeof(g_dockedRefreshRates) / sizeof(g_dockedRefreshRates[0]);
-    
-    if (g_lastVActive == 1080) {
-        for (int i = numRates - 1; g_dockedRefreshRates[i] > 60; i--) {
-            if (g_dockedAllowed[i])
-                return (g_dockedRefreshRates[i] > g_dockedHighestRefreshRate) ? g_dockedHighestRefreshRate : g_dockedRefreshRates[i];
-        }
-    } else if (g_lastVActive == 720) {
-        for (int i = numRates - 1; g_dockedRefreshRates[i] > 60; i--) {
-            if (g_dockedAllowed720p[i])
-                return (g_dockedRefreshRates[i] > g_dockedHighestRefreshRate) ? g_dockedHighestRefreshRate : g_dockedRefreshRates[i];
-        }
-    }
-    return 60;
+    return (g_dockedHighestRefreshRate > 60) ? g_dockedHighestRefreshRate : 60;
 }
 
 static void _getDockedHighestRefreshRate(uint32_t fd_in) {
     uint8_t highestRefreshRate = 60;
     uint32_t fd = fd_in;
     
-    if (!fd && nvOpen(&fd, "/dev/nvdisp-disp1")) {
-        g_dockedHighestRefreshRate = 60;
-        return;
-    }
-    
+    if(!fd) nvOpen(&fd, "/dev/nvdisp-disp1");
     NvdcModeDB2 db2 = {0};
     int rc = nvIoctl(fd, NVDISP_GET_MODE_DB2, &db2);
     
@@ -317,8 +258,8 @@ static void _getDockedHighestRefreshRate(uint32_t fd_in) {
     rc = nvIoctl(fd, NVDISP_GET_PANEL_DATA, &dpaux);
     if (rc == 0) {
         g_dockedLinkRate = dpaux.set.link_rate;
-        if (display_b.hActive == 1920 && display_b.vActive == 1080 && highestRefreshRate > 75 && dpaux.set.link_rate < 20) 
-            highestRefreshRate = 75;
+        // if (display_b.hActive == 1920 && display_b.vActive == 1080 && highestRefreshRate > 75 && dpaux.set.link_rate < 20 && ) 
+        //     highestRefreshRate = 75;
     }
     
     if (!fd_in) nvClose(fd);
@@ -432,10 +373,6 @@ static bool _setNvDispDockedRefreshRate(uint32_t new_refreshRate) {
 
     if (display_b.vActive != g_lastVActiveSet) {
         g_lastVActiveSet = display_b.vActive;
-        if (display_b.vActive != 720 && display_b.vActive != 1080) {
-            memset(g_dockedAllowed, 0, sizeof(g_dockedAllowed));
-            g_dockedAllowed[_getDockedRefreshRateIterator(60)] = true;
-        }
     }
 
     uint32_t h_total = display_b.hActive + display_b.hFrontPorch + display_b.hSyncWidth + display_b.hBackPorch;
@@ -445,15 +382,13 @@ static bool _setNvDispDockedRefreshRate(uint32_t new_refreshRate) {
     int8_t itr = -1;
     const size_t numRates = sizeof(g_dockedRefreshRates) / sizeof(g_dockedRefreshRates[0]);
     
+    // Find closest matching refresh rate
     if ((new_refreshRate <= 60) && ((60 % new_refreshRate) == 0)) {
         itr = _getDockedRefreshRateIterator(60);
     }
     
     if (itr == -1) {
         for (size_t i = 0; i < numRates; i++) {
-            bool* allowed = (display_b.vActive == 720) ? g_dockedAllowed720p : g_dockedAllowed;
-            if (allowed[i] != true) continue;
-            
             uint8_t val = g_dockedRefreshRates[i];
             if ((val % new_refreshRate) == 0) {
                 itr = i;
@@ -466,9 +401,8 @@ static bool _setNvDispDockedRefreshRate(uint32_t new_refreshRate) {
         if (!g_config.matchLowestDocked) {
             itr = _getDockedRefreshRateIterator(60);
         } else {
-            bool* allowed = (display_b.vActive == 1080) ? g_dockedAllowed : g_dockedAllowed720p;
             for (size_t i = 0; i < numRates; i++) {
-                if ((allowed[i] == true) && (new_refreshRate < g_dockedRefreshRates[i])) {
+                if (new_refreshRate < g_dockedRefreshRates[i]) {
                     itr = i;
                     break;
                 }
@@ -478,15 +412,13 @@ static bool _setNvDispDockedRefreshRate(uint32_t new_refreshRate) {
     
     if (itr == -1) itr = _getDockedRefreshRateIterator(60);
     
-    bool increase = refreshRateNow < g_dockedRefreshRates[itr];
-    bool* allowed = (display_b.vActive == 720) ? g_dockedAllowed720p : g_dockedAllowed;
-    
-    while(itr >= 0 && itr < (int8_t)numRates && allowed[itr] != true) {
-        if (!g_config.displaySyncDocked) {
-            if (increase) itr++;
-            else itr--;
-        } else {
-            itr++;
+    // Clamp to highest allowed refresh rate
+    if (g_dockedRefreshRates[itr] > g_dockedHighestRefreshRate) {
+        for (int8_t i = itr; i >= 0; i--) {
+            if (g_dockedRefreshRates[i] <= g_dockedHighestRefreshRate) {
+                itr = i;
+                break;
+            }
         }
     }
     
@@ -658,8 +590,7 @@ bool DisplayRefresh_SetRate(uint32_t new_refreshRate) {
 
 bool DisplayRefresh_GetRate(uint32_t* out_refreshRate, bool internal) {
     if (!out_refreshRate || !g_initialized || !g_config.clkVirtAddr) return false;
-    
-    uint32_t value = 60;
+    static uint32_t value = 60;
 
     if (g_config.isRetroSUPER && !g_config.isDocked) {
         uint32_t fd = 0;
@@ -734,7 +665,10 @@ bool DisplayRefresh_GetRate(uint32_t* out_refreshRate, bool internal) {
                     return false;
                 }
             }
-            
+            if(internal) {
+                *out_refreshRate = value;
+                return true;
+            }
             uint32_t fd = 0;
             if (!nvOpen(&fd, "/dev/nvdisp-disp1")) {
                 NvdcMode2 display_b = {0};

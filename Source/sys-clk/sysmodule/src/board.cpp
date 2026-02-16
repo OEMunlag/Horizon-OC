@@ -444,8 +444,8 @@ SysClkProfile Board::GetProfile()
 void Board::SetHz(SysClkModule module, std::uint32_t hz)
 {
     Result rc = 0;
-
-    if(module == HorizonOCModule_Display && Board::GetConsoleType() != HorizonOCConsoleType_Hoag) {
+    u32 out_rate = 0;
+    if(module == HorizonOCModule_Display && Board::GetConsoleType() != HorizonOCConsoleType_Hoag) {     
         DisplayRefresh_SetRate(hz);
         return;
     }
@@ -722,14 +722,15 @@ void Board::ResetToStockGpu()
 }
 
 void Board::ResetToStockDisplay() {
-    if(Board::GetConsoleType() != HorizonOCConsoleType_Hoag)
+    if(Board::GetConsoleType() != HorizonOCConsoleType_Hoag) {
         DisplayRefresh_SetRate(60);
+    }
 }
 
 u8 Board::GetHighestDockedDisplayRate() {
-    if(Board::GetConsoleType() != HorizonOCConsoleType_Hoag)
+    if(Board::GetConsoleType() != HorizonOCConsoleType_Hoag) {
         return DisplayRefresh_GetDockedHighestAllowed();
-    else
+    } else
         return 60;
 }
 
@@ -1166,5 +1167,11 @@ void Board::SetGpuSchedulingMode(GpuSchedulingMode mode) {
             break;
         default:
             ASSERT_ENUM_VALID(GpuSchedulingMode, mode);
+    }
+}
+
+void Board::SetDisplayRefreshDockedState(bool docked) {
+    if(Board::GetConsoleType() != HorizonOCConsoleType_Hoag) {
+        DisplayRefresh_SetDockedState(docked);
     }
 }
