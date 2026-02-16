@@ -550,9 +550,15 @@ void ClockManager::Tick()
 
                         this->context->voltages[HocClkVoltage_GPU] = vmin * 1000;
                     }
-
                     Board::SetHz((SysClkModule)module, nearestHz);
                     this->context->freqs[module] = nearestHz;
+                    if(module == SysClkModule_CPU && this->config->GetConfigValue(HorizonOCConfigValue_LiveCpuUv))
+                    {
+                        if(Board::GetSocType() == SysClkSocType_Erista)
+                            Board::SetCpuUvLevel(this->config->GetConfigValue(KipConfigValue_eristaCpuUV), 0, 1581000000);
+                        else
+                            Board::SetCpuUvLevel(this->config->GetConfigValue(KipConfigValue_marikoCpuUVLow), this->config->GetConfigValue(KipConfigValue_marikoCpuUVHigh), Board::CalculateTbreak(this->config->GetConfigValue(KipConfigValue_tableConf)));
+                    }
                 }
 
                 if(module == SysClkModule_MEM && Board::GetSocType() == SysClkSocType_Mariko && targetHz < oldHz && this->config->GetConfigValue(HorizonOCConfigValue_DVFSMode) == DVFSMode_Hijack) {
@@ -583,6 +589,14 @@ void ClockManager::Tick()
 
 void ClockManager::ResetToStockClocks() {
     Board::ResetToStockCpu();
+    if(this->config->GetConfigValue(HorizonOCConfigValue_LiveCpuUv))
+    {
+        if(Board::GetSocType() == SysClkSocType_Erista)
+            Board::SetCpuUvLevel(this->config->GetConfigValue(KipConfigValue_eristaCpuUV), 0, 1581000000);
+        else
+            Board::SetCpuUvLevel(this->config->GetConfigValue(KipConfigValue_marikoCpuUVLow), this->config->GetConfigValue(KipConfigValue_marikoCpuUVHigh), Board::CalculateTbreak(this->config->GetConfigValue(KipConfigValue_tableConf)));
+    }
+
     Board::ResetToStockGpu();
 }
 
@@ -656,6 +670,13 @@ bool ClockManager::RefreshContext()
                 case SysClkModule_CPU:
                     if(!(apmExtIsBoostMode(mode) || (this->config->GetConfigValue(HocClkConfigValue_OverwriteBoostMode) && apmExtIsBoostMode(mode))))
                         Board::ResetToStockCpu();
+                    if(this->config->GetConfigValue(HorizonOCConfigValue_LiveCpuUv)) {
+                        if(Board::GetSocType() == SysClkSocType_Erista)
+                            Board::SetCpuUvLevel(this->config->GetConfigValue(KipConfigValue_eristaCpuUV), 0, 1581000000);
+                        else
+                            Board::SetCpuUvLevel(this->config->GetConfigValue(KipConfigValue_marikoCpuUVLow), this->config->GetConfigValue(KipConfigValue_marikoCpuUVHigh), Board::CalculateTbreak(this->config->GetConfigValue(KipConfigValue_tableConf)));
+                    }
+                    
                     break;
                 case SysClkModule_GPU:
                     Board::ResetToStockGpu();

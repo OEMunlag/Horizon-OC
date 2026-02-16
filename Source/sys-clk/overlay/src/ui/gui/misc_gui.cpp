@@ -409,7 +409,8 @@ void MiscGui::listUI()
         // };
         if(this->configList->values[HorizonOCConfigValue_EnableExperimentalSettings]) {
             this->listElement->addItem(new tsl::elm::CategoryHeader("Experimental"));
-            
+
+            addConfigToggle(HorizonOCConfigValue_LiveCpuUv, nullptr);
             std::vector<NamedValue> gpuSchedValues = {
                 NamedValue("Do not override", GpuSchedulingMode_DoNotOverride),
                 NamedValue("Enabled", GpuSchedulingMode_Enabled, "96.5% limit"),
