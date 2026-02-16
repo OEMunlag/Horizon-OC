@@ -784,7 +784,6 @@ bool ClockManager::RefreshContext()
     if(Board::GetConsoleType() != HorizonOCConsoleType_Hoag)
         Board::SetDisplayRefreshDockedState(this->context->profile == SysClkProfile_Docked);
 
-    FileUtils::LogLine("[mgr] highest rate: %u", Board::GetHighestDockedDisplayRate());
     return hasChanged;
 }
 
