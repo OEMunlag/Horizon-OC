@@ -50,8 +50,6 @@ Result sysclkIpcSetConfigValues(SysClkConfigValueList* configValues);
 Result sysclkIpcGetFreqList(SysClkModule module, u32* list, u32 maxCount, u32* outCount);
 Result hocClkIpcSetKipData();
 Result hocClkIpcGetKipData();
-Result hocClkIpcUpdateEmcRegs();
-Result hocClkIpcCalculateGpuVmin();
 
 static inline Result sysclkIpcRemoveOverride(SysClkModule module)
 {
