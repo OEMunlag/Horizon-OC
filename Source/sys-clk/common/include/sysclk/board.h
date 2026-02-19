@@ -138,6 +138,12 @@ typedef enum {
 } GpuSchedulingMode;
 
 typedef enum {
+    GpuSchedulingOverrideMethod_Ini = 0,
+    GpuSchedulingOverrideMethod_NvService,
+    GpuSchedulingOverrideMethod_EnumMax,
+} GpuSchedulingOverrideMethod;
+
+typedef enum {
     GovernorState_DoNotOverride = 0,
     GovernorState_Disabled,
     GovernorState_Enabled_CpuGpu,

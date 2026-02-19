@@ -62,7 +62,7 @@ typedef enum {
     HorizonOCConfigValue_EnableExperimentalSettings,
 
     HorizonOCConfigValue_GPUScheduling,
-
+    HorizonOCConfigValue_GPUSchedulingMethod,
     KipConfigValue_custRev,
     // KipConfigValue_mtcConf,
     KipConfigValue_hpMode,
@@ -234,6 +234,9 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
 
         case HorizonOCConfigValue_GPUScheduling:
             return pretty ? "GPU Scheduling" : "gpu_scheduling";
+
+        case HorizonOCConfigValue_GPUSchedulingMethod:
+            return pretty ? "GPU Scheduling Method" : "gpu_sched_method";
 
         case HorizonOCConfigValue_LiveCpuUv:
             return pretty ? "Live CPU Undervolt" : "live_cpu_uv";
@@ -420,6 +423,7 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
         case HorizonOCConfigValue_EnableUnsafeDisplayFreqs:
         case HorizonOCConfigValue_GPUScheduling:
         case HorizonOCConfigValue_LiveCpuUv:
+        case HorizonOCConfigValue_GPUSchedulingMethod:
             return 0ULL;
         case HocClkConfigValue_EristaMaxCpuClock:
             return 1785ULL;
@@ -468,6 +472,7 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case HocClkConfigValue_IsFirstLoad:
         case HorizonOCConfigValue_EnableExperimentalSettings:
         case HorizonOCConfigValue_LiveCpuUv:
+        case HorizonOCConfigValue_GPUSchedulingMethod:
             return (input & 0x1) == input;
 
         case KipConfigValue_custRev:

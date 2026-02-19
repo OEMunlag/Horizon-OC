@@ -42,6 +42,7 @@
 #include <registers.h>
 #include <notification.h>
 #include <memmem.h>
+#include <minIni.h>
 
 #define MAX(A, B)   std::max(A, B)
 #define MIN(A, B)   std::min(A, B)
@@ -1159,25 +1160,48 @@ bool Board::IsDram8GB() {
         return args.X[1] == 0x00002000 ? true : false;
 }
 
-void Board::SetGpuSchedulingMode(GpuSchedulingMode mode) {
-    if (nvCheck_sched == 1) {
+void Board::SetGpuSchedulingMode(GpuSchedulingMode mode, GpuSchedulingOverrideMethod method) {
+    if (nvCheck_sched == 1 && method == GpuSchedulingOverrideMethod_NvService) {
         return;
     }
     u32 temp;
+    bool enabled = false;
     switch(mode) {
         case GpuSchedulingMode_DoNotOverride:
+            if (method == GpuSchedulingOverrideMethod_Ini) {
+                const char* ini_path = "sdmc:/atmosphere/config/system_settings.ini";
+                const char* section = "am.gpu";
+                const char* key = "gpu_scheduling_enabled";
+
+                // Remove the key from the INI
+                ini_puts(section, key, NULL, ini_path);
+            }
             return;
         case GpuSchedulingMode_Disabled:
-            nvIoctl(fd2, NVSCHED_CTRL_DISABLE, &temp);
+            if(method == GpuSchedulingOverrideMethod_NvService)
+                nvIoctl(fd2, NVSCHED_CTRL_DISABLE, &temp);
+            else
+                enabled = false;
             break;
         case GpuSchedulingMode_Enabled:
-            nvIoctl(fd2, NVSCHED_CTRL_ENABLE, &temp);
+            if(method == GpuSchedulingOverrideMethod_NvService)
+                nvIoctl(fd2, NVSCHED_CTRL_ENABLE, &temp);
+            else
+                enabled = true;
             break;
         default:
             ASSERT_ENUM_VALID(GpuSchedulingMode, mode);
     }
-}
+    if(method == GpuSchedulingOverrideMethod_Ini) {
+        const char* ini_path = "sdmc:/atmosphere/config/system_settings.ini";
+        const char* section = "am.gpu";
+        const char* key = "gpu_scheduling_enabled";
+        
+        const char* value = enabled ? "u8!0x1" : "u8!0x0";
 
+        ini_puts(section, key, value, ini_path);
+    }
+}
 void Board::SetDisplayRefreshDockedState(bool docked) {
     if(Board::GetConsoleType() != HorizonOCConsoleType_Hoag) {
         DisplayRefresh_SetDockedState(docked);

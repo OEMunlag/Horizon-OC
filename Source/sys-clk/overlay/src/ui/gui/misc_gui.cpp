@@ -251,7 +251,27 @@ void MiscGui::listUI()
     this->listElement->addItem(new tsl::elm::CategoryHeader("Settings"));
 
     addConfigToggle(HocClkConfigValue_OverwriteBoostMode, nullptr);
-
+    std::vector<NamedValue> gpuSchedValues = {
+        NamedValue("Do not override", GpuSchedulingMode_DoNotOverride),
+        NamedValue("Enabled", GpuSchedulingMode_Enabled, "96.5% limit"),
+        NamedValue("Disabled", GpuSchedulingMode_Disabled, "99.7% limit"),
+    };
+    tsl::elm::CustomDrawer* gpuSchedInfoText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
+        renderer->drawString("\uE150 This option requires a reboot", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
+        renderer->drawString("to take effect", false, x + 20, y + 50, 18, tsl::style::color::ColorText);
+    });
+    gpuSchedInfoText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 70);
+    this->listElement->addItem(gpuSchedInfoText);
+    addConfigButton(
+        HorizonOCConfigValue_GPUScheduling,
+        "GPU Scheduling Override",
+        ValueRange(0, 0, 1, "", 0),
+        "GPU Scheduling Override",
+        &thresholdsDisabled,
+        {},
+        gpuSchedValues,
+        false
+    );
 
     this->listElement->addItem(new tsl::elm::CategoryHeader("Safety Settings"));
     addConfigToggle(HocClkConfigValue_UncappedClocks, nullptr);
@@ -411,25 +431,18 @@ void MiscGui::listUI()
             this->listElement->addItem(new tsl::elm::CategoryHeader("Experimental"));
 
             addConfigToggle(HorizonOCConfigValue_LiveCpuUv, nullptr);
-            std::vector<NamedValue> gpuSchedValues = {
-                NamedValue("Do not override", GpuSchedulingMode_DoNotOverride),
-                NamedValue("Enabled", GpuSchedulingMode_Enabled, "96.5% limit"),
-                NamedValue("Disabled", GpuSchedulingMode_Disabled, "99.7% limit"),
+            std::vector<NamedValue> gpuSchedMethodValues = {
+                NamedValue("INI", GpuSchedulingOverrideMethod_Ini),
+                NamedValue("NV Service", GpuSchedulingOverrideMethod_NvService),
             };
-            tsl::elm::CustomDrawer* gpuSchedInfoText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
-                renderer->drawString("\uE150 This option requires a reboot", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
-                renderer->drawString("to take effect", false, x + 20, y + 50, 18, tsl::style::color::ColorText);
-            });
-            gpuSchedInfoText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 70);
-            this->listElement->addItem(gpuSchedInfoText);
             addConfigButton(
-                HorizonOCConfigValue_GPUScheduling,
-                "GPU Scheduling Override",
+                HorizonOCConfigValue_GPUSchedulingMethod,
+                "GPU Scheduling Override Method",
                 ValueRange(0, 0, 1, "", 0),
-                "GPU Scheduling Override",
+                "GPU Scheduling Override Method",
                 &thresholdsDisabled,
                 {},
-                gpuSchedValues,
+                gpuSchedMethodValues,
                 false
             );
             tsl::elm::CustomDrawer* chargeWarningText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {

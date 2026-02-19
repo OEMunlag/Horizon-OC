@@ -64,7 +64,7 @@ class Board
     static u8 GetFanRotationLevel();
     static u8 GetDramID();
     static bool IsDram8GB();
-    static void SetGpuSchedulingMode(GpuSchedulingMode mode);
+    static void SetGpuSchedulingMode(GpuSchedulingMode mode, GpuSchedulingOverrideMethod method);
     static void SetDisplayRefreshDockedState(bool docked);
     static void SetCpuUvLevel(u32 levelLow, u32 levelHigh, u32 tbreakPoint);
     static u32 CalculateTbreak(u32 table);

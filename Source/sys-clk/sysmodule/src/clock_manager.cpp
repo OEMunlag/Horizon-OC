@@ -128,7 +128,7 @@ ClockManager::ClockManager()
     this->context->dramID = Board::GetDramID();
     this->context->isDram8GB = Board::IsDram8GB();
     previousRamHz = Board::GetHz(SysClkModule_MEM);
-    Board::SetGpuSchedulingMode((GpuSchedulingMode)this->config->GetConfigValue(HorizonOCConfigValue_GPUScheduling));
+    Board::SetGpuSchedulingMode((GpuSchedulingMode)this->config->GetConfigValue(HorizonOCConfigValue_GPUScheduling), (GpuSchedulingOverrideMethod)this->config->GetConfigValue(HorizonOCConfigValue_GPUSchedulingMethod));
     this->context->gpuSchedulingMode = (GpuSchedulingMode)this->config->GetConfigValue(HorizonOCConfigValue_GPUScheduling);
     this->context->isSysDockInstalled = this->sysDockIntegration->getCurrentSysDockState();
 }
@@ -683,6 +683,9 @@ void ClockManager::Tick()
         if(this->config->GetConfigValue(HorizonOCConfigValue_BatteryChargeCurrent)) {
             I2c_Bq24193_SetFastChargeCurrentLimit(this->config->GetConfigValue(HorizonOCConfigValue_BatteryChargeCurrent));
         }
+        if((GpuSchedulingOverrideMethod)this->config->GetConfigValue(HorizonOCConfigValue_GPUSchedulingMethod) == GpuSchedulingOverrideMethod_Ini)
+            Board::SetGpuSchedulingMode((GpuSchedulingMode)this->config->GetConfigValue(HorizonOCConfigValue_GPUScheduling), (GpuSchedulingOverrideMethod)this->config->GetConfigValue(HorizonOCConfigValue_GPUSchedulingMethod));
+
         std::uint32_t targetHz = 0;
         std::uint32_t maxHz = 0;
         std::uint32_t nearestHz = 0;
