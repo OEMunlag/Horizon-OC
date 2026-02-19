@@ -99,11 +99,16 @@ void GlobalOverrideGui::addModuleListItemValue(
     const std::string& suffix,
     std::uint32_t divisor,
     int decimalPlaces, 
-    ValueThresholds thresholds
+    ValueThresholds thresholds,
+    const std::vector<NamedValue>& namedValues,
+    bool showDefaultValue
 )
 {
+    bool hasNamedValues = !namedValues.empty();
 
-    this->customFormatModules[module] = std::make_tuple(suffix, divisor, decimalPlaces);
+    if (!hasNamedValues) {
+        this->customFormatModules[module] = std::make_tuple(suffix, divisor, decimalPlaces);
+    }
 
     tsl::elm::ListItem* listItem =
         new tsl::elm::ListItem(sysclkFormatModule(module, true));
@@ -121,7 +126,10 @@ void GlobalOverrideGui::addModuleListItemValue(
          suffix,
          divisor,
          decimalPlaces,
-         thresholds](u64 keys)
+         thresholds,
+         namedValues,
+         hasNamedValues,
+         showDefaultValue](u64 keys)
         {
             if ((keys & HidNpadButton_A) == HidNpadButton_A)
             {
@@ -147,7 +155,7 @@ void GlobalOverrideGui::addModuleListItemValue(
                     range,
                     categoryName,
                     
-                    [this, listItem, module, divisor, suffix, decimalPlaces, thresholds](std::uint32_t value) -> bool
+                    [this, listItem, module, divisor, suffix, decimalPlaces, thresholds, namedValues, hasNamedValues, showDefaultValue](std::uint32_t value) -> bool
                     {
                         if (!this->context) {
                             return false;
@@ -158,6 +166,13 @@ void GlobalOverrideGui::addModuleListItemValue(
                         
                         if (value == 0) {
                             listItem->setValue(FREQ_DEFAULT_TEXT);
+                        } else if (hasNamedValues) {
+                            for (const auto& namedValue : namedValues) {
+                                if (namedValue.value == value / divisor) {
+                                    listItem->setValue(namedValue.name);
+                                    break;
+                                }
+                            }
                         } else {
                             char buf[32];
                             if (decimalPlaces > 0) {
@@ -188,8 +203,8 @@ void GlobalOverrideGui::addModuleListItemValue(
                     thresholds,
                     false,
                     std::map<std::uint32_t, std::string>(),
-                    std::vector<NamedValue>(),
-                    true
+                    namedValues,
+                    showDefaultValue
                 );
                 
                 return true;
@@ -294,7 +309,16 @@ void GlobalOverrideGui::listUI()
         if(!IsHoag() && configList.values[HorizonOCConfigValue_OverwriteRefreshRate])
             this->addModuleListItemValue(HorizonOCModule_Display, "Display", IsAula() ? 45 : 40, configList.values[HorizonOCConfigValue_EnableUnsafeDisplayFreqs] ? IsAula() ? 65 : 72 : 60, 1, " Hz", 1, 0, lcdThresholds);
     #endif
-    this->addModuleToggleItem(HorizonOCModule_Governor);
+    
+    std::vector<NamedValue> governorSettings = {
+        NamedValue("Do Not Override", GovernorState_DoNotOverride),
+        NamedValue("Disabled", GovernorState_Disabled),
+        NamedValue("CPU + GPU", GovernorState_Enabled_CpuGpu),
+        NamedValue("CPU", GovernorState_Enabled_Cpu),
+        NamedValue("GPU", GovernorState_Enabled_Gpu),
+    };
+    
+    this->addModuleListItemValue(HorizonOCModule_Governor, "Governor", 0, 0, 1, "", 1, 0, ValueThresholds(), governorSettings, false);
 }
 
 void GlobalOverrideGui::refresh()
@@ -306,17 +330,30 @@ void GlobalOverrideGui::refresh()
 
     for (std::uint16_t m = 0; m < SysClkModule_EnumMax; m++) {
         if (m == HorizonOCModule_Governor) {
-            auto *toggle =
-            static_cast<tsl::elm::ToggleListItem *>(this->listItems[m]);
-            if (!toggle)
-                continue;
-
-            bool newState = this->context->overrideFreqs[m] != 0;
-
-            if (toggle->getState() != newState) {
-                toggle->setState(newState);
+            if (this->listItems[m] != nullptr &&
+                this->listHz[m] != this->context->overrideFreqs[m]) {
+                
+                std::string displayText = FREQ_DEFAULT_TEXT;
+                std::uint32_t currentValue = this->context->overrideFreqs[m];
+                
+                std::vector<NamedValue> governorSettings = {
+                    NamedValue("Do Not Override", GovernorState_DoNotOverride),
+                    NamedValue("Disabled", GovernorState_Disabled),
+                    NamedValue("CPU + GPU", GovernorState_Enabled_CpuGpu),
+                    NamedValue("CPU", GovernorState_Enabled_Cpu),
+                    NamedValue("GPU", GovernorState_Enabled_Gpu),
+                };
+                
+                for (const auto& setting : governorSettings) {
+                    if (setting.value == currentValue) {
+                        displayText = setting.name;
+                        break;
+                    }
+                }
+                
+                this->listItems[m]->setValue(displayText);
+                this->listHz[m] = currentValue;
             }
-
             continue;
         }
 

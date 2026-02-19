@@ -149,6 +149,36 @@ void AppProfileGui::addModuleListItemToggle(SysClkProfile profile, SysClkModule 
     this->listElement->addItem(toggle);
 }
 
+std::string AppProfileGui::formatValueDisplay(
+    std::uint32_t value,
+    const std::vector<NamedValue>& namedValues,
+    const std::string& suffix,
+    std::uint32_t divisor,
+    int decimalPlaces
+)
+{
+    if (value == 0) {
+        return FREQ_DEFAULT_TEXT;
+    }
+    
+    if (!namedValues.empty()) {
+        for (const auto& namedValue : namedValues) {
+            if (namedValue.value == value) {
+                return namedValue.name;
+            }
+        }
+    }
+    
+    char buf[32];
+    if (decimalPlaces > 0) {
+        double displayValue = (double)value / divisor;
+        snprintf(buf, sizeof(buf), "%.*f%s", decimalPlaces, displayValue, suffix.c_str());
+    } else {
+        snprintf(buf, sizeof(buf), "%u%s", value / divisor, suffix.c_str());
+    }
+    return std::string(buf);
+}
+
 void AppProfileGui::addModuleListItemValue(
     SysClkProfile profile,
     SysClkModule module,
@@ -160,24 +190,16 @@ void AppProfileGui::addModuleListItemValue(
     std::uint32_t divisor,
     int decimalPlaces,
     ValueThresholds thresholds,
-    std::vector<NamedValue> namedValues
+    std::vector<NamedValue> namedValues,
+    bool showDefaultValue
 )
 {
     tsl::elm::ListItem* listItem =
         new tsl::elm::ListItem(sysclkFormatModule(module, true));
     std::uint32_t storedValue = this->profileList->mhzMap[profile][module];
-    if (storedValue == 0) {
-        listItem->setValue(FREQ_DEFAULT_TEXT);
-    } else {
-        char buf[32];
-        if (decimalPlaces > 0) {
-            double displayValue = (double)storedValue / divisor;
-            snprintf(buf, sizeof(buf), "%.*f%s", decimalPlaces, displayValue, suffix.c_str());
-        } else {
-            snprintf(buf, sizeof(buf), "%u%s", storedValue / divisor, suffix.c_str());
-        }
-        listItem->setValue(buf);
-    }
+    
+    listItem->setValue(this->formatValueDisplay(storedValue, namedValues, suffix, divisor, decimalPlaces));
+    
     listItem->setClickListener(
         [this,
          listItem,
@@ -191,7 +213,8 @@ void AppProfileGui::addModuleListItemValue(
          divisor,
          decimalPlaces,
          thresholds,
-         namedValues](u64 keys)
+         namedValues,
+         showDefaultValue](u64 keys)
         {
             if ((keys & HidNpadButton_A) == HidNpadButton_A)
             {
@@ -210,23 +233,11 @@ void AppProfileGui::addModuleListItemValue(
                     currentValue,
                     range,
                     categoryName,
-                    [this, listItem, profile, module, divisor, suffix, decimalPlaces, thresholds](std::uint32_t value) -> bool
+                    [this, listItem, profile, module, divisor, suffix, decimalPlaces, thresholds, namedValues](std::uint32_t value) -> bool
                     {
                         this->profileList->mhzMap[profile][module] = value / divisor;
-                        if (value == 0) {
-                            listItem->setValue(FREQ_DEFAULT_TEXT);
-                        } else {
-                            char buf[32];
-                            if (decimalPlaces > 0) {
-                                double displayValue = (double)value / divisor;
-                                snprintf(buf, sizeof(buf), "%.*f%s", 
-                                        decimalPlaces, displayValue, suffix.c_str());
-                            } else {
-                                snprintf(buf, sizeof(buf), "%u%s", 
-                                        value / divisor, suffix.c_str());
-                            }
-                            listItem->setValue(buf);
-                        }
+                        listItem->setValue(this->formatValueDisplay(value / divisor, namedValues, suffix, divisor, decimalPlaces));
+                        
                         Result rc =
                             sysclkIpcSetProfiles(this->applicationId,
                                                  this->profileList);
@@ -242,7 +253,7 @@ void AppProfileGui::addModuleListItemValue(
                     false,
                     {},
                     namedValues,
-                    true
+                    showDefaultValue
                 );
                 return true;
             }
@@ -355,7 +366,15 @@ void AppProfileGui::addProfileUI(SysClkProfile profile)
             }
         }
     #endif
-    this->addModuleListItemToggle(profile, HorizonOCModule_Governor);
+    std::vector<NamedValue> governorSettings = {
+        NamedValue("Do Not Override", GovernorState_DoNotOverride),
+        NamedValue("Disabled", GovernorState_Disabled),
+        NamedValue("CPU + GPU", GovernorState_Enabled_CpuGpu),
+        NamedValue("CPU", GovernorState_Enabled_Cpu),
+        NamedValue("GPU", GovernorState_Enabled_Gpu),
+    };
+    
+    this->addModuleListItemValue(profile, HorizonOCModule_Governor, "Governor", 0, 0, 1, "", 1, 0, ValueThresholds(), governorSettings, false);
 }
 
 void AppProfileGui::listUI()

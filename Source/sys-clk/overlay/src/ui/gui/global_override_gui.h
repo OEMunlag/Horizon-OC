@@ -1,4 +1,5 @@
 /*
+ *
  * Copyright (c) Souldbminer, Lightos_ and Horizon OC Contributors
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -23,10 +24,7 @@
  * stuff is worth it, you can buy us a beer in return.  - The sys-clk authors
  * --------------------------------------------------------------------------
  */
-
-
 #pragma once
-
 #include "../../ipc.h"
 #include "base_menu_gui.h"
 #include "freq_choice_gui.h"
@@ -63,7 +61,9 @@ class GlobalOverrideGui : public BaseMenuGui
             const std::string& suffix,
             std::uint32_t divisor,
             int decimalPlaces,
-            ValueThresholds thresholds = {}
+            ValueThresholds thresholds = {},
+            const std::vector<NamedValue>& namedValues = {},
+            bool showDefaultValue = true
         );
     public:
         GlobalOverrideGui();

@@ -23,33 +23,24 @@
  * stuff is worth it, you can buy us a beer in return.  - The sys-clk authors
  * --------------------------------------------------------------------------
  */
-
-
 #pragma once
-
 #include <atomic>
 #include <sysclk.h>
 #include <switch.h>
-
 #include "config.h"
 #include "board.h"
 #include <nxExt/cpp/lockable_mutex.h>
 #include "integrations.h"
-void governorThread(void*);
 
 class SysDockIntegration;
-
 class ClockManager
 {
   public:
     static ClockManager* GetInstance();
     static void Initialize();
     static void Exit();
-
-
     ClockManager();
     virtual ~ClockManager();
-
     SysClkContext GetCurrentContext();
     Config* GetConfig();
     void SetRunning(bool running);
@@ -60,7 +51,9 @@ class ClockManager
     void WaitForNextTick();
     void SetKipData();
     void GetKipData();
+    static void CpuGovernorThread(void* arg);
     static void GovernorThread(void* arg);
+    GovernorState GetEffectiveGovernorState(GovernorState appState, GovernorState tempState);
     struct {
       std::uint32_t count;
       std::uint32_t list[SYSCLK_FREQ_LIST_MAX];
@@ -75,9 +68,7 @@ class ClockManager
     bool ConfigIntervalTimeout(SysClkConfigValue intervalMsConfigValue, std::uint64_t ns, std::uint64_t* lastLogNs);
     void RefreshFreqTableRow(SysClkModule module);
     bool RefreshContext();
-
     static ClockManager *instance;
-
     std::atomic_bool running;
     LockableMutex contextMutex;
     Config* config;

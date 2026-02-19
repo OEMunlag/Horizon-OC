@@ -36,3 +36,7 @@ echo "*** assets ***"
 mkdir -p "$DIST_DIR/config/horizon-oc"
 cp -vf "$ROOT_DIR/config.ini.template" "$DIST_DIR/config/horizon-oc/config.ini.template"
 cp -vf "$ROOT_DIR/../../README.md" "$DIST_DIR/README.md"
+
+echo "*** lang ***"
+
+cp -r "$ROOT_DIR/overlay/lang/" "$DIST_DIR/config/horizon-oc/lang/"
