@@ -683,8 +683,6 @@ void ClockManager::Tick()
         if(this->config->GetConfigValue(HorizonOCConfigValue_BatteryChargeCurrent)) {
             I2c_Bq24193_SetFastChargeCurrentLimit(this->config->GetConfigValue(HorizonOCConfigValue_BatteryChargeCurrent));
         }
-        if((GpuSchedulingOverrideMethod)this->config->GetConfigValue(HorizonOCConfigValue_GPUSchedulingMethod) == GpuSchedulingOverrideMethod_Ini)
-            Board::SetGpuSchedulingMode((GpuSchedulingMode)this->config->GetConfigValue(HorizonOCConfigValue_GPUScheduling), (GpuSchedulingOverrideMethod)this->config->GetConfigValue(HorizonOCConfigValue_GPUSchedulingMethod));
 
         std::uint32_t targetHz = 0;
         std::uint32_t maxHz = 0;
