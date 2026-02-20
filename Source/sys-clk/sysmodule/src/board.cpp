@@ -42,6 +42,7 @@
 #include <registers.h>
 #include <notification.h>
 #include <memmem.h>
+#include <minIni.h>
 
 #define MAX(A, B)   std::max(A, B)
 #define MIN(A, B)   std::min(A, B)
@@ -105,6 +106,8 @@ u16 cpuSpeedo0, cpuSpeedo2, socSpeedo0; // CPU, GPU, SOC
 u32 speedoBracket;
 u16 cpuIDDQ, gpuIDDQ, socIDDQ;
 u8 g_dramID = 0;
+u64 cldvfs, cldvfs_temp;
+u32 cachedEristaUvLowTune0 = 0, cachedEristaUvLowTune1 = 0, cachedMarikoUvHighTune0 = 0;
 
 static const u32 ramBrackets[][22] = {
     { 2133, 2200, 2266, 2300, 2366, 2400, 2433, 2466, 2533, 2566, 2600, 2633, 2700, 2733, 2766, 2833, 2866, 2900, 2933, 3033, 3066, 3100, },
@@ -290,6 +293,16 @@ void Board::Initialize()
     }
 
     FetchHardwareInfos();
+    rc = svcQueryMemoryMapping(&cldvfs, &cldvfs_temp, CLDVFS_REGION_BASE, CLDVFS_REGION_SIZE);
+    ASSERT_RESULT_OK(rc, "svcQueryMemoryMapping (cldvfs)");
+    if(Board::GetSocType() == SysClkSocType_Erista) {
+        cachedEristaUvLowTune0 = *(u32*)(cldvfs + CL_DVFS_TUNE0_0);
+        cachedEristaUvLowTune1 = *(u32*)(cldvfs + CL_DVFS_TUNE1_0);
+    } else {
+        Board::SetHz(SysClkModule_CPU, 1785000000);
+        cachedMarikoUvHighTune0 = *(u32*)(cldvfs + CL_DVFS_TUNE0_0);
+        Board::ResetToStockCpu();
+    }
 }
 
 void Board::fuseReadSpeedos() {
@@ -444,8 +457,7 @@ SysClkProfile Board::GetProfile()
 void Board::SetHz(SysClkModule module, std::uint32_t hz)
 {
     Result rc = 0;
-
-    if(module == HorizonOCModule_Display && Board::GetConsoleType() != HorizonOCConsoleType_Hoag) {
+    if(module == HorizonOCModule_Display && Board::GetConsoleType() != HorizonOCConsoleType_Hoag) {     
         DisplayRefresh_SetRate(hz);
         return;
     }
@@ -460,7 +472,7 @@ void Board::SetHz(SysClkModule module, std::uint32_t hz)
         rc = clkrstSetClockRate(&session, hz);
         ASSERT_RESULT_OK(rc, "clkrstSetClockRate");
         if (module == SysClkModule_CPU) {
-            svcSleepThread(300'000);
+            svcSleepThread(200'000);
             rc = clkrstSetClockRate(&session, hz);
             ASSERT_RESULT_OK(rc, "clkrstSetClockRate");
         }
@@ -471,7 +483,7 @@ void Board::SetHz(SysClkModule module, std::uint32_t hz)
         rc = pcvSetClockRate(Board::GetPcvModule(module), hz);
         ASSERT_RESULT_OK(rc, "pcvSetClockRate");
         if (module == SysClkModule_CPU) {
-            svcSleepThread(300'000);
+            svcSleepThread(200'000);
             rc = pcvSetClockRate(Board::GetPcvModule(module), hz);
             ASSERT_RESULT_OK(rc, "pcvSetClockRate");
         }
@@ -722,14 +734,15 @@ void Board::ResetToStockGpu()
 }
 
 void Board::ResetToStockDisplay() {
-    if(Board::GetConsoleType() != HorizonOCConsoleType_Hoag)
+    if(Board::GetConsoleType() != HorizonOCConsoleType_Hoag) {
         DisplayRefresh_SetRate(60);
+    }
 }
 
 u8 Board::GetHighestDockedDisplayRate() {
-    if(Board::GetConsoleType() != HorizonOCConsoleType_Hoag)
+    if(Board::GetConsoleType() != HorizonOCConsoleType_Hoag) {
         return DisplayRefresh_GetDockedHighestAllowed();
-    else
+    } else
         return 60;
 }
 
@@ -1134,9 +1147,6 @@ void Board::PcvHijackDvfs(u32 vmin) {
     FileUtils::LogLine("[dvfs] voltage set to %u mV", vmin);
 }
 
-#define MC_REGISTER_BASE 0x70019000
-#define MC_REGISTER_REGION_SIZE 0x1000
-
 bool Board::IsDram8GB() {
     SecmonArgs args = {};
     args.X[0] = 0xF0000002;
@@ -1150,21 +1160,171 @@ bool Board::IsDram8GB() {
         return args.X[1] == 0x00002000 ? true : false;
 }
 
-void Board::SetGpuSchedulingMode(GpuSchedulingMode mode) {
-    if (nvCheck_sched == 1) {
+void Board::SetGpuSchedulingMode(GpuSchedulingMode mode, GpuSchedulingOverrideMethod method) {
+    if (nvCheck_sched == 1 && method == GpuSchedulingOverrideMethod_NvService) {
         return;
     }
     u32 temp;
+    bool enabled = false;
     switch(mode) {
         case GpuSchedulingMode_DoNotOverride:
+            if (method == GpuSchedulingOverrideMethod_Ini) {
+                const char* ini_path = "sdmc:/atmosphere/config/system_settings.ini";
+                const char* section = "am.gpu";
+                const char* key = "gpu_scheduling_enabled";
+
+                // Remove the key from the INI
+                ini_puts(section, key, NULL, ini_path);
+            }
             return;
         case GpuSchedulingMode_Disabled:
-            nvIoctl(fd2, NVSCHED_CTRL_DISABLE, &temp);
+            if(method == GpuSchedulingOverrideMethod_NvService)
+                nvIoctl(fd2, NVSCHED_CTRL_DISABLE, &temp);
+            else
+                enabled = false;
             break;
         case GpuSchedulingMode_Enabled:
-            nvIoctl(fd2, NVSCHED_CTRL_ENABLE, &temp);
+            if(method == GpuSchedulingOverrideMethod_NvService)
+                nvIoctl(fd2, NVSCHED_CTRL_ENABLE, &temp);
+            else
+                enabled = true;
             break;
         default:
             ASSERT_ENUM_VALID(GpuSchedulingMode, mode);
     }
+    if(method == GpuSchedulingOverrideMethod_Ini) {
+        const char* ini_path = "sdmc:/atmosphere/config/system_settings.ini";
+        const char* section = "am.gpu";
+        const char* key = "gpu_scheduling_enabled";
+        
+        const char* value = enabled ? "u8!0x1" : "u8!0x0";
+
+        ini_puts(section, key, value, ini_path);
+    }
+}
+void Board::SetDisplayRefreshDockedState(bool docked) {
+    if(Board::GetConsoleType() != HorizonOCConsoleType_Hoag) {
+        DisplayRefresh_SetDockedState(docked);
+    }
+}
+
+
+typedef struct EristaCpuUvEntry {
+    u32 tune0;
+    u32 tune1;
+} EristaCpuUvEntry;
+typedef struct MarikoCpuUvEntry {
+    u32 tune0_low;
+    u32 tune0_high;
+    u32 tune1_low;
+    u32 tune1_high;
+} MarikoCpuUvEntry;
+
+EristaCpuUvEntry eristaCpuUvTable[5] = {
+    {0xffff, 0x27007ff},
+    {0xefff, 0x27407ff},
+    {0xdfff, 0x27807ff},
+    {0xdfdf, 0x27a07ff},
+    {0xcfdf, 0x37007ff},
+};
+
+MarikoCpuUvEntry marikoCpuUvLow[12] = {
+    {0xffa0, 0xffff, 0x21107ff, 0},
+    {0x0, 0xffdf, 0x21107ff, 0x27207ff},
+    {0xffdf, 0xffdf, 0x21107ff, 0x27307ff},
+    {0xffff, 0xffdf, 0x21107ff, 0x27407ff},
+    {0x0, 0xffdf, 0x21607ff, 0x27707ff},
+    {0x0, 0xffdf, 0x21607ff, 0x27807ff},
+    {0x0, 0xdfff, 0x21607ff, 0x27b07ff},
+    {0xdfff, 0xdfff, 0x21707ff, 0x27b07ff},
+    {0xdfff, 0xdfff, 0x21707ff, 0x27c07ff},
+    {0xdfff, 0xdfff, 0x21707ff, 0x27d07ff},
+    {0xdfff, 0xdfff, 0x21707ff, 0x27e07ff},
+    {0xdfff, 0xdfff, 0x21707ff, 0x27f07ff},
+};
+
+MarikoCpuUvEntry marikoCpuUvHigh[12] = {
+    {0x0, 0xffff, 0, 0},
+    {0x0, 0xffdf, 0, 0x27207ff},
+    {0x0, 0xffdf, 0, 0x27307ff},
+    {0x0, 0xffdf, 0, 0x27407ff},
+    {0x0, 0xffdf, 0, 0x27707ff},
+    {0x0, 0xffdf, 0, 0x27807ff},
+    {0x0, 0xdfff, 0, 0x27b07ff},
+    {0x0, 0xdfff, 0, 0x27c07ff},
+    {0x0, 0xdfff, 0, 0x27d07ff},
+    {0x0, 0xdfff, 0, 0x27e07ff},
+    {0x0, 0xdfff, 0, 0x27f07ff},
+    {0x0, 0xdfff, 0, 0x27f07ff},
+};
+void Board::SetCpuUvLevel(u32 levelLow, u32 levelHigh, u32 tbreakPoint) {
+
+    u32* tune0_ptr = (u32*)(cldvfs + CL_DVFS_TUNE0_0);
+    u32* tune1_ptr = (u32*)(cldvfs + CL_DVFS_TUNE1_0);
+    if(Board::GetSocType() == SysClkSocType_Mariko) { 
+        if(Board::GetHz(SysClkModule_CPU) < tbreakPoint && (levelLow || levelHigh)) {
+            if(levelLow) {
+                *tune0_ptr = marikoCpuUvLow[levelLow-1].tune0_low;
+                *tune1_ptr = marikoCpuUvLow[levelLow-1].tune1_low;
+            }
+            return;
+        } else {
+            if(levelLow) {
+                *tune0_ptr = marikoCpuUvLow[levelLow-1].tune0_low;
+                *tune1_ptr = marikoCpuUvLow[levelLow-1].tune1_low;
+            }
+            if(levelHigh) {
+                *tune0_ptr = marikoCpuUvHigh[levelHigh-1].tune0_high;
+                *tune1_ptr = marikoCpuUvHigh[levelHigh-1].tune1_high;
+            }
+            return;
+        }
+        if(Board::GetHz(SysClkModule_CPU) < tbreakPoint || (!levelLow)) { // account for tbreak
+            *tune0_ptr = 0xCFFF;
+            *tune1_ptr = 0xFF072201;
+            return;
+        } else if (Board::GetHz(SysClkModule_CPU) >= tbreakPoint || (!levelHigh)) {
+            *tune0_ptr = cachedMarikoUvHighTune0; // per console?
+            *tune1_ptr = 0xFFF7FF3F;
+            return;
+        } 
+    } else {
+        if(Board::GetHz(SysClkModule_CPU) < tbreakPoint || (!levelLow)) { // account for tbreak
+            *tune0_ptr = cachedEristaUvLowTune0; // I think each erista has a different tune0/tune1?
+            *tune1_ptr = cachedEristaUvLowTune1;
+            return;
+        } else {
+            if(levelLow) {
+                *tune0_ptr = eristaCpuUvTable[levelLow-1].tune0;
+                *tune1_ptr = eristaCpuUvTable[levelLow-1].tune1;
+            } else {
+                *tune0_ptr = 0x0;
+                *tune1_ptr = 0x0;
+            }
+        }
+    }
+}
+/*
+enum TableConfig: u32 {
+    DEFAULT_TABLE = 1,
+    TBREAK_1581 = 2,
+    TBREAK_1683 = 3,
+    EXTREME_TABLE = 4,
+};
+*/
+u32 Board::CalculateTbreak(u32 table) {
+    if(Board::GetSocType() == SysClkSocType_Erista)
+        return 1581000000;
+    else {
+        switch(table) {
+            case 1 ... 2:
+            case 4:
+                return 1581000000;
+            case 3:
+                return 1683000000;
+            default:
+                return 1581000000;
+        }
+    }
+    
 }

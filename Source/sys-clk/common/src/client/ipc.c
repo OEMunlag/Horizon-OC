@@ -153,12 +153,6 @@ Result sysclkIpcGetFreqList(SysClkModule module, u32* list, u32 maxCount, u32* o
     );
 }
 
-Result sysclkIpcSetReverseNXRTMode(ReverseNXMode mode)
-{
-    return serviceDispatchIn(&g_sysclkSrv, SysClkIpcCmd_SetReverseNXRTMode, mode);
-}
-
-
 Result hocClkIpcSetKipData()
 {
     u32 temp = 0;

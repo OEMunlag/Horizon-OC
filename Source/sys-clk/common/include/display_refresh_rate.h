@@ -124,8 +124,8 @@ typedef struct {
     bool displaySyncDocked;
     bool displaySyncDockedOutOfFocus60;
 } DisplayRefreshConfig;
-
 bool DisplayRefresh_Initialize(const DisplayRefreshConfig* config);
+void DisplayRefresh_SetDockedState(bool isDocked);
 bool DisplayRefresh_SetRate(uint32_t new_refreshRate);
 bool DisplayRefresh_GetRate(uint32_t* out_refreshRate, bool internal);
 uint8_t DisplayRefresh_GetDockedHighestAllowed(void);

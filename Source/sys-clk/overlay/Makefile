@@ -39,7 +39,7 @@ include ${TOPDIR}/lib/libultrahand/ultrahand.mk
 # version control constants
 #---------------------------------------------------------------------------------
 #TARGET_VERSION	:= $(shell git describe --dirty --always --tags)
-APP_VERSION		:= 0.39
+APP_VERSION		:= 0.40
 TARGET_VERSION := $(APP_VERSION)
 
 #---------------------------------------------------------------------------------
@@ -55,7 +55,7 @@ CFLAGS	:=	-Os -Wall -flto -fdata-sections -ffunction-sections -fno-rtti -fno-com
 CFLAGS	+=	$(INCLUDE) -D__SWITCH__
 
 # Enable appearance overriding
-UI_OVERRIDE_PATH := /config/sys-clk/
+UI_OVERRIDE_PATH := /config/horizon-oc/
 CFLAGS += -DUI_OVERRIDE_PATH="\"$(UI_OVERRIDE_PATH)\""
 
 # Disable fstream

@@ -108,16 +108,6 @@ typedef enum
     SysClkPartLoad_EnumMax
 } SysClkPartLoad;
 
-
-typedef enum
-{
-    ReverseNX_NotFound = 0,
-    ReverseNX_SystemDefault = 0,
-    ReverseNX_Handheld,
-    ReverseNX_Docked,
-} ReverseNXMode;
-
-
 typedef enum {
     HorizonOCSpeedo_CPU = 0,
     HorizonOCSpeedo_GPU,
@@ -133,7 +123,7 @@ typedef enum {
 } GPUUndervoltLevel;
 
 enum {
-    DVFSMode_Disabled,
+    DVFSMode_Disabled = 0,
     DVFSMode_Hijack,
     // DVFSMode_OfficialService,
     // DVFSMode_Hack,
@@ -146,6 +136,21 @@ typedef enum {
     GpuSchedulingMode_Disabled,
     GpuSchedulingMode_EnumMax,
 } GpuSchedulingMode;
+
+typedef enum {
+    GpuSchedulingOverrideMethod_Ini = 0,
+    GpuSchedulingOverrideMethod_NvService,
+    GpuSchedulingOverrideMethod_EnumMax,
+} GpuSchedulingOverrideMethod;
+
+typedef enum {
+    GovernorState_DoNotOverride = 0,
+    GovernorState_Disabled,
+    GovernorState_Enabled_CpuGpu,
+    GovernorState_Enabled_Cpu,
+    GovernorState_Enabled_Gpu,
+    GovernorState_EnumMax,
+} GovernorState;
 
 #define SYSCLK_ENUM_VALID(n, v) ((v) < n##_EnumMax)
 

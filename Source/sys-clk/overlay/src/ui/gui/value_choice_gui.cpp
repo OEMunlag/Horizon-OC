@@ -30,7 +30,8 @@ ValueChoiceGui::ValueChoiceGui(std::uint32_t selectedValue,
                                bool enableThresholds,
                                std::map<std::uint32_t, std::string> labels,
                                std::vector<NamedValue> namedValues,
-                               bool showDefaultValue)
+                               bool showDefaultValue,
+                               bool showDNO)
     : selectedValue(selectedValue),
       range(range),
       categoryName(categoryName),
@@ -39,7 +40,8 @@ ValueChoiceGui::ValueChoiceGui(std::uint32_t selectedValue,
       enableThresholds(enableThresholds),
       labels(labels),
       namedValues(namedValues),
-      showDefaultValue(showDefaultValue)
+      showDefaultValue(showDefaultValue),
+      showDNO(showDNO)
 {
 }
 
@@ -52,7 +54,7 @@ std::string ValueChoiceGui::formatValue(std::uint32_t value)
     std::ostringstream oss;
     if(showDefaultValue) {
         if (value == 0) {
-            return VALUE_DEFAULT_TEXT;
+            return this->showDNO ? FREQ_DEFAULT_TEXT : VALUE_DEFAULT_TEXT;
         }
     }
     double displayValue = static_cast<double>(value) / static_cast<double>(range.divisor);
@@ -164,15 +166,14 @@ void ValueChoiceGui::listUI()
     if (!categoryName.empty()) {
         this->listElement->addItem(new tsl::elm::CategoryHeader(categoryName));
     }
-    
+
+    if (showDefaultValue) {
+        this->listElement->addItem(this->createValueListItem(0, this->selectedValue == 0, 0));
+    }
     for (const auto& namedValue : namedValues) {
         int safety = enableThresholds ? getSafetyLevel(namedValue.value) : 0;
         bool selected = (namedValue.value == this->selectedValue);
         this->listElement->addItem(this->createNamedValueListItem(namedValue, selected, safety));
-    }
-    
-    if (showDefaultValue) {
-        this->listElement->addItem(this->createValueListItem(0, this->selectedValue == 0, 0));
     }
     
     if (namedValues.empty()) {

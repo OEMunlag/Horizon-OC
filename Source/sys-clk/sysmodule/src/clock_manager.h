@@ -23,52 +23,166 @@
  * stuff is worth it, you can buy us a beer in return.  - The sys-clk authors
  * --------------------------------------------------------------------------
  */
-
-
 #pragma once
-
 #include <atomic>
 #include <sysclk.h>
 #include <switch.h>
-
 #include "config.h"
 #include "board.h"
 #include <nxExt/cpp/lockable_mutex.h>
 #include "integrations.h"
-void governorThread(void*);
 
-class ReverseNXSync;
-
+class SysDockIntegration;
 class ClockManager
 {
   public:
     static ClockManager* GetInstance();
     static void Initialize();
     static void Exit();
-
-
     ClockManager();
     virtual ~ClockManager();
-
     SysClkContext GetCurrentContext();
     Config* GetConfig();
     void SetRunning(bool running);
     bool Running();
     void GetFreqList(SysClkModule module, std::uint32_t* list, std::uint32_t maxCount, std::uint32_t* outCount);
+
+    /**
+     * Handles safety features
+     *
+     */
+    void HandleSafetyFeatures();
+
+    /**
+     * Handles misc features (currently only battery charge current).
+     *
+     */
+    void HandleMiscFeatures();
+
+    /**
+     * Handles governor state resolution and applies CPU/GPU governor transitions.
+     *
+     * @param targetHz   Governor override value for the current profile.
+     */
+    void HandleGovernor(uint32_t targetHz);
+
+    /**
+     * Handles DVFS logic before the frequency set
+     *
+     * @param targetHz   Governor override value for the current profile.
+     */
+    void DVFSBeforeSet(u32 targetHz);
+
+    /**
+     * Handles DVFS logic after the frequency set
+     *
+     * @param targetHz   Governor override value for the current profile.
+     */
+    void DVFSAfterSet(u32 targetHz);
+
+    /**
+     * Reset the GPU vMin
+     *
+     */
+    void DVFSReset();
+
+    /**
+     * Handles the Live CPU UV Feature
+     *
+     */
+    void HandleCpuUv();
+
+    /**
+     * Handles frequency resets
+     *
+     * @param module The module to reset frequency for
+     * @param isBoost Is in boost mode
+     */
+    void HandleFreqReset(SysClkModule module, bool isBoost);
+
+    /**
+     * Sets clocks
+     *
+     * @param isBoost Is in boost mode
+     */
+    void SetClocks(bool isBoost);
+    
+    /**
+     * Main function, runs every 5s in sleep mode, and a user specified amount when awake
+     *
+     */
     void Tick();
+
+    /**
+     * Reset CPU/GPU to stock values
+     *
+     */
     void ResetToStockClocks();
+
+    /**
+     * Wait for the next tick event
+     *
+     */
     void WaitForNextTick();
-    void SetRNXRTMode(ReverseNXMode mode);
+
+    /**
+     * Set the data in the KIP
+     *
+     */
     void SetKipData();
+
+    /**
+     * Get the data from the KIP
+     *
+     */
     void GetKipData();
+
+    /**
+     * Runs the CPU Governor
+     *
+     * @param arg Cast to ClockManager* for context
+     */
+    static void CpuGovernorThread(void* arg);
+
+    /**
+     * Runs the GPU Governor
+     *
+     * @param arg Cast to ClockManager* for context
+     */
     static void GovernorThread(void* arg);
+
+    /**
+     * Gets the effective governor state from application/temporary override
+     *
+     * @param appState Governor state from app
+     * @param tempState Governor state from temporary override
+     */
+    GovernorState GetEffectiveGovernorState(GovernorState appState, GovernorState tempState);
+
+    /**
+     * Frequency tables
+     *
+     */
     struct {
       std::uint32_t count;
       std::uint32_t list[SYSCLK_FREQ_LIST_MAX];
     } freqTable[SysClkModule_EnumMax];
+
+    /**
+     * Gets the current GPU speedo bracket
+     *
+     * @param speedo GPU Speedo
+     */
     int GetSpeedoBracket (int speedo);
+
+    /**
+     * Gets the required vMin for a ram frequency for a speedo
+     *
+     * @param freq RAM Freq in MHz
+     * @param speedo GPU Speedo
+     */
     unsigned int GetGpuVoltage (unsigned int freq, int speedo);
-    void calculateGpuVmin(void);
+
   protected:
     bool IsAssignableHz(SysClkModule module, std::uint32_t hz);
     inline std::uint32_t GetMaxAllowedHz(SysClkModule module, SysClkProfile profile);
@@ -76,9 +190,7 @@ class ClockManager
     bool ConfigIntervalTimeout(SysClkConfigValue intervalMsConfigValue, std::uint64_t ns, std::uint64_t* lastLogNs);
     void RefreshFreqTableRow(SysClkModule module);
     bool RefreshContext();
-
     static ClockManager *instance;
-
     std::atomic_bool running;
     LockableMutex contextMutex;
     Config* config;
@@ -87,5 +199,5 @@ class ClockManager
     std::uint64_t lastFreqLogNs;
     std::uint64_t lastPowerLogNs;
     std::uint64_t lastCsvWriteNs;
-    ReverseNXSync *rnxSync;
+    SysDockIntegration *sysDockIntegration;
 };

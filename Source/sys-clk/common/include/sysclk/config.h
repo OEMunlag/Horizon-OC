@@ -58,9 +58,11 @@ typedef enum {
 
     HorizonOCConfigValue_DVFSMode,
     HorizonOCConfigValue_DVFSOffset,
+    HorizonOCConfigValue_LiveCpuUv,
+    HorizonOCConfigValue_EnableExperimentalSettings,
 
     HorizonOCConfigValue_GPUScheduling,
-
+    HorizonOCConfigValue_GPUSchedulingMethod,
     KipConfigValue_custRev,
     // KipConfigValue_mtcConf,
     KipConfigValue_hpMode,
@@ -232,6 +234,16 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
 
         case HorizonOCConfigValue_GPUScheduling:
             return pretty ? "GPU Scheduling" : "gpu_scheduling";
+
+        case HorizonOCConfigValue_GPUSchedulingMethod:
+            return pretty ? "GPU Scheduling Method" : "gpu_sched_method";
+
+        case HorizonOCConfigValue_LiveCpuUv:
+            return pretty ? "Live CPU Undervolt" : "live_cpu_uv";
+
+        case HorizonOCConfigValue_EnableExperimentalSettings:
+            return pretty ? "Enable Experimental Settings" : "enable_experimental_settings";
+
         // KIP config values
         case KipConfigValue_custRev:
             return pretty ? "Custom Revision" : "kip_cust_rev";
@@ -410,6 +422,8 @@ static inline uint64_t sysclkDefaultConfigValue(SysClkConfigValue val)
         case HorizonOCConfigValue_OverwriteRefreshRate:
         case HorizonOCConfigValue_EnableUnsafeDisplayFreqs:
         case HorizonOCConfigValue_GPUScheduling:
+        case HorizonOCConfigValue_LiveCpuUv:
+        case HorizonOCConfigValue_GPUSchedulingMethod:
             return 0ULL;
         case HocClkConfigValue_EristaMaxCpuClock:
             return 1785ULL;
@@ -456,6 +470,9 @@ static inline uint64_t sysclkValidConfigValue(SysClkConfigValue val, uint64_t in
         case HorizonOCConfigValue_OverwriteRefreshRate:
         case HorizonOCConfigValue_EnableUnsafeDisplayFreqs:
         case HocClkConfigValue_IsFirstLoad:
+        case HorizonOCConfigValue_EnableExperimentalSettings:
+        case HorizonOCConfigValue_LiveCpuUv:
+        case HorizonOCConfigValue_GPUSchedulingMethod:
             return (input & 0x1) == input;
 
         case KipConfigValue_custRev:
