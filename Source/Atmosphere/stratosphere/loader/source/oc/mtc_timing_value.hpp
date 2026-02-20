@@ -30,8 +30,6 @@ namespace ams::ldr::hoc {
     #define PACK_U32(high, low) ((static_cast<u32>(high) << 16) | (static_cast<u32>(low) & 0xFFFF))
     #define PACK_U32_NIBBLE_HIGH_BYTE_LOW(high, low) ((static_cast<u32>(high & 0xF) << 28) | (static_cast<u32>(low) & 0xFF))
 
-
-
     /* Burst latency, not to be confused with base latency (tWRL). */
     const u32 BL = 16;
 
@@ -175,4 +173,5 @@ namespace ams::ldr::hoc {
     }
 
 }
+
 
