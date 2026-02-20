@@ -243,7 +243,7 @@ void MiscGui::listUI()
     if (R_FAILED(rc)) [[unlikely]] {
         FatalGui::openWithResultCode("sysclkIpcGetConfigValues", rc);
         return;
-    }    
+    }
 
     ValueThresholds thresholdsDisabled(0, 0);
     std::vector<NamedValue> noNamedValues = {};
@@ -353,7 +353,7 @@ void MiscGui::listUI()
 
         addConfigButton(HorizonOCConfigValue_DVFSOffset, "GPU DVFS Offset", ValueRange(0, 12, 1, "", 0), "GPU DVFS Offset", &thresholdsDisabled, {}, dvfsOffset, false);
     }
-        
+
     this->listElement->addItem(new tsl::elm::CategoryHeader("Display"));
 
     addConfigToggle(HorizonOCConfigValue_OverwriteRefreshRate, nullptr);
@@ -815,8 +815,6 @@ protected:
         this->listElement->addItem(new tsl::elm::CategoryHeader("CPU Settings"));
         if(IsMariko()) {
             std::vector<NamedValue> ClkOptions = {
-                NamedValue("1785 MHz", 1785000),
-                NamedValue("1887 MHz", 1887000),
                 NamedValue("1963 MHz", 1963000),
                 NamedValue("2091 MHz", 2091000),
                 NamedValue("2193 MHz", 2193000),
