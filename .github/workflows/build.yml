@@ -5,10 +5,21 @@ on:
     branches: [ develop, main, master ]
   pull_request:
   workflow_dispatch:
+   inputs:
+    disable_ccache:
+      description: "Disable ccache"
+      required: false
+      default: "false"
+      type: choice
+      options:
+        - "false"
+        - "true"
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      DISABLE_CCACHE: ${{ github.event_name == 'workflow_dispatch' && inputs.disable_ccache || 'false' }}
 
     container:
       image: devkitpro/devkita64:latest
@@ -34,14 +45,18 @@ jobs:
         shell: bash
 
       - name: Install ccache
+        if: env.DISABLE_CCACHE != 'true'
         run: |
           apt-get update
           apt-get install -y ccache
         shell: bash
 
-      - name: stop bothering me
-        run: git config --global --add safe.directory /__w/Horizon-OC/
-
+      - name: stop bothering with dubious ownership
+        shell: bash
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE/*"
+    
       - name: Build libnx
         run: |
           git clone --depth=1 --single-branch https://github.com/switchbrew/libnx.git
@@ -70,8 +85,8 @@ jobs:
       - name: Override ldr_process_creation.cpp
         run: |
           cp -rf Source/Atmosphere/stratosphere/loader/source/* build/stratosphere/loader/source/
-
       - name: Cache ccache
+        if: env.DISABLE_CCACHE != 'true'
         uses: actions/cache@v5.0.3
         with:
           path: /root/.cache/ccache
@@ -80,6 +95,7 @@ jobs:
             ccache-${{ runner.os }}-devkitpro-
 
       - name: Configure ccache
+        if: env.DISABLE_CCACHE != 'true'
         run: |
           export CCACHE_DIR=/root/.cache/ccache
           echo "CCACHE_DIR=/root/.cache/ccache" >> $GITHUB_ENV
@@ -155,6 +171,7 @@ jobs:
           cp hoc.kip ../../../dist/atmosphere/kips/hoc.kip
           
       - name: ccache stats
+        if: env.DISABLE_CCACHE != 'true'
         run: ccache --show-stats
 
       # -------------------------------------------------
