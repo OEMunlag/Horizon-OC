@@ -266,7 +266,6 @@ namespace ams::ldr::hoc::pcv::mariko {
                 break;
         }
 
-
         switch (C.marikoCpuUVHigh) {
             case 1:
                 PATCH_OFFSET(&(entry->tune1_high), 0);
