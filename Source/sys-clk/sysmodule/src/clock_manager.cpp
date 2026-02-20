@@ -95,7 +95,7 @@ ClockManager::ClockManager()
     this->sysDockIntegration = new SysDockIntegration;
     memset(&initialConfigValues, 0, sizeof(initialConfigValues));
     this->GetKipData();
-    
+
     threadCreate(
         &cpuGovernorTHREAD,
         ClockManager::CpuGovernorThread,
@@ -664,7 +664,7 @@ void ClockManager::HandleMiscFeatures() {
 
 void ClockManager::HandleGovernor(uint32_t targetHz) {
     GovernorState appGovernorState = (GovernorState)targetHz;
-    
+
     u32 tempTargetHz = this->context->overrideFreqs[HorizonOCModule_Governor];
     if (!tempTargetHz)
     {
@@ -673,9 +673,9 @@ void ClockManager::HandleGovernor(uint32_t targetHz) {
             tempTargetHz = this->config->GetAutoClockHz(GLOBAL_PROFILE_ID, HorizonOCModule_Governor, this->context->profile, true);
     }
     GovernorState tempGovernorState = (GovernorState)tempTargetHz;
-    
+
     GovernorState effectiveState = this->GetEffectiveGovernorState(appGovernorState, tempGovernorState);
-    
+
     bool newCpuGovernorState = (effectiveState == GovernorState_Enabled_CpuGpu || effectiveState == GovernorState_Enabled_Cpu);
     bool newGpuGovernorState = (effectiveState == GovernorState_Enabled_CpuGpu || effectiveState == GovernorState_Enabled_Gpu);
 
@@ -740,8 +740,21 @@ void ClockManager::HandleCpuUv() {
 void ClockManager::DVFSReset() {
     if (Board::GetSocType() == SysClkSocType_Mariko && this->config->GetConfigValue(HorizonOCConfigValue_DVFSMode) == DVFSMode_Hijack) {
         Board::PcvHijackDvfs(0);
+
+        u32 targetHz = this->context->overrideFreqs[SysClkModule_GPU];
+        if (!targetHz) {
+            targetHz = this->config->GetAutoClockHz(this->context->applicationId, SysClkModule_GPU, this->context->profile, false);
+            if(!targetHz) {
+                targetHz = this->config->GetAutoClockHz(GLOBAL_PROFILE_ID, SysClkModule_GPU, this->context->profile, false);
+            }
+        }
+
         Board::SetHz(SysClkModule_GPU, ~0);
-        Board::ResetToStockGpu();
+        if(targetHz) {
+            Board::SetHz(SysClkModule_GPU, targetHz);
+        } else {
+            Board::ResetToStockGpu();
+        }
     }
 }
 
@@ -757,7 +770,7 @@ void ClockManager::HandleFreqReset(SysClkModule module, bool isBoost) {
             else
                 Board::SetCpuUvLevel(this->config->GetConfigValue(KipConfigValue_marikoCpuUVLow), this->config->GetConfigValue(KipConfigValue_marikoCpuUVHigh), Board::CalculateTbreak(this->config->GetConfigValue(KipConfigValue_tableConf)));
         }
-        
+
         break;
     case SysClkModule_GPU:
         Board::ResetToStockGpu();
@@ -812,10 +825,10 @@ void ClockManager::SetClocks(bool isBoost) {
         if(module > SysClkModule_MEM) {
             continue;
         }
-        
+
         bool noCPU = isCpuGovernorEnabled;
         bool noGPU = isGpuGovernorEnabled;
-        
+
         if(noCPU && module == SysClkModule_CPU)
             continue;
         if(noGPU && module == SysClkModule_GPU)
@@ -1023,8 +1036,8 @@ bool ClockManager::RefreshContext()
     }
 
     if(targetHz && this->context->realFreqs[HorizonOCModule_Display] > targetHz && this->context->profile != SysClkProfile_Docked)
-        this->context->realFreqs[HorizonOCModule_Display] = targetHz; // clean up display real freqs, should probably be moved to the real freqs loop? 
-    
+        this->context->realFreqs[HorizonOCModule_Display] = targetHz; // clean up display real freqs, should probably be moved to the real freqs loop?
+
     if(Board::GetConsoleType() != HorizonOCConsoleType_Hoag)
         Board::SetDisplayRefreshDockedState(this->context->profile == SysClkProfile_Docked);
 
