@@ -790,6 +790,10 @@ void ClockManager::SetClocks(bool isBoost) {
     std::uint32_t nearestHz = 0;
 
     if(isBoost && !this->config->GetConfigValue(HocClkConfigValue_OverwriteBoostMode)) {
+        u32 boostFreq = Board::GetHz(SysClkModule_CPU);
+        if (boostFreq / 1000000 > 1785) {
+            Board::SetHz(SysClkModule_CPU, boostFreq);
+        }
         return; // Return if we are't overwriting boost mode
     }
 
