@@ -39,6 +39,9 @@ jobs:
           apt-get install -y ccache
         shell: bash
 
+      - name: stop bothering me
+        run: git config --global --add safe.directory /__w/Horizon-OC/
+
       - name: Build libnx
         run: |
           git clone --depth=1 --single-branch https://github.com/switchbrew/libnx.git
