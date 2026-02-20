@@ -290,12 +290,11 @@ void MiscGui::listUI()
     ValueThresholds thresholdsDisabled(0, 0);
     std::vector<NamedValue> noNamedValues = {};
 
-
     this->listElement->addItem(new tsl::elm::CategoryHeader("CPU Settings"));
     addConfigToggle(HocClkConfigValue_OverwriteBoostMode, nullptr);
     std::vector<NamedValue> gpuSchedValues = {
         NamedValue("Do not override", GpuSchedulingMode_DoNotOverride),
-        NamedValue("Enabled", GpuSchedulingMode_Enabled, "96.5% limit"),
+        NamedValue("Enabled (Default)", GpuSchedulingMode_Enabled, "96.6% limit"),
         NamedValue("Disabled", GpuSchedulingMode_Disabled, "99.7% limit"),
     };
 
