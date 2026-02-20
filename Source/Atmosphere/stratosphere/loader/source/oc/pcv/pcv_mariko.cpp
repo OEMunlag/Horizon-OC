@@ -575,14 +575,6 @@ namespace ams::ldr::hoc::pcv::mariko {
         table->emc_cfg_2 = 0x11083D;
     }
 
-        // WRITE_PARAM_ALL_REG(table, emc_pdex2wr, GET_CYCLE(10.0));
-        // WRITE_PARAM_ALL_REG(table, emc_pdex2rd, GET_CYCLE(10.0));
-        // WRITE_PARAM_ALL_REG(table, emc_pchg2pden, GET_CYCLE(1.75));
-        // WRITE_PARAM_ALL_REG(table, emc_ar2pden,   GET_CYCLE(1.75));
-        // WRITE_PARAM_ALL_REG(table, emc_pdex2cke,  GET_CYCLE(1.75));
-        // WRITE_PARAM_ALL_REG(table, emc_act2pden,  GET_CYCLE(14.0));
-        // WRITE_PARAM_ALL_REG(table, emc_cke2pden,  GET_CYCLE(5.0));
-
     void MemMtcPllmbDivisor(MarikoMtcTable *table) {
         constexpr u32 PllOscInKHz   = 38400;
         constexpr u32 PllOscHalfKHz = 19200;
