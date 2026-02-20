@@ -39,12 +39,12 @@ jobs:
           apt-get install -y ccache
         shell: bash
 
-    #  - name: Build libnx
-   #     run: |
-     #     git clone --depth=1 --single-branch https://github.com/switchbrew/libnx.git
-     #     make -C libnx/nx -j$(nproc) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
-      #    sudo make -C libnx/nx install
-   #     shell: bash
+      - name: Build libnx
+        run: |
+          git clone --depth=1 --single-branch https://github.com/switchbrew/libnx.git
+          make -C libnx/nx -j$(nproc) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
+          sudo -e make -C libnx/nx install
+        shell: bash
 
       # -------------------------------------------------
       # Get short commit SHA
