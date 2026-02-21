@@ -61,7 +61,7 @@ jobs:
         run: |
           git clone --depth=1 --single-branch https://github.com/switchbrew/libnx.git
                     case "$DISABLE_CCACHE" in
-            false) export make -C libnx/nx -j$(nproc) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc" ;;
+            false) make -C libnx/nx -j$(nproc) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc" ;;
                 *) make -C libnx/nx -j$(nproc)  ;;
             esac
           
