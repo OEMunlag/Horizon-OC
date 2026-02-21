@@ -393,19 +393,19 @@ void MiscGui::listUI()
         return false;
     });
     this->listElement->addItem(gpuSubmenu);
-
+    if(!IsHoag())
     this->listElement->addItem(new tsl::elm::CategoryHeader("Display"));
-    addConfigToggle(HorizonOCConfigValue_OverwriteRefreshRate, nullptr);
-    tsl::elm::CustomDrawer* warningText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
-        renderer->drawString("\uE150 Enabling unsafe display", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
-        renderer->drawString("refresh rates may cause stress", false, x + 20, y + 50, 18, tsl::style::color::ColorText);
-        renderer->drawString("or damage to your display! ", false, x + 20, y + 70, 18, tsl::style::color::ColorText);
-        renderer->drawString("Proceed at your own risk!", false, x + 20, y + 90, 18, tsl::style::color::ColorText);
-    });
-    warningText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 110);
-    this->listElement->addItem(warningText);
-    addConfigToggle(HorizonOCConfigValue_EnableUnsafeDisplayFreqs, nullptr);
-
+        addConfigToggle(HorizonOCConfigValue_OverwriteRefreshRate, nullptr);
+        tsl::elm::CustomDrawer* warningText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
+            renderer->drawString("\uE150 Enabling unsafe display", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
+            renderer->drawString("refresh rates may cause stress", false, x + 20, y + 50, 18, tsl::style::color::ColorText);
+            renderer->drawString("or damage to your display! ", false, x + 20, y + 70, 18, tsl::style::color::ColorText);
+            renderer->drawString("Proceed at your own risk!", false, x + 20, y + 90, 18, tsl::style::color::ColorText);
+        });
+        warningText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 110);
+        this->listElement->addItem(warningText);
+        addConfigToggle(HorizonOCConfigValue_EnableUnsafeDisplayFreqs, nullptr);
+    }
     #if IS_MINIMAL == 0
         // std::vector<NamedValue> chargerCurrents = {
         //     NamedValue("Disabled", 0),

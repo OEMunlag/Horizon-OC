@@ -366,15 +366,20 @@ void AppProfileGui::addProfileUI(SysClkProfile profile)
             }
         }
     #endif
-    std::vector<NamedValue> governorSettings = {
+    std::vector<NamedValue> governorSettingsE = {
         NamedValue("Do Not Override", GovernorState_DoNotOverride),
         NamedValue("Disabled", GovernorState_Disabled),
         NamedValue("CPU + GPU", GovernorState_Enabled_CpuGpu),
         NamedValue("CPU", GovernorState_Enabled_Cpu),
         NamedValue("GPU", GovernorState_Enabled_Gpu),
     };
-    
-    this->addModuleListItemValue(profile, HorizonOCModule_Governor, "Governor", 0, 0, 1, "", 1, 0, ValueThresholds(), governorSettings, false);
+
+    std::vector<NamedValue> governorSettings = {
+        NamedValue("Do Not Override", GovernorState_DoNotOverride),
+        NamedValue("Disabled", GovernorState_Disabled),
+        NamedValue("GPU", GovernorState_Enabled_Gpu),
+    };
+    this->addModuleListItemValue(profile, HorizonOCModule_Governor, "Governor", 0, 0, 1, "", 1, 0, ValueThresholds(), configList.values[HorizonOCConfigValue_EnableExperimentalSettings] ?governorSettingsE : governorSettings, false);
 }
 
 void AppProfileGui::listUI()
