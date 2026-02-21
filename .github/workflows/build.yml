@@ -60,7 +60,11 @@ jobs:
       - name: Build libnx
         run: |
           git clone --depth=1 --single-branch https://github.com/switchbrew/libnx.git
-          make -C libnx/nx -j$(nproc) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc"
+                    case "$DISABLE_CCACHE" in
+            false) export make -C libnx/nx -j$(nproc) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc" ;;
+                *) make -C libnx/nx -j$(nproc)  ;;
+            esac
+          
           sudo -E make -C libnx/nx install
         shell: bash
 
