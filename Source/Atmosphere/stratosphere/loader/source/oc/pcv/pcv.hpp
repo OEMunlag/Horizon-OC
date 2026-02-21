@@ -202,7 +202,6 @@ namespace ams::ldr::hoc::pcv {
             {                                                 },
         };
 
-
         constexpr u32 CpuVoltOfficial = 1235;
 
         constexpr u32 CpuVminOfficial = 825;

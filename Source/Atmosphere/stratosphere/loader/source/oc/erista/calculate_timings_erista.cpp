@@ -20,9 +20,9 @@
 namespace ams::ldr::hoc::pcv::erista {
 
     void CalculateTimings(double tCK_avg) {
-        tR2W    = FLOOR(FLOOR((5.0 / tCK_avg) + ((FLOOR(48.0 / WL) - 0.478) * 3.0)) / 1.501) + RL_DBI - (C.t6_tRTW * 3) + finetRTW;
-        tWTPDEN = CEIL(((1.803 / tCK_avg) + MAX(RL_DBI + (2.694 / tCK_avg), static_cast<double>(tW2P))) + (BL / 2));
-        tW2R    = FLOOR(MAX((5.020 / tCK_avg) + 1.130, WL - MAX(-CEIL(0.258 * (WL - RL_DBI)), 1.964)) * 1.964) + WL - CEIL(tWTR / tCK_avg) + finetWTR;
+        tR2W    = FLOOR(FLOOR((5.0 / tCK_avg) + ((FLOOR(48.0 / WL) - 0.478) * 3.0)) / 1.501) + RL - (C.t6_tRTW * 3) + finetRTW;
+        tWTPDEN = CEIL(((1.803 / tCK_avg) + MAX(RL + (2.694 / tCK_avg), static_cast<double>(tW2P))) + (BL / 2));
+        tW2R    = FLOOR(MAX((5.020 / tCK_avg) + 1.130, WL - MAX(-CEIL(0.258 * (WL - RL)), 1.964)) * 1.964) + WL - CEIL(tWTR / tCK_avg) + finetWTR;
 
         pdex2rw  = CEIL((CEIL(12.335 - tCK_avg) + (7.430 / tCK_avg) - CEIL(tCK_avg * 11.361)));
         tCLKSTOP = FLOOR(MIN(8.488 / tCK_avg, 23.0)) + 8.0;

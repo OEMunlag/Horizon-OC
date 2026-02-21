@@ -285,7 +285,7 @@ namespace ams::ldr::hoc::pcv::erista {
         // WRITE_PARAM_ALL_REG(table, emc_tr_rdv, rdv);
         // ams::ldr::hoc::pcv::mariko::CalculateMrw2();
         // table->emc_mrw2 = (table->emc_mrw2 & ~0xFFu) | static_cast<u32>(mrw2);
-        // table->dram_timings.rl = RL_DBI;
+        // table->dram_timings.rl = RL;
 
         /* This needs some clean up. */
         constexpr double MC_ARB_DIV = 4.0;

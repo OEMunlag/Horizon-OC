@@ -43,7 +43,7 @@ namespace ams::ldr::hoc::pcv::mariko {
         u32 wlIndex = 0;
 
         for (u32 i = 0; i < std::size(rlMapDBI); ++i) {
-            if (rlMapDBI[i] == RL_DBI) {
+            if (rlMapDBI[i] == RL) {
                 rlIndex = i;
                 break;
             }
