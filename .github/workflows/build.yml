@@ -22,7 +22,7 @@ jobs:
       DISABLE_CCACHE: ${{ github.event_name == 'workflow_dispatch' && inputs.disable_ccache || 'false' }}
 
     container:
-      image: devkitpro/devkita64:20251231
+      image: devkitpro/devkita64:20260202
 
     steps:
       - name: Checkout repository and submodules # needed for hoc-clk
@@ -59,7 +59,7 @@ jobs:
     
       - name: Build libnx
         run: |
-          git clone --depth=1 --single-branch https://github.com/switchbrew/libnx.git -b v4.11.0
+          git clone --depth=1 --single-branch https://github.com/switchbrew/libnx.git -b v4.11.1
                     case "$DISABLE_CCACHE" in
             false) make -C libnx/nx -j$(nproc) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc" ;;
                 *) make -C libnx/nx -j$(nproc)  ;;
