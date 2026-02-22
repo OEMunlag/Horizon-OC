@@ -59,7 +59,7 @@ jobs:
     
       - name: Build libnx
         run: |
-          git clone --depth=1 --single-branch https://github.com/switchbrew/libnx.git
+          git clone --depth=1 --single-branch https://github.com/switchbrew/libnx.git -b v4.10.0
                     case "$DISABLE_CCACHE" in
             false) make -C libnx/nx -j$(nproc) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc" ;;
                 *) make -C libnx/nx -j$(nproc)  ;;
