@@ -22,7 +22,7 @@ jobs:
       DISABLE_CCACHE: ${{ github.event_name == 'workflow_dispatch' && inputs.disable_ccache || 'false' }}
 
     container:
-      image: devkitpro/devkita64:20260202
+      image: devkitpro/devkita64:20260215
 
     steps:
       - name: Checkout repository and submodules # needed for hoc-clk
