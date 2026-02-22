@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: devkitpro/devkita64:20260219
+      image: devkitpro/devkita64:latest
 
     steps:
       - name: Checkout repository (with submodules)
@@ -27,11 +27,18 @@ jobs:
           echo "DEVKITARM=/opt/devkitpro/devkitARM" >> "$GITHUB_ENV"
           echo "PATH=/opt/devkitpro/devkitA64/bin:/opt/devkitpro/devkitARM/bin:$PATH" >> "$GITHUB_ENV"
 
+      - name: Build and install latest libnx just in case atmosphere still errors out because this time we're trying the latest versions in case the action builds do not want to work on atmosphree 1.10.2 maybe master works but that would cause an inconsitency in horizon-oc anyways let's try
+        shell: bash
+        run: |
+          git clone --depth=1 https://github.com/switchbrew/libnx.git
+          cd libnx
+          make -j"$(nproc)"
+          make install
+
       - name: Clone Atmosphere
         shell: bash
         run: |
-          git clone --depth=1 --single-branch \
-            https://github.com/Atmosphere-NX/Atmosphere.git atmosphere -b "$(cat ams_ver.txt)"
+          git clone --depth=1 --single-branch https://github.com/Atmosphere-NX/Atmosphere.git atmosphere
 
       - name: Build loader
         shell: bash
