@@ -59,7 +59,7 @@ jobs:
     
       - name: Build libnx
         run: |
-          git clone --depth=1 --single-branch https://github.com/switchbrew/libnx.git -b v4.11.1
+          git clone --depth=10 --single-branch https://github.com/switchbrew/libnx.git
                     case "$DISABLE_CCACHE" in
             false) make -C libnx/nx -j$(nproc) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc" ;;
                 *) make -C libnx/nx -j$(nproc)  ;;
@@ -166,6 +166,18 @@ jobs:
           cp -vf \
             "$ROOT_DIR/README.md" \
             "$DIST_DIR/README.md"
+
+      - name: Build libnx again so ams is happy
+        working-directory: libnx
+        run: |
+          git checkout 81e4c213fd587ad1e8554aee1ac8880813f5a140
+                    case "$DISABLE_CCACHE" in
+            false) make -C nx -j$(nproc) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc" ;;
+                *) make -C nx -j$(nproc)  ;;
+            esac
+          
+          sudo -E make -C nx install
+        shell: bash
 
       - name: Build kip
         working-directory: build/stratosphere/loader
