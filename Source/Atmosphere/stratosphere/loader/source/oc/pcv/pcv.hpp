@@ -178,7 +178,7 @@ namespace ams::ldr::hoc::pcv {
     }
 
     namespace erista {
-        const u32 maxClocks[] = { C.eristaEmcMaxClock2, C.eristaEmcMaxClock1, C.eristaEmcMaxClock, };
+        static u32 maxEmcClocks[] = { C.eristaEmcMaxClock2, C.eristaEmcMaxClock1, C.eristaEmcMaxClock, };
         #define GET_MAX_OF_ARR(ARR) (*std::max_element(ARR, ARR + std::size(ARR)))
 
         constexpr cvb_entry_t CpuCvbTableDefault[] = {
@@ -201,7 +201,6 @@ namespace ams::ldr::hoc::pcv {
             { 1785000, {1227500}, {  5100873, -279186,  4747} },
             {                                                 },
         };
-
 
         constexpr u32 CpuVoltOfficial = 1235;
 

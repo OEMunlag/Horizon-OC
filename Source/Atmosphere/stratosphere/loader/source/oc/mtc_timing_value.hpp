@@ -30,17 +30,12 @@ namespace ams::ldr::hoc {
     #define PACK_U32(high, low) ((static_cast<u32>(high) << 16) | (static_cast<u32>(low) & 0xFFFF))
     #define PACK_U32_NIBBLE_HIGH_BYTE_LOW(high, low) ((static_cast<u32>(high & 0xF) << 28) | (static_cast<u32>(low) & 0xFF))
 
-
-
     /* Burst latency, not to be confused with base latency (tWRL). */
     const u32 BL = 16;
 
     /* Base latency for read and write (tWRL). */
-    const u32 RL = C.mem_burst_read_latency - 4; /* (This is a lazy fix for now) */
+    const u32 RL = C.mem_burst_read_latency;
     const u32 WL = C.mem_burst_write_latency;
-
-    /* Switch uses RL_DBI, todo: get rid of non DBI_RL. */
-    const u32 RL_DBI = RL + 4;
 
     /* Precharge to Precharge Delay. (tCK) */
     const u32 tPPD = 4;
@@ -73,7 +68,7 @@ namespace ams::ldr::hoc {
         const std::array<u32,       8> tRP_values     = { 18, 17, 16, 15, 14, 13, 12, 11 };
         const std::array<u32,      10> tRAS_values    = { 42, 36, 34, 32, 30, 28, 26, 24, 22, 20 };
         const std::array<double,    8>  tRRD_values   = { 10.0, 7.5, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0 };
-        const std::array<u32,      11>  tRFC_values   = { 140, 130, 120, 110, 100, 90, 80, 70, 60, 50, 40 };
+        const std::array<u32,       6>  tRFC_values   = { 90, 80, 70, 60, 50, 40 };
         const std::array<u32,      10>  tWTR_values   = { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
         const std::array<u32,       6>  tREFpb_values = { 3900, 5850, 7800, 11700, 15600, 99999 };
 
@@ -92,7 +87,7 @@ namespace ams::ldr::hoc {
         const u32 tFAW     = static_cast<u32>(tRRD * 4.0);
         const double tRPab = tRPpb + 3;
 
-        const u32 tR2P   = CEIL((RL_DBI * 0.426) - 2.0);
+        const u32 tR2P   = CEIL((RL * 0.426) - 2.0);
         inline u32 tR2W;
         inline u32 rext;
 
@@ -133,16 +128,16 @@ namespace ams::ldr::hoc {
         const u32 tFAW     = static_cast<u32>(tRRD * 4.0);
         const double tRPab = tRPpb + 3;
 
-        const u32 tR2P   = CEIL((RL_DBI * 0.426) - 2.0);
-        const u32 tR2W = FLOOR(FLOOR((5.0 / tCK_avg) + ((FLOOR(48.0 / WL) - 0.478) * 3.0)) / 1.501) + RL_DBI - (C.t6_tRTW * 3) + finetRTW;
-        const u32 tRTM   = FLOOR((10.0 + RL_DBI) + (3.502 / tCK_avg)) + FLOOR(7.489 / tCK_avg);
-        const u32 tRATM  = CEIL((tRTM - 10.0) + (RL_DBI * 0.426));
+        const u32 tR2P   = CEIL((RL * 0.426) - 2.0);
+        const u32 tR2W = FLOOR(FLOOR((5.0 / tCK_avg) + ((FLOOR(48.0 / WL) - 0.478) * 3.0)) / 1.501) + RL - (C.t6_tRTW * 3) + finetRTW;
+        const u32 tRTM   = FLOOR((10.0 + RL) + (3.502 / tCK_avg)) + FLOOR(7.489 / tCK_avg);
+        const u32 tRATM  = CEIL((tRTM - 10.0) + (RL * 0.426));
         inline u32 rext;
 
-        const u32 rdv             = RL_DBI + FLOOR((5.105 / tCK_avg) + 17.017);
+        const u32 rdv             = RL + FLOOR((5.105 / tCK_avg) + 17.017);
         const u32 qpop            = rdv - 14;
         const u32 quse_width      = CEIL(((4.897 / tCK_avg) - FLOOR(2.538 / tCK_avg)) + 3.782);
-        const u32 quse            = FLOOR(RL_DBI + ((5.082 / tCK_avg) + FLOOR(2.560 / tCK_avg))) - CEIL(4.820 / tCK_avg);
+        const u32 quse            = FLOOR(RL + ((5.082 / tCK_avg) + FLOOR(2.560 / tCK_avg))) - CEIL(4.820 / tCK_avg);
         const u32 einput_duration = FLOOR(9.936 / tCK_avg) + 5.0 + quse_width;
         const u32 einput          = quse - CEIL(9.928 / tCK_avg);
         const u32 qrst_duration   = FLOOR(8.399 - tCK_avg);
@@ -151,8 +146,8 @@ namespace ams::ldr::hoc {
         const u32 ibdly           = PACK_U32_NIBBLE_HIGH_BYTE_LOW(1, quse - qrst_duration - 2.0);
         const u32 qsafe           = (einput_duration + 3) + MAX(MIN(qrstLow * rdv, qrst_duration + qrst_duration), einput);
         const u32 tW2P            = (CEIL(WL * 1.7303) * 2) - 5;
-        const u32 tWTPDEN         = CEIL(((1.803 / tCK_avg) + MAX(RL_DBI + (2.694 / tCK_avg), static_cast<double>(tW2P))) + (BL / 2));
-        const u32 tW2R            = FLOOR(MAX((5.020 / tCK_avg) + 1.130, WL - MAX(-CEIL(0.258 * (WL - RL_DBI)), 1.964)) * 1.964) + WL - CEIL(tWTR / tCK_avg) + finetWTR;
+        const u32 tWTPDEN         = CEIL(((1.803 / tCK_avg) + MAX(RL + (2.694 / tCK_avg), static_cast<double>(tW2P))) + (BL / 2));
+        const u32 tW2R            = FLOOR(MAX((5.020 / tCK_avg) + 1.130, WL - MAX(-CEIL(0.258 * (WL - RL)), 1.964)) * 1.964) + WL - CEIL(tWTR / tCK_avg) + finetWTR;
         const u32 tWTM            = CEIL(WL + ((7.570 / tCK_avg) + 8.753));
         const u32 tWATM           = (tWTM + (FLOOR(WL / 0.816) * 2.0)) - 4.0;
 
@@ -175,4 +170,5 @@ namespace ams::ldr::hoc {
     }
 
 }
+
 

@@ -457,7 +457,7 @@ SysClkProfile Board::GetProfile()
 void Board::SetHz(SysClkModule module, std::uint32_t hz)
 {
     Result rc = 0;
-    if(module == HorizonOCModule_Display && Board::GetConsoleType() != HorizonOCConsoleType_Hoag) {     
+    if(module == HorizonOCModule_Display && Board::GetConsoleType() != HorizonOCConsoleType_Hoag) {
         DisplayRefresh_SetRate(hz);
         return;
     }
@@ -1167,16 +1167,7 @@ void Board::SetGpuSchedulingMode(GpuSchedulingMode mode, GpuSchedulingOverrideMe
     u32 temp;
     bool enabled = false;
     switch(mode) {
-        case GpuSchedulingMode_DoNotOverride:
-            if (method == GpuSchedulingOverrideMethod_Ini) {
-                const char* ini_path = "sdmc:/atmosphere/config/system_settings.ini";
-                const char* section = "am.gpu";
-                const char* key = "gpu_scheduling_enabled";
-
-                // Remove the key from the INI
-                ini_puts(section, key, NULL, ini_path);
-            }
-            return;
+        case GpuSchedulingMode_DoNotOverride: break;
         case GpuSchedulingMode_Disabled:
             if(method == GpuSchedulingOverrideMethod_NvService)
                 nvIoctl(fd2, NVSCHED_CTRL_DISABLE, &temp);
@@ -1196,7 +1187,7 @@ void Board::SetGpuSchedulingMode(GpuSchedulingMode mode, GpuSchedulingOverrideMe
         const char* ini_path = "sdmc:/atmosphere/config/system_settings.ini";
         const char* section = "am.gpu";
         const char* key = "gpu_scheduling_enabled";
-        
+
         const char* value = enabled ? "u8!0x1" : "u8!0x0";
 
         ini_puts(section, key, value, ini_path);
@@ -1261,7 +1252,7 @@ void Board::SetCpuUvLevel(u32 levelLow, u32 levelHigh, u32 tbreakPoint) {
 
     u32* tune0_ptr = (u32*)(cldvfs + CL_DVFS_TUNE0_0);
     u32* tune1_ptr = (u32*)(cldvfs + CL_DVFS_TUNE1_0);
-    if(Board::GetSocType() == SysClkSocType_Mariko) { 
+    if(Board::GetSocType() == SysClkSocType_Mariko) {
         if(Board::GetHz(SysClkModule_CPU) < tbreakPoint && (levelLow || levelHigh)) {
             if(levelLow) {
                 *tune0_ptr = marikoCpuUvLow[levelLow-1].tune0_low;
@@ -1287,7 +1278,7 @@ void Board::SetCpuUvLevel(u32 levelLow, u32 levelHigh, u32 tbreakPoint) {
             *tune0_ptr = cachedMarikoUvHighTune0; // per console?
             *tune1_ptr = 0xFFF7FF3F;
             return;
-        } 
+        }
     } else {
         if(Board::GetHz(SysClkModule_CPU) < tbreakPoint || (!levelLow)) { // account for tbreak
             *tune0_ptr = cachedEristaUvLowTune0; // I think each erista has a different tune0/tune1?
@@ -1326,5 +1317,5 @@ u32 Board::CalculateTbreak(u32 table) {
                 return 1581000000;
         }
     }
-    
+
 }

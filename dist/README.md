@@ -56,7 +56,6 @@ It enables advanced CPU, GPU, and RAM tuning with user-friendly configuration to
 
    ```
    kip1=atmosphere/kips/hoc.kip
-   secmon=exosphere.bin
    ```
 
    *(No changes needed if using fusee.)*
@@ -114,6 +113,9 @@ Refer to COMPILATION.md
 * 816
 * 714
 * 612 → sleep mode
+  
+**Notes:**
+1. On Erista, CPU in handheld is capped to 1581MHz
 
 ### GPU clocks
 * 1536 → absolute max clock on mariko. very dangerous
@@ -140,8 +142,10 @@ Refer to COMPILATION.md
 * 76 → boost mode
 
 **Notes:**
-1. GPU overclock is capped at 460MHz in handheld and capped at 768MHz if charging, unless you're using the official charger.
-2. Clocks higher than 768MHz need the official charger is plugged in.
+1. GPU overclock is capped at 460MHz on erista in handheld
+2. On Mariko, cap with No uv is 614MHz, with SLT it is 691MHz and with HiOPT it's 768MHz
+3. Clocks higher than 768MHz on erista need the official charger is plugged in.
+4. On Mariko, cap with No uv is 844MHz, with SLT it is 921MHz and with HiOPT it's 998MHz
 
 ---
 
@@ -160,5 +164,5 @@ Refer to COMPILATION.md
 * **b0rd2death** – Ultrahand sys-clk & Status Monitor fork
 * **MasaGratoR and ZachyCatGames** - General help
 * **MasaGratoR** - Status Monitor & Display Refresh Rate Driver
-* **Dom, Samybigio, Arcdelta, Miki, Happy, Flopsider, Winnerboi77, Blaise, Alvise, TDRR, agjeococh and Xenshen** - Testing
+* **Dom, Samybigio, Arcdelta, Miki, Happy, Flopsider, Winnerboi77, Blaise, Alvise, TDRR, agjeococh, frost, letum00 and Xenshen** - Testing
 * **Samybigio2011** - Italian translations

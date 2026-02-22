@@ -266,7 +266,6 @@ namespace ams::ldr::hoc::pcv::mariko {
                 break;
         }
 
-
         switch (C.marikoCpuUVHigh) {
             case 1:
                 PATCH_OFFSET(&(entry->tune1_high), 0);
@@ -569,19 +568,11 @@ namespace ams::ldr::hoc::pcv::mariko {
 
         table->dram_timings.t_rp = tRFCpb;
         table->dram_timings.t_rfc = tRFCab;
-        table->dram_timings.rl = RL_DBI;
+        table->dram_timings.rl = RL;
 
         table->emc_mrw2 = (table->emc_mrw2 & ~0xFFu) | static_cast<u32>(mrw2);
         table->emc_cfg_2 = 0x11083D;
     }
-
-        // WRITE_PARAM_ALL_REG(table, emc_pdex2wr, GET_CYCLE(10.0));
-        // WRITE_PARAM_ALL_REG(table, emc_pdex2rd, GET_CYCLE(10.0));
-        // WRITE_PARAM_ALL_REG(table, emc_pchg2pden, GET_CYCLE(1.75));
-        // WRITE_PARAM_ALL_REG(table, emc_ar2pden,   GET_CYCLE(1.75));
-        // WRITE_PARAM_ALL_REG(table, emc_pdex2cke,  GET_CYCLE(1.75));
-        // WRITE_PARAM_ALL_REG(table, emc_act2pden,  GET_CYCLE(14.0));
-        // WRITE_PARAM_ALL_REG(table, emc_cke2pden,  GET_CYCLE(5.0));
 
     void MemMtcPllmbDivisor(MarikoMtcTable *table) {
         constexpr u32 PllOscInKHz   = 38400;

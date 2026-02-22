@@ -243,35 +243,7 @@ void MiscGui::listUI()
     if (R_FAILED(rc)) [[unlikely]] {
         FatalGui::openWithResultCode("sysclkIpcGetConfigValues", rc);
         return;
-    }    
-
-    ValueThresholds thresholdsDisabled(0, 0);
-    std::vector<NamedValue> noNamedValues = {};
-
-    this->listElement->addItem(new tsl::elm::CategoryHeader("Settings"));
-
-    addConfigToggle(HocClkConfigValue_OverwriteBoostMode, nullptr);
-    std::vector<NamedValue> gpuSchedValues = {
-        NamedValue("Do not override", GpuSchedulingMode_DoNotOverride),
-        NamedValue("Enabled", GpuSchedulingMode_Enabled, "96.5% limit"),
-        NamedValue("Disabled", GpuSchedulingMode_Disabled, "99.7% limit"),
-    };
-    tsl::elm::CustomDrawer* gpuSchedInfoText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
-        renderer->drawString("\uE150 This option requires a reboot", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
-        renderer->drawString("to take effect", false, x + 20, y + 50, 18, tsl::style::color::ColorText);
-    });
-    gpuSchedInfoText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 70);
-    this->listElement->addItem(gpuSchedInfoText);
-    addConfigButton(
-        HorizonOCConfigValue_GPUScheduling,
-        "GPU Scheduling Override",
-        ValueRange(0, 0, 1, "", 0),
-        "GPU Scheduling Override",
-        &thresholdsDisabled,
-        {},
-        gpuSchedValues,
-        false
-    );
+    }
 
     this->listElement->addItem(new tsl::elm::CategoryHeader("Safety Settings"));
     addConfigToggle(HocClkConfigValue_UncappedClocks, nullptr);
@@ -315,8 +287,30 @@ void MiscGui::listUI()
         );
     #endif
 
+    ValueThresholds thresholdsDisabled(0, 0);
+    std::vector<NamedValue> noNamedValues = {};
+
+    this->listElement->addItem(new tsl::elm::CategoryHeader("CPU Settings"));
+    addConfigToggle(HocClkConfigValue_OverwriteBoostMode, nullptr);
+    std::vector<NamedValue> gpuSchedValues = {
+        NamedValue("Do not override", GpuSchedulingMode_DoNotOverride),
+        NamedValue("Enabled (Default)", GpuSchedulingMode_Enabled, "96.6% limit"),
+        NamedValue("Disabled", GpuSchedulingMode_Disabled, "99.7% limit"),
+    };
+
+    this->listElement->addItem(new tsl::elm::CategoryHeader("GPU Settings"));
+    addConfigButton(
+        HorizonOCConfigValue_GPUScheduling,
+        "GPU Scheduling Override",
+        ValueRange(0, 0, 1, "", 0),
+        "GPU Scheduling Override",
+        &thresholdsDisabled,
+        {},
+        gpuSchedValues,
+        false
+    );
+
     if (IsMariko()) {
-        this->listElement->addItem(new tsl::elm::CategoryHeader("DVFS"));
         std::vector<NamedValue> dvfsValues = {
             NamedValue("Disabled", DVFSMode_Disabled),
             NamedValue("PCV Hijack", DVFSMode_Hijack),
@@ -353,19 +347,6 @@ void MiscGui::listUI()
 
         addConfigButton(HorizonOCConfigValue_DVFSOffset, "GPU DVFS Offset", ValueRange(0, 12, 1, "", 0), "GPU DVFS Offset", &thresholdsDisabled, {}, dvfsOffset, false);
     }
-        
-    this->listElement->addItem(new tsl::elm::CategoryHeader("Display"));
-
-    addConfigToggle(HorizonOCConfigValue_OverwriteRefreshRate, nullptr);
-    tsl::elm::CustomDrawer* warningText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
-        renderer->drawString("\uE150 Enabling unsafe display", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
-        renderer->drawString("refresh rates may cause stress", false, x + 20, y + 50, 18, tsl::style::color::ColorText);
-        renderer->drawString("or damage to your display! ", false, x + 20, y + 70, 18, tsl::style::color::ColorText);
-        renderer->drawString("Proceed at your own risk!", false, x + 20, y + 90, 18, tsl::style::color::ColorText);
-    });
-    warningText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 110);
-    this->listElement->addItem(warningText);
-    addConfigToggle(HorizonOCConfigValue_EnableUnsafeDisplayFreqs, nullptr);
 
     this->listElement->addItem(new tsl::elm::CategoryHeader("KIP"));
 
@@ -412,8 +393,19 @@ void MiscGui::listUI()
         return false;
     });
     this->listElement->addItem(gpuSubmenu);
-
-
+    if(!IsHoag())
+    this->listElement->addItem(new tsl::elm::CategoryHeader("Display"));
+        addConfigToggle(HorizonOCConfigValue_OverwriteRefreshRate, nullptr);
+        tsl::elm::CustomDrawer* warningText = new tsl::elm::CustomDrawer([](tsl::gfx::Renderer *renderer, s32 x, s32 y, s32 w, s32 h) {
+            renderer->drawString("\uE150 Enabling unsafe display", false, x + 20, y + 30, 18, tsl::style::color::ColorText);
+            renderer->drawString("refresh rates may cause stress", false, x + 20, y + 50, 18, tsl::style::color::ColorText);
+            renderer->drawString("or damage to your display! ", false, x + 20, y + 70, 18, tsl::style::color::ColorText);
+            renderer->drawString("Proceed at your own risk!", false, x + 20, y + 90, 18, tsl::style::color::ColorText);
+        });
+        warningText->setBoundaries(0, 0, tsl::cfg::FramebufferWidth, 110);
+        this->listElement->addItem(warningText);
+        addConfigToggle(HorizonOCConfigValue_EnableUnsafeDisplayFreqs, nullptr);
+    }
     #if IS_MINIMAL == 0
         // std::vector<NamedValue> chargerCurrents = {
         //     NamedValue("Disabled", 0),
@@ -815,8 +807,6 @@ protected:
         this->listElement->addItem(new tsl::elm::CategoryHeader("CPU Settings"));
         if(IsMariko()) {
             std::vector<NamedValue> ClkOptions = {
-                NamedValue("1785 MHz", 1785000),
-                NamedValue("1887 MHz", 1887000),
                 NamedValue("1963 MHz", 1963000),
                 NamedValue("2091 MHz", 2091000),
                 NamedValue("2193 MHz", 2193000),

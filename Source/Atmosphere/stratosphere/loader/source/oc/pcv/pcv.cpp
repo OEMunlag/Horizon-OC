@@ -144,7 +144,7 @@ void SafetyCheck() {
         { C.marikoCpuBoostClock, 1020'000, 2703'000, true },
         { C.commonEmcMemVolt,                 912'500, 1350'000 }, // Official burst vmax for the RAMs is 1500mV
         { C.eristaCpuMaxVolt,                    1000,     1257 },
-        { GET_MAX_OF_ARR(erista::maxClocks), 1600'000, 2600'000 },
+        { GET_MAX_OF_ARR(erista::maxEmcClocks), 1600'000, 2600'000 },
         { C.marikoCpuMaxVolt,                    1000,     1235 },
         { C.marikoEmcMaxClock,               1600'000, 3500'000 },
         { C.marikoEmcVddqVolt,                250'000,  700'000 },

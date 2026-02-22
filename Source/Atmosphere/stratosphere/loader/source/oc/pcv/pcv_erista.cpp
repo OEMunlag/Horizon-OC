@@ -285,7 +285,7 @@ namespace ams::ldr::hoc::pcv::erista {
         // WRITE_PARAM_ALL_REG(table, emc_tr_rdv, rdv);
         // ams::ldr::hoc::pcv::mariko::CalculateMrw2();
         // table->emc_mrw2 = (table->emc_mrw2 & ~0xFFu) | static_cast<u32>(mrw2);
-        // table->dram_timings.rl = RL_DBI;
+        // table->dram_timings.rl = RL;
 
         /* This needs some clean up. */
         constexpr double MC_ARB_DIV = 4.0;
@@ -324,13 +324,13 @@ namespace ams::ldr::hoc::pcv::erista {
 
         table->burst_mc_regs.mc_emem_arb_misc0 = (table->burst_mc_regs.mc_emem_arb_misc0 & 0xFFE08000) | (table->burst_mc_regs.mc_emem_arb_timing_rc + 1);
 
-        u32 mpcorer_ptsa_rate = MAX(static_cast<u32>(227), (table->rate_khz / 1600000) * 208);
+        u32 mpcorer_ptsa_rate = MIN(static_cast<u32>(227), (table->rate_khz / 1600000) * 208);
         table->la_scale_regs.mc_mll_mpcorer_ptsa_rate = mpcorer_ptsa_rate;
 
-        u32 ftop_ptsa_rate = MAX(static_cast<u32>(31), (table->rate_khz / 1600000) * 24);
+        u32 ftop_ptsa_rate = MIN(static_cast<u32>(31), (table->rate_khz / 1600000) * 24);
         table->la_scale_regs.mc_ftop_ptsa_rate = ftop_ptsa_rate;
 
-        u32 grant_decrement = MAX(static_cast<u32>(6143), (table->rate_khz / 1600000) * 4611);
+        u32 grant_decrement = MIN(static_cast<u32>(6143), (table->rate_khz / 1600000) * 4611);
         table->la_scale_regs.mc_ptsa_grant_decrement = grant_decrement;
 
         constexpr u32 MaskHigh = 0xFF00FFFF;
@@ -370,7 +370,12 @@ namespace ams::ldr::hoc::pcv::erista {
     }
 
     Result MemFreqMtcTable(u32 *ptr) {
+        if (GET_MAX_OF_ARR(maxEmcClocks) <= EmcClkOSLimit) {
+            R_SKIP();
+        }
+
         u32 khz_list[] = {1600000, 1331200, 1065600, 800000, 665600, 408000, 204000, 102000, 68000, 40800};
+        std::sort(maxEmcClocks, maxEmcClocks + std::size(maxEmcClocks), std::greater<>());
         u32 khz_list_size = sizeof(khz_list) / sizeof(u32);
 
         // Generate list for mtc table pointers
@@ -382,32 +387,37 @@ namespace ams::ldr::hoc::pcv::erista {
             R_UNLESS(table_list[i]->rev == MTC_TABLE_REV, ldr::ResultInvalidMtcTable());
         }
 
-        if (GET_MAX_OF_ARR(maxClocks) <= EmcClkOSLimit) {
-            R_SKIP();
+        u32 additionalFreqs = 0;
+        for (u32 i = 0; i < std::size(maxEmcClocks); ++i) {
+            if (maxEmcClocks[i] > EmcClkOSLimit) {
+                ++additionalFreqs;
+            } else {
+                break;
+            }
         }
 
         // Make room for new mtc table, discarding useless 40.8, 68000 and 102000 MHz table
-        // 40800 overwritten by 68000, ..., 1331200 overwritten by 1600000, leaving table_list[0], table_list[1] and table_list[2] not overwritten
-        for (u32 i = khz_list_size - 1; i > 2; --i) {
-            std::memcpy(static_cast<void *>(table_list[i]), static_cast<void *>(table_list[i - 3]), sizeof(EristaMtcTable));
+        // 40800 overwritten by 204000, ..., 1331200 overwritten by 1600000, leaving table_list[0], table_list[1] and table_list[2] not overwritten
+        for (u32 i = khz_list_size - 1; i > additionalFreqs - 1; --i) {
+            std::memcpy(static_cast<void *>(table_list[i]), static_cast<void *>(table_list[i - additionalFreqs]), sizeof(EristaMtcTable));
         }
 
-        for (u32 i = 0; i < std::size(maxClocks); ++i) {
-            if (maxClocks[i] > EmcClkOSLimit) {
-                table_list[i]->rate_khz = maxClocks[i];
-                MemMtcTableAutoAdjust(table_list[i]);
-            }
+        for (u32 i = 0; i < additionalFreqs; ++i) {
+            /* Since we're not scaling latency timings properly, copy over the 1600Mhz table to get the closest timings. */
+            std::memcpy(table_list[i], table_list[additionalFreqs], sizeof(EristaMtcTable));
+            table_list[i]->rate_khz = maxEmcClocks[i];
+            MemMtcTableAutoAdjust(table_list[i]);
         }
 
         R_SUCCEED();
     }
 
     Result MemFreqMax(u32 *ptr) {
-        if (GET_MAX_OF_ARR(maxClocks) <= EmcClkOSLimit) {
+        if (GET_MAX_OF_ARR(maxEmcClocks) <= EmcClkOSLimit) {
             R_SKIP();
         }
 
-        PATCH_OFFSET(ptr, GET_MAX_OF_ARR(maxClocks));
+        PATCH_OFFSET(ptr, GET_MAX_OF_ARR(maxEmcClocks));
 
         R_SUCCEED();
     }
@@ -445,4 +455,5 @@ namespace ams::ldr::hoc::pcv::erista {
             }
         }
     }
+
 }
