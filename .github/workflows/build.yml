@@ -22,7 +22,7 @@ jobs:
       DISABLE_CCACHE: ${{ github.event_name == 'workflow_dispatch' && inputs.disable_ccache || 'false' }}
 
     container:
-      image: devkitpro/devkita64:20260215
+      image: devkitpro/devkita64:latest
 
     steps:
       - name: Checkout repository and submodules # needed for hoc-clk
@@ -56,17 +56,6 @@ jobs:
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git config --global --add safe.directory "$GITHUB_WORKSPACE/*"
-    
-      - name: Build libnx
-        run: |
-          git clone --depth=10 --single-branch https://github.com/switchbrew/libnx.git
-                    case "$DISABLE_CCACHE" in
-            false) make -C libnx/nx -j$(nproc) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc" ;;
-                *) make -C libnx/nx -j$(nproc)  ;;
-            esac
-          
-          sudo -E make -C libnx/nx install
-        shell: bash
 
       # -------------------------------------------------
       # Get short commit SHA
@@ -167,10 +156,11 @@ jobs:
             "$ROOT_DIR/README.md" \
             "$DIST_DIR/README.md"
 
-      - name: Build libnx again so ams is happy
-        working-directory: libnx
+      - name: Build libnx for ams
         run: |
-          git checkout 81e4c213fd587ad1e8554aee1ac8880813f5a140
+          git clone --depth=10 https://github.com/switchbrew/libnx.git
+          cd libnx
+          git checkout dfb936ed11e6d0cbd5df28e3106fdcd578ad2fc4
                     case "$DISABLE_CCACHE" in
             false) make -C nx -j$(nproc) CXX="ccache aarch64-none-elf-g++" CC="ccache aarch64-none-elf-gcc" ;;
                 *) make -C nx -j$(nproc)  ;;
