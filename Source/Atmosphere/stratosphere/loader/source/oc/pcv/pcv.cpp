@@ -146,7 +146,7 @@ namespace ams::ldr::hoc::pcv {
             { C.eristaCpuBoostClock, 1020'000, 2295'000, true },
             { C.marikoCpuBoostClock, 1020'000, 2703'000, true },
             { C.commonEmcMemVolt,                 912'500, 1350'000 }, // Official burst vmax for the RAMs is 1500mV
-            { C.eristaCpuMaxVolt,                    1000,     1257 },
+            { C.eristaCpuMaxVolt,                    1000,     1260 },
             { GET_MAX_OF_ARR(erista::maxEmcClocks), 1600'000, 2600'000 },
             { C.marikoCpuMaxVolt,                    1000,     1235 },
             { C.marikoEmcMaxClock,               1600'000, 3500'000 },
@@ -156,7 +156,7 @@ namespace ams::ldr::hoc::pcv {
             { eristaGpuDvfsMaxFreq,               768'000, 1152'000 },
             { marikoGpuDvfsMaxFreq,               768'000, 1536'000 },
         };
-        
+
         for (auto& i : validators) {
             if (R_FAILED(i.check())) {
                 CRASH("Validation FAIL");
