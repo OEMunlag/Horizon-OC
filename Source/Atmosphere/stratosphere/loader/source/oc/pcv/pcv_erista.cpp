@@ -436,13 +436,14 @@ namespace ams::ldr::hoc::pcv::erista {
     // }
 
     void Patch(uintptr_t mapped_nso, size_t nso_size) {
+        /* TODO: limit patch count */
         PatcherEntry<u32> patches[] = {
             {"CPU Freq Table", CpuFreqCvbTable<false>, 1, nullptr, static_cast<u32>(GetDvfsTableLastEntry(CpuCvbTableDefault)->freq)},
-            {"CPU Volt DVFS", &CpuVoltDvfs, 1, nullptr, 825},
-            {"CPU Volt Thermals", &CpuVoltThermals, 1, nullptr, 825},
-            {"CPU Volt Dfll",  &CpuVoltDfll, 1, nullptr, 0xFFEAD0FF},
-            {"GPU Volt DVFS", &GpuVoltDVFS, 1, nullptr, 810},
-            {"GPU Volt Thermals", &GpuVoltThermals, 1, nullptr, 810},
+            {"CPU Volt DVFS", &CpuVoltDvfs, 0, nullptr, CpuVminOfficial},
+            {"CPU Volt Thermals", &CpuVoltThermals, 0, nullptr, CpuVminOfficial},
+            {"CPU Volt Dfll", &CpuVoltDfll, 0, nullptr, 0xFFEAD0FF},
+            {"GPU Volt DVFS", &GpuVoltDVFS, 0, nullptr, GpuVminOfficial},
+            {"GPU Volt Thermals", &GpuVoltThermals, 0, nullptr, GpuVminOfficial},
             {"GPU Freq Table", GpuFreqCvbTable<false>, 1, nullptr, static_cast<u32>(GetDvfsTableLastEntry(GpuCvbTableDefault)->freq)},
             {"GPU Freq Asm", &GpuFreqMaxAsm, 2, &GpuMaxClockPatternFn},
             {"GPU PLL Max", &GpuFreqPllMax, 1, nullptr, GpuClkPllMax},
