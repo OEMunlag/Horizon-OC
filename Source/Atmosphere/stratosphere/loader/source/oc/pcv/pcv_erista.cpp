@@ -24,6 +24,21 @@
 
 namespace ams::ldr::hoc::pcv::erista {
 
+    Result CpuVoltRange(u32* ptr) {
+        u32 min_volt_got = *(ptr - 1);
+        for (const auto& mv : CpuMinVolts) {
+            if (min_volt_got != mv)
+                continue;
+
+            if (!C.eristaCpuMaxVolt)
+                R_SKIP();
+
+            PATCH_OFFSET(ptr, C.eristaCpuMaxVolt);
+            R_SUCCEED();
+        }
+        R_THROW(ldr::ResultInvalidCpuMinVolt());
+    }
+
     Result CpuVoltDvfs(u32 *ptr) {
         if (MatchesPattern(ptr, cpuVoltDvfsPattern, cpuVoltDvfsOffsets)) {
             if (C.eristaCpuVmin) {
@@ -439,6 +454,7 @@ namespace ams::ldr::hoc::pcv::erista {
         PatcherEntry<u32> patches[] = {
             {"CPU Freq Table", CpuFreqCvbTable<false>, 1, nullptr, static_cast<u32>(GetDvfsTableLastEntry(CpuCvbTableDefault)->freq)},
             {"CPU Volt DVFS", &CpuVoltDvfs, 1, nullptr, 825},
+            {"CPU Volt Limit", &CpuVoltRange,          0, &CpuMaxVoltPatternFn},
             {"CPU Volt Thermals", &CpuVoltThermals, 1, nullptr, 825},
             {"CPU Volt Dfll",  &CpuVoltDfll, 1, nullptr, 0xFFEAD0FF},
             {"GPU Volt DVFS", &GpuVoltDVFS, 1, nullptr, 810},

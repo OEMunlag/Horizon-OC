@@ -35,7 +35,7 @@ std::map<uint32_t, std::string> cpu_freq_label_e = {
     {1224000000, "Dev OC"},
     {1785000000, "Boost Mode & Safe Max"},
     {2091000000, "Unsafe Max"},
-    {2295000000, "Absolute Max"},
+    {2397000000, "Absolute Max"},
 };
 std::map<uint32_t, std::string> gpu_freq_label_e = {
     {76800000, "Boost Mode"},

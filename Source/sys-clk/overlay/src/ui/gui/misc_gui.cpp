@@ -834,6 +834,7 @@ protected:
                 NamedValue("2091 MHz", 2091000),
                 NamedValue("2193 MHz", 2193000),
                 NamedValue("2295 MHz", 2295000),
+                NamedValue("2397 MHz", 2295000),
             };
             ValueThresholds eCpuClockThresholds(1785000, 2091000);
             addConfigButton(
@@ -870,14 +871,37 @@ protected:
                 {},
                 false
             );
+
+            ValueThresholds eCpuVoltThresholds(1235, 1260);
             addConfigButton(
                 KipConfigValue_eristaCpuMaxVolt,
                 "CPU Max Voltage",
-                ValueRange(1120, 1235, 5, "mV", 1),
+                ValueRange(1120, 1260, 5, "mV", 1),
                 "CPU Max Voltage",
-                &thresholdsDisabled,
+                &eCpuVoltThresholds,
                 {},
                 {},
+                false
+            );
+
+            std::vector<NamedValue> maxClkOptions = {
+                NamedValue("1785 MHz", 1785),
+                NamedValue("1887 MHz", 1887),
+                NamedValue("1963 MHz", 1963),
+                NamedValue("2091 MHz", 2091),
+                NamedValue("2193 MHz", 2193),
+                NamedValue("2295 MHz", 2295),
+                NamedValue("2397 MHz", 2397),
+            };
+            ValueThresholds eCpuMaxClockThresholds(1785, 2091);
+            addConfigButton(
+                HocClkConfigValue_EristaMaxCpuClock,
+                "CPU Max Clock",
+                ValueRange(0, 0, 1, "", 1),
+                "CPU Max Clock",
+                &eCpuMaxClockThresholds,
+                {},
+                maxClkOptions,
                 false
             );
         } else {

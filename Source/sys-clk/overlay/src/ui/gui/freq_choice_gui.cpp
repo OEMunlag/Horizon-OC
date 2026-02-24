@@ -131,10 +131,9 @@ void FreqChoiceGui::listUI()
         //     //     this->configList->values[HocClkConfigValue_MarikoMaxMemClock] < mhz)
         //     //     continue;
 
-        // } else if (checkMax && IsErista()) {
-        //     if (moduleName == "cpu" &&
-        //         this->configList->values[HocClkConfigValue_EristaMaxCpuClock] < mhz)
-        //         continue;
+        if (checkMax && IsErista())
+            if (moduleName == "cpu" && this->configList->values[HocClkConfigValue_EristaMaxCpuClock] < mhz)
+                continue;
 
         //     // if (moduleName == "gpu" &&
         //     //     this->configList->values[HocClkConfigValue_EristaMaxGpuClock] < mhz)

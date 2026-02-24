@@ -218,6 +218,13 @@ namespace ams::ldr::hoc::pcv {
         constexpr u32 GpuClkPllMax = 921'600'000;
         constexpr u32 GpuVminOfficial = 810;
 
+        constexpr u16 CpuMinVolts[] = { 950, 850, 825, 810 };
+
+        inline bool CpuMaxVoltPatternFn(u32* ptr32) {
+            u32 val = *ptr32;
+            return (val == 1132 || val == 1170 || val == 1227);
+        }
+        
         static const u32 gpuVoltDvfsPattern[] = { 810, 1150, 1000, 100, 1000, 10, };
         static_assert(sizeof(gpuVoltDvfsPattern) == (sizeof(u32) * 6), "Invalid gpuVoltDvfsPattern");
 

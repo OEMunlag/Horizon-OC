@@ -197,7 +197,7 @@ static inline const char* sysclkFormatConfigValue(SysClkConfigValue val, bool pr
             return pretty ? "Overwrite Boost Mode" : "ow_boost";
 
         case HocClkConfigValue_EristaMaxCpuClock:
-            return pretty ? "CPU Max Display Clock" : "cpu_max_e";
+            return pretty ? "CPU Max Clock" : "cpu_max_e";
 
         case HocClkConfigValue_MarikoMaxCpuClock:
             return pretty ? "CPU Max Display Clock" : "cpu_max_m";
