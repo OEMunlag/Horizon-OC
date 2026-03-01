@@ -991,7 +991,7 @@ protected:
             addConfigButton(
                 KipConfigValue_marikoCpuMaxVolt,
                 "CPU Max Voltage",
-                ValueRange(1000, 1235, 5, "mV", 1),
+                ValueRange(1000, 1200, 5, "mV", 1),
                 "CPU Max Voltage",
                 &mCpuVoltThresholds,
                 {},
