@@ -24,6 +24,21 @@
 
 namespace ams::ldr::hoc::pcv::erista {
 
+    Result CpuVoltRange(u32* ptr) {
+        u32 min_volt_got = *(ptr - 1);
+        for (const auto& mv : CpuMinVolts) {
+            if (min_volt_got != mv)
+                continue;
+
+            if (!C.eristaCpuMaxVolt)
+                R_SKIP();
+
+            PATCH_OFFSET(ptr, C.eristaCpuMaxVolt);
+            R_SUCCEED();
+        }
+        R_THROW(ldr::ResultInvalidCpuMinVolt());
+    }
+
     Result CpuVoltDvfs(u32 *ptr) {
         if (MatchesPattern(ptr, cpuVoltDvfsPattern, cpuVoltDvfsOffsets)) {
             if (C.eristaCpuVmin) {
@@ -65,12 +80,13 @@ namespace ams::ldr::hoc::pcv::erista {
         R_SUCCEED();
     }
 
+    /* In theory this should work, but it doesn't, I have no idea why ¯\_(ツ)_/¯ */
     Result CpuVoltDfll(u32* ptr) {
         cvb_cpu_dfll_data *entry = reinterpret_cast<cvb_cpu_dfll_data *>(ptr);
-        R_UNLESS(entry->tune0_low == 0xFFEAD0FF,   ldr::ResultInvalidCpuVoltDfllEntry());
-        R_UNLESS(entry->tune0_high == 0x0,   ldr::ResultInvalidCpuVoltDfllEntry());
-        R_UNLESS(entry->tune1_low == 0x0,   ldr::ResultInvalidCpuVoltDfllEntry());
-        R_UNLESS(entry->tune1_high == 0x0,    ldr::ResultInvalidCpuVoltDfllEntry());
+        R_UNLESS(entry->tune0_low == 0xFFEAD0FF, ldr::ResultInvalidCpuVoltDfllEntry());
+        R_UNLESS(entry->tune0_high == 0x0, ldr::ResultInvalidCpuVoltDfllEntry());
+        R_UNLESS(entry->tune1_low == 0x0, ldr::ResultInvalidCpuVoltDfllEntry());
+        R_UNLESS(entry->tune1_high == 0x0, ldr::ResultInvalidCpuVoltDfllEntry());
 
         if( !C.eristaCpuUV) {
             R_SKIP();
@@ -164,20 +180,6 @@ namespace ams::ldr::hoc::pcv::erista {
         PATCH_OFFSET(ptr32, asm_patch[0]);
         PATCH_OFFSET(ptr32 + 1, asm_patch[1]);
 
-        R_SUCCEED();
-    }
-
-    Result GpuFreqPllLimit(u32 *ptr) {
-        clk_pll_param *entry = reinterpret_cast<clk_pll_param *>(ptr);
-
-        // All zero except for freq
-        for (size_t i = 1; i < sizeof(clk_pll_param) / sizeof(u32); i++) {
-            R_UNLESS(*(ptr + i) == 0, ldr::ResultInvalidGpuPllEntry());
-        }
-
-        // Double the max clk simply
-        u32 max_clk = entry->freq * 2;
-        entry->freq = max_clk;
         R_SUCCEED();
     }
 
@@ -422,17 +424,45 @@ namespace ams::ldr::hoc::pcv::erista {
         R_SUCCEED();
     }
 
+    Result GpuFreqPllMax(u32 *ptr) {
+        clk_pll_param *entry = reinterpret_cast<clk_pll_param *>(ptr);
+
+        // All zero except for freq
+        for (size_t i = 1; i < sizeof(clk_pll_param) / sizeof(u32); i++) {
+            R_UNLESS(*(ptr + i) == 0, ldr::ResultInvalidGpuPllEntry());
+        }
+
+        // Double the max clk simply
+        u32 max_clk = entry->freq * 2;
+        entry->freq = max_clk;
+        R_SUCCEED();
+    }
+
+    // patch out 1305MHz limit on erista, don't use this!
+    // Result GpuFreqPllLimit(u32 *ptr) {
+    //     u32 prev_freq = *(ptr - 1);
+
+    //     if (prev_freq != 128000 && prev_freq != 1300000 && prev_freq != 76800) {
+    //         R_THROW(ldr::ResultInvalidGpuPllEntry());
+    //     }
+
+    //     PATCH_OFFSET(ptr, 3600000);
+
+    //     R_SUCCEED();
+    // }
+
     void Patch(uintptr_t mapped_nso, size_t nso_size) {
         PatcherEntry<u32> patches[] = {
             {"CPU Freq Table", CpuFreqCvbTable<false>, 1, nullptr, static_cast<u32>(GetDvfsTableLastEntry(CpuCvbTableDefault)->freq)},
-            {"CPU Volt DVFS", &CpuVoltDvfs, 1, nullptr, 825},
-            {"CPU Volt Thermals", &CpuVoltThermals, 1, nullptr, 825},
-            {"CPU Volt Dfll",  &CpuVoltDfll, 1, nullptr, 0xFFEAD0FF},
-            {"GPU Volt DVFS", &GpuVoltDVFS, 1, nullptr, 810},
-            {"GPU Volt Thermals", &GpuVoltThermals, 1, nullptr, 810},
+            {"CPU Volt DVFS", &CpuVoltDvfs, 1, nullptr, CpuVminOfficial},
+            {"CPU Volt Thermals", &CpuVoltThermals, 1, nullptr, CpuVminOfficial},
+            {"CPU Volt Dfll", &CpuVoltDfll, 1, nullptr, 0xFFEAD0FF},
+            {"GPU Volt DVFS", &GpuVoltDVFS, 1, nullptr, GpuVminOfficial},
+            {"GPU Volt Thermals", &GpuVoltThermals, 1, nullptr, GpuVminOfficial},
             {"GPU Freq Table", GpuFreqCvbTable<false>, 1, nullptr, static_cast<u32>(GetDvfsTableLastEntry(GpuCvbTableDefault)->freq)},
             {"GPU Freq Asm", &GpuFreqMaxAsm, 2, &GpuMaxClockPatternFn},
-            {"GPU Freq PLL", &GpuFreqPllLimit, 1, nullptr, GpuClkPllLimit},
+            {"GPU PLL Max", &GpuFreqPllMax, 1, nullptr, GpuClkPllMax},
+            // {"GPU PLL Limit", &GpuFreqPllLimit, 4, nullptr, GpuClkPllLimit},
             {"MEM Freq Mtc", &MemFreqMtcTable, 0, nullptr, EmcClkOSLimit},
             {"MEM Freq Max", &MemFreqMax, 0, nullptr, EmcClkOSLimit},
             {"MEM Freq PLLM", &MemFreqPllmLimit, 2, nullptr, EmcClkPllmLimit},

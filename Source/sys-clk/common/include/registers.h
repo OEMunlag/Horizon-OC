@@ -1,6 +1,8 @@
 /*
  * Copyright (c) Souldbminer, Lightos_ and Horizon OC Contributors
  *
+ * Copyright (c) Linux 4 Tegra & Linux 4 Switch contributors
+ *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
  * version 2, as published by the Free Software Foundation.
@@ -522,9 +524,4 @@
 #define CL_DVFS_I2C_VDD_REG_ADDR_0 0x44
 #define CL_DVFS_I2C_STS_0 0x48
 #define CL_DVFS_INTR_STS_0 0x5C
-#define CL_DVFS_INTR_EN_0 0x60
-#define DVFS_DFLL_THROTTLE_CTRL_0 0x64
-#define DVFS_DFLL_THROTTLE_LIGHT_0 0x68
-#define DVFS_DFLL_THROTTLE_MEDIUM_0 0x6C
-#define DVFS_DFLL_THROTTLE_HEAVY_0 0x70
 #define CL_DVFS_I2C_CLK_DIVISOR_REGISTER_0 0x16C

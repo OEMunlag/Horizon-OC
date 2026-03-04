@@ -202,11 +202,11 @@ namespace ams::ldr::hoc::pcv {
             {                                                 },
         };
 
-        constexpr u32 CpuVoltOfficial = 1235;
+        constexpr u32 CpuVoltOfficial = 1227;
 
         constexpr u32 CpuVminOfficial = 825;
 
-        constexpr u32 CpuVoltL4T = 1235'000;
+        constexpr u32 CpuVoltL4T = 1257'000;
 
         static const u32 cpuVoltDvfsPattern[] = { 1227, 1000, 100, 1000, 0 };
         static const u32 cpuVoltDvfsOffsets[] = {    5,    6,   7,    8, 9 };
@@ -214,16 +214,22 @@ namespace ams::ldr::hoc::pcv {
 
         static const u32 cpuVoltageThermalPattern[] = { 950, 1132, 0, 950, 1227, 0, 825, 1227, 15000, 825, 1170, 60000, 825, 1132, 80000 };
         static_assert(sizeof(cpuVoltageThermalPattern) == 0x3c, "invalid cpuVoltageThermalPattern size");
-
-        constexpr u32 GpuClkPllLimit = 921'600'000;
+        constexpr u32 GpuClkPllLimit = 2'600'000;
+        constexpr u32 GpuClkPllMax = 921'600'000;
         constexpr u32 GpuVminOfficial = 810;
 
+        constexpr u16 CpuMinVolts[] = { 950, 850, 825, 810 };
+
+        inline bool CpuMaxVoltPatternFn(u32* ptr32) {
+            u32 val = *ptr32;
+            return (val == 1132 || val == 1170 || val == 1227);
+        }
+        
         static const u32 gpuVoltDvfsPattern[] = { 810, 1150, 1000, 100, 1000, 10, };
         static_assert(sizeof(gpuVoltDvfsPattern) == (sizeof(u32) * 6), "Invalid gpuVoltDvfsPattern");
 
         static const u32 gpuVoltThermalPattern[] = { 950, 1132, 0, 810, 1132, 15000, 810, 1132, 30000, 810, 1132, 50000, 810, 1132, 70000, 810, 1132, 105000 };
         static_assert(sizeof(gpuVoltThermalPattern) == 0x48, "invalid gpuVoltageThermalPattern size");
-
 
         /* GPU Max Clock asm Pattern:
          *

@@ -748,10 +748,12 @@ void ClockManager::DVFSReset() {
                 targetHz = this->config->GetAutoClockHz(GLOBAL_PROFILE_ID, SysClkModule_GPU, this->context->profile, false);
             }
         }
+        u32 maxHz = this->GetMaxAllowedHz(SysClkModule_GPU, this->context->profile);
+        u32 nearestHz = this->GetNearestHz(SysClkModule_GPU, targetHz, maxHz);
 
         Board::SetHz(SysClkModule_GPU, ~0);
         if(targetHz) {
-            Board::SetHz(SysClkModule_GPU, targetHz);
+            Board::SetHz(SysClkModule_GPU, nearestHz);
         } else {
             Board::ResetToStockGpu();
         }
@@ -764,7 +766,7 @@ void ClockManager::HandleFreqReset(SysClkModule module, bool isBoost) {
     case SysClkModule_CPU:
         if(!(isBoost || (this->config->GetConfigValue(HocClkConfigValue_OverwriteBoostMode) && isBoost)))
             Board::ResetToStockCpu();
-        if(this->config->GetConfigValue(HorizonOCConfigValue_LiveCpuUv)) {
+        if(this->config->GetConfigValue(HorizonOCConfigValue_LiveCpuUv) || (kipAvailable && Board::GetSocType() == SysClkSocType_Erista)) { 
             if(Board::GetSocType() == SysClkSocType_Erista)
                 Board::SetCpuUvLevel(this->config->GetConfigValue(KipConfigValue_eristaCpuUV), 0, 1581000000);
             else
@@ -778,8 +780,8 @@ void ClockManager::HandleFreqReset(SysClkModule module, bool isBoost) {
     case SysClkModule_MEM:
         Board::ResetToStockMem();
         DVFSReset();
-        default:
-            break;
+    default:
+        break;
     }
 
 }
@@ -858,7 +860,7 @@ void ClockManager::SetClocks(bool isBoost) {
                 Board::SetHz((SysClkModule)module, nearestHz);
                 this->context->freqs[module] = nearestHz;
 
-                if(module == SysClkModule_CPU && this->config->GetConfigValue(HorizonOCConfigValue_LiveCpuUv))
+                if(module == SysClkModule_CPU && (this->config->GetConfigValue(HorizonOCConfigValue_LiveCpuUv) || (kipAvailable && Board::GetSocType() == SysClkSocType_Erista)))
                 {
                     HandleCpuUv();
                 }
@@ -894,7 +896,7 @@ void ClockManager::Tick()
 
 void ClockManager::ResetToStockClocks() {
     Board::ResetToStockCpu();
-    if(this->config->GetConfigValue(HorizonOCConfigValue_LiveCpuUv))
+    if(this->config->GetConfigValue(HorizonOCConfigValue_LiveCpuUv) || (kipAvailable && Board::GetSocType() == SysClkSocType_Erista))
     {
         if(Board::GetSocType() == SysClkSocType_Erista)
             Board::SetCpuUvLevel(this->config->GetConfigValue(KipConfigValue_eristaCpuUV), 0, 1581000000);
